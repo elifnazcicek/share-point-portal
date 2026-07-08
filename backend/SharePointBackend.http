@@ -1,0 +1,6 @@
+@SharePointBackend_HostAddress = http://localhost:5081
+
+GET {{SharePointBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,785 @@
+@if (!isLoggedIn()) {
+  <!-- PREMIUM LOGIN SCREEN -->
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-icon">SP</div>
+        <h2>SharePoint Portal</h2>
+        <p>
+          @if (authMode() === 'login') { Lütfen devam etmek için giriş yapınız }
+          @else if (authMode() === 'register') { Yeni bir kurumsal profil oluşturun }
+          @else if (authMode() === 'forgot') { Şifrenizi yenilemek için bilgilerinizi giriniz }
+          @else if (authMode() === 'verify_otp') { E-postanıza gönderilen doğrulama kodunu giriniz }
+        </p>
+      </div>
+
+      <!-- Alerts -->
+      @if (authError()) {
+        <div class="login-alert danger">
+          <span>⚠️ {{ authError() }}</span>
+        </div>
+      }
+      @if (authSuccess()) {
+        <div class="login-alert success">
+          <span>✓ {{ authSuccess() }}</span>
+        </div>
+      }
+
+      <!-- 1. LOGIN MODE -->
+      @if (authMode() === 'login') {
+        <form (submit)="handleAuthSubmit(); $event.preventDefault();" class="login-form">
+          <div class="form-group">
+            <label for="login-username">Kullanıcı Adı</label>
+            <div class="input-with-icon">
+              <span class="field-icon">👤</span>
+              <input 
+                type="text" 
+                id="login-username" 
+                [ngModel]="authUsername()" 
+                (ngModelChange)="authUsername.set($event)"
+                name="authUsername" 
+                required 
+                placeholder="Kullanıcı adınızı girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Şifre</label>
+            <div class="input-with-icon">
+              <span class="field-icon">🔒</span>
+              <input 
+                type="password" 
+                id="login-password" 
+                [ngModel]="authPassword()" 
+                (ngModelChange)="authPassword.set($event)"
+                name="authPassword" 
+                required 
+                placeholder="Şifrenizi girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="login-form-options">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [ngModel]="rememberMe()" 
+                (ngModelChange)="rememberMe.set($event)"
+                name="rememberMe" 
+                [disabled]="authLoading()"
+              />
+              <span>Beni Hatırla</span>
+            </label>
+            <a (click)="switchAuthMode('forgot')" class="forgot-link">Şifremi Unuttum</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="authLoading()">
+            @if (authLoading()) { <div class="spinner spinner-sm spinner-white"></div> }
+            <span>{{ authLoading() ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}</span>
+          </button>
+        </form>
+      }
+
+      <!-- 2. REGISTER MODE -->
+      @if (authMode() === 'register') {
+        <form (submit)="handleAuthSubmit(); $event.preventDefault();" class="login-form">
+          <div class="form-group">
+            <label for="reg-username">Kullanıcı Adı</label>
+            <div class="input-with-icon">
+              <span class="field-icon">👤</span>
+              <input 
+                type="text" 
+                id="reg-username" 
+                [ngModel]="authUsername()" 
+                (ngModelChange)="authUsername.set($event)"
+                name="authUsername" 
+                required 
+                placeholder="Kullanıcı adı belirleyin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-email">E-posta Adresi</label>
+            <div class="input-with-icon">
+              <span class="field-icon">✉️</span>
+              <input 
+                type="email" 
+                id="reg-email" 
+                [ngModel]="authEmail()" 
+                (ngModelChange)="authEmail.set($event)"
+                name="authEmail" 
+                placeholder="ornek@sirket.com"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-password">Şifre</label>
+            <div class="input-with-icon">
+              <span class="field-icon">🔒</span>
+              <input 
+                type="password" 
+                id="reg-password" 
+                [ngModel]="authPassword()" 
+                (ngModelChange)="authPassword.set($event)"
+                name="authPassword" 
+                required 
+                placeholder="Şifrenizi girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-confirm">Şifre Tekrar</label>
+            <div class="input-with-icon">
+              <span class="field-icon">🔒</span>
+              <input 
+                type="password" 
+                id="reg-confirm" 
+                [ngModel]="authConfirmPassword()" 
+                (ngModelChange)="authConfirmPassword.set($event)"
+                name="authConfirmPassword" 
+                required 
+                placeholder="Şifrenizi tekrar girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="authLoading()">
+            @if (authLoading()) { <div class="spinner spinner-sm spinner-white"></div> }
+            <span>{{ authLoading() ? 'Kaydediliyor...' : 'Profil Oluştur' }}</span>
+          </button>
+        </form>
+      }
+
+      <!-- 3. FORGOT PASSWORD MODE -->
+      @if (authMode() === 'forgot') {
+        <form (submit)="executeResetRequest(); $event.preventDefault();" class="login-form">
+          <div class="form-group">
+            <label for="forgot-username">Kullanıcı Adı</label>
+            <div class="input-with-icon">
+              <span class="field-icon">👤</span>
+              <input 
+                type="text" 
+                id="forgot-username" 
+                [ngModel]="authUsername()" 
+                (ngModelChange)="authUsername.set($event)"
+                name="authUsername" 
+                required 
+                placeholder="Kullanıcı adınızı girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="forgot-email">Kayıtlı E-posta Adresi</label>
+            <div class="input-with-icon">
+              <span class="field-icon">✉️</span>
+              <input 
+                type="email" 
+                id="forgot-email" 
+                [ngModel]="authEmail()" 
+                (ngModelChange)="authEmail.set($event)"
+                name="authEmail" 
+                required 
+                placeholder="ornek@sirket.com"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="authLoading()">
+            @if (authLoading()) { <div class="spinner spinner-sm spinner-white"></div> }
+            <span>{{ authLoading() ? 'Kod Gönderiliyor...' : 'Sıfırlama Kodu Gönder' }}</span>
+          </button>
+        </form>
+      }
+
+      <!-- 4. VERIFY OTP MODE -->
+      @if (authMode() === 'verify_otp') {
+        <form (submit)="executeResetVerify(); $event.preventDefault();" class="login-form">
+          <div class="form-group">
+            <label for="otp-username">Kullanıcı Adı</label>
+            <div class="input-with-icon">
+              <span class="field-icon">👤</span>
+              <input 
+                type="text" 
+                id="otp-username" 
+                [ngModel]="authUsername()" 
+                name="authUsername" 
+                disabled
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="otp-code">Doğrulama Kodu (OTP)</label>
+            <div class="input-with-icon">
+              <span class="field-icon">🔑</span>
+              <input 
+                type="text" 
+                id="otp-code" 
+                [ngModel]="otpCode()" 
+                (ngModelChange)="otpCode.set($event)"
+                name="otpCode" 
+                required 
+                placeholder="6 haneli kodu girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="new-password">Yeni Şifre</label>
+            <div class="input-with-icon">
+              <span class="field-icon">🔒</span>
+              <input 
+                type="password" 
+                id="new-password" 
+                [ngModel]="newPassword()" 
+                (ngModelChange)="newPassword.set($event)"
+                name="newPassword" 
+                required 
+                placeholder="Yeni şifrenizi girin"
+                [disabled]="authLoading()"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="authLoading()">
+            @if (authLoading()) { <div class="spinner spinner-sm spinner-white"></div> }
+            <span>{{ authLoading() ? 'Şifre Yenileniyor...' : 'Şifreyi Güncelle' }}</span>
+          </button>
+        </form>
+      }
+
+      <!-- Toggle Mode Link -->
+      <div class="login-toggle-mode">
+        @if (authMode() === 'login') {
+          <p>Hesabınız yok mu? <a (click)="switchAuthMode('register')" class="toggle-link">Profil Oluştur</a></p>
+        } @else {
+          <p>Zaten hesabınız var mı? <a (click)="switchAuthMode('login')" class="toggle-link">Giriş Yap</a></p>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- PORTAL WRAPPER (MAIN Intranet page) -->
+  <div class="portal-wrapper">
+    <!-- TOP HEADER (SharePoint style) -->
+    <header class="main-header">
+      <div class="header-left">
+        <button class="grid-menu-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <circle cx="5" cy="5" r="2"></circle><circle cx="12" cy="5" r="2"></circle><circle cx="19" cy="5" r="2"></circle>
+            <circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle>
+            <circle cx="5" cy="19" r="2"></circle><circle cx="12" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle>
+          </svg>
+        </button>
+        <span class="logo-text">SharePoint</span>
+      </div>
+
+      <!-- SEARCH BAR -->
+      <div class="header-search">
+        <div class="search-box">
+          <app-icon name="search" [size]="16" color="#0078d4" class="search-icon"></app-icon>
+          <input 
+            type="text" 
+            placeholder="Search this site" 
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- SYSTEM IP INDICATOR -->
+        <button class="network-badge" (click)="isSimulatorOpen.set(true)" title="Click to simulate network changes">
+          <span class="status-dot green"></span>
+          <span class="badge-ip">{{ device()?.ipAddress }}</span>
+          <span class="badge-dept">{{ device()?.department?.name || 'Guest' }}</span>
+        </button>
+
+        <button class="icon-nav-btn" title="Settings">
+          <app-icon name="settings" [size]="18" color="#ffffff"></app-icon>
+        </button>
+        <button class="icon-nav-btn" title="Help">
+          <app-icon name="help-circle" [size]="18" color="#ffffff"></app-icon>
+        </button>
+
+        <!-- PROFILE CARD -->
+        <div class="profile-card-authenticated">
+          <div class="avatar-auth" [title]="currentUserFullName() || 'Kullanıcı'">
+            {{ currentUser()?.slice(0, 2) | uppercase }}
+          </div>
+          <div class="auth-details">
+            <span class="auth-name">{{ currentUserFullName() }}</span>
+            <span class="auth-role">{{ currentUserRole() }}</span>
+          </div>
+          <button class="logout-btn" (click)="logout()" title="Çıkış Yap">
+            <app-icon name="log-out" [size]="16" color="#ffffff"></app-icon>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECONDARY NAV BAR (ON TAP Style) -->
+    <nav class="sub-nav">
+      <div class="nav-left">
+        <a href="#" class="home-icon-btn">
+          <app-icon name="calendar" [size]="18" color="#334155" style="transform: scale(0.9)"></app-icon>
+        </a>
+        <div class="ontap-logo">ON<span class="logo-bold">TAP</span></div>
+        <div class="nav-links">
+          <div class="nav-link-dropdown">How do I? <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">About me <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">News & events <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">About us <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">Directorates <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">Policies <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">Apps <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+          <div class="nav-link-dropdown">Help <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" (click)="isSimulatorOpen.set(true)">
+        <app-icon name="activity" [size]="14"></app-icon>
+        <span>Network Simulator</span>
+      </button>
+    </nav>
+
+    <!-- ERROR ALERT -->
+    @if (error()) {
+      <div class="error-banner">
+        <app-icon name="shield" [size]="24" color="#ef4444"></app-icon>
+        <div class="error-content">
+          <h4>Connection Error</h4>
+          <p>{{ error() }}</p>
+        </div>
+        <button class="btn btn-primary btn-sm" (click)="loadProfile()">Retry Connection</button>
+      </div>
+    }
+
+    <!-- MAIN LOADING -->
+    @if (loading()) {
+      <div class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Synchronizing network profile and authorized toolsets...</p>
+      </div>
+    } @else {
+      <!-- MAIN CONTENT PORTAL -->
+      <main class="portal-container">
+        
+        <!-- PRIORITY NOTICE BANNER -->
+        @if (activeAnnouncement(); as announcement) {
+          @if (isAlertBannerVisible()) {
+            <div class="announcement-banner">
+              <app-icon name="bell" [size]="18" color="#ffffff" class="banner-bell-icon"></app-icon>
+              <div class="announcement-text">
+                <strong>{{ announcement.title }}:</strong> {{ announcement.content }}
+              </div>
+              <button class="announcement-close" (click)="dismissAlert()">
+                <app-icon name="plus" [size]="16" color="#ffffff" style="transform: rotate(45deg)"></app-icon>
+              </button>
+            </div>
+          }
+        }
+
+        <!-- TOP SPLIT SECTION (Carousel 60% | Apps Grid 40%) -->
+        <div class="top-layout-grid">
+          
+          <!-- LEFT: NEWS CAROUSEL -->
+          <section class="carousel-section">
+            <!-- Greet Banner -->
+            <div class="greet-banner">
+              <span class="greet-text">Good Afternoon, {{ currentUserFullName() || device()?.deviceName }}</span>
+              <span class="greet-divider">|</span>
+              <span class="greet-location">Coventry <app-icon name="globe" [size]="14" color="#64748b" style="display:inline-block"></app-icon> 16°c</span>
+              <button class="tour-btn" (click)="isSimulatorOpen.set(true)">Show network settings</button>
+            </div>
+
+            <div class="carousel-container">
+              @for (slide of slides; track $index) {
+                <div class="carousel-slide" [class.active]="$index === activeSlide()">
+                  <img [src]="slide.image" [alt]="slide.title" class="slide-image" />
+                  <div class="slide-overlay">
+                    <span class="slide-date">22nd November 2026</span>
+                    <h2 class="slide-title">{{ slide.title }}</h2>
+                    <p class="slide-desc">{{ slide.description }}</p>
+                    <button class="read-more-btn" (click)="handleToolClick({url: 'https://company.com/news', isAccessible: true, name: slide.title})">Read more</button>
+                  </div>
+                </div>
+              }
+
+              <!-- CAROUSEL PROGRESS INDICATORS -->
+              <div class="carousel-progress-bar">
+                @for (slide of slides; track $index) {
+                  <div 
+                    class="progress-segment" 
+                    [class.active]="$index === activeSlide()"
+                    (click)="selectSlide($index)"
+                  ></div>
+                }
+              </div>
+
+              <!-- CAROUSEL BOTTOM SLIDE LINKS -->
+              <div class="carousel-bottom-links">
+                @for (slide of slides; track $index) {
+                  <button 
+                    class="bottom-link-btn" 
+                    [class.active]="$index === activeSlide()"
+                    (click)="selectSlide($index)"
+                  >
+                    {{ slide.title | slice:0:30 }}...
+                  </button>
+                }
+              </div>
+            </div>
+          </section>
+
+          <!-- RIGHT: MY APPS GRID -->
+          <section class="apps-section">
+            <div class="apps-header">
+              <h3>My Apps</h3>
+              <button class="edit-apps-btn" (click)="openAddModal()">
+                <app-icon name="settings" [size]="14" color="#0078d4" style="margin-right:4px"></app-icon> Edit
+              </button>
+            </div>
+
+            <div class="apps-grid">
+              @for (app of filteredShortcuts(); track app.id) {
+                <div 
+                  class="app-tile" 
+                  [class.locked]="!app.isAccessible"
+                  (click)="handleToolClick(app)"
+                  [style.background-color]="app.color"
+                >
+                  @if (!app.isAccessible) {
+                    <div class="tile-lock">
+                      <app-icon name="lock" [size]="12" color="#ffffff"></app-icon>
+                    </div>
+                  }
+                  
+                  <div class="tile-icon-wrapper">
+                    <app-icon [name]="app.icon" color="#ffffff" [size]="24"></app-icon>
+                  </div>
+                  <span class="tile-title">{{ app.name }}</span>
+                </div>
+              }
+
+              @for (custom of customShortcuts(); track custom.id) {
+                <div 
+                  class="app-tile custom-tile" 
+                  (click)="handleToolClick({url: custom.url, isAccessible: true, name: custom.name})"
+                  [style.background-color]="custom.color"
+                >
+                  <button class="tile-delete-btn" (click)="deleteCustomShortcut(custom.id); $event.stopPropagation()">
+                    <app-icon name="plus" [size]="10" color="#ffffff" style="transform: rotate(45deg)"></app-icon>
+                  </button>
+                  <div class="tile-icon-wrapper">
+                    <app-icon [name]="custom.icon" color="#ffffff" [size]="24"></app-icon>
+                  </div>
+                  <span class="tile-title">{{ custom.name }} (Custom)</span>
+                </div>
+              }
+
+              <div class="app-tile add-tile" (click)="openAddModal()">
+                <div class="tile-icon-wrapper">
+                  <app-icon name="plus" color="#0078d4" [size]="24"></app-icon>
+                </div>
+                <span class="tile-title" style="color: #0078d4;">Add Link</span>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- BOTTOM SPLIT SECTION (Widgets 60% | Search 40%) -->
+        <div class="bottom-layout-grid">
+          
+          <!-- LEFT: DASHBOARD WIDGETS -->
+          <section class="dashboard-section">
+            <div class="section-title">
+              <h3>Dashboard</h3>
+              <a href="#" class="see-all-link">See all</a>
+            </div>
+
+            <div class="widgets-row">
+              <div class="dashboard-widget-card">
+                <div class="widget-card-header">
+                  <app-icon name="calendar" [size]="16" color="#0078d4"></app-icon>
+                  <span>Tasks</span>
+                </div>
+                <div class="widget-card-body">
+                  <div class="badge-huge">1 due today</div>
+                  <div class="widget-subtext">Unsubmitted expense balance due by 25th</div>
+                </div>
+              </div>
+
+              <div class="dashboard-widget-card">
+                <div class="widget-card-header">
+                  <app-icon name="dollar-sign" [size]="16" color="#10b981"></app-icon>
+                  <span>Expenses 2.0</span>
+                </div>
+                <div class="widget-card-body">
+                  <div class="badge-huge">$80.21</div>
+                  <div class="widget-subtext">Unsubmitted expense balance due by 25th</div>
+                </div>
+              </div>
+
+              <div class="dashboard-widget-card">
+                <div class="widget-card-header">
+                  <app-icon name="activity" [size]="16" color="#8b5cf6"></app-icon>
+                  <span>Insights</span>
+                </div>
+                <div class="widget-card-body insights-body">
+                  <div class="insights-title">Give your mind a break</div>
+                  <div class="widget-subtext">Take 5 minutes with Headspace</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="widget-panel mt-20">
+              <div class="widget-header">
+                <h3>Subnet Access Logs (Audit)</h3>
+                <app-icon name="terminal" [size]="16" color="#0078d4"></app-icon>
+              </div>
+              <div class="widget-body audit-list">
+                @for (log of recentLogs() | slice:0:5; track log.id) {
+                  <div class="audit-item">
+                    <div class="audit-dot"></div>
+                    <div class="audit-info">
+                      <span class="audit-action">{{ log.action }}</span>
+                      <div class="audit-meta">
+                        <span>{{ log.ipAddress }}</span> &bull; 
+                        <span>{{ log.departmentName }}</span> &bull; 
+                        <span>{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+
+          <!-- RIGHT: PEOPLE SEARCH -->
+          <section class="search-section">
+            <div class="section-title">
+              <h3>People search</h3>
+            </div>
+            
+            <div class="people-search-card">
+              <div class="search-box-large">
+                <app-icon name="search" [size]="18" color="#64748b" class="search-icon-large"></app-icon>
+                <input type="text" placeholder="Search by name, team or job title" />
+              </div>
+              <button class="directory-btn" (click)="handleToolClick({url: 'https://company.com/directory', isAccessible: true, name: 'Staff Directory'})">
+                See Staff Directory
+              </button>
+            </div>
+
+            <div class="broadcasts-card mt-20">
+              <div class="widget-header" style="padding:0 0 12px 0; border-bottom:1px solid #e2e8f0; margin-bottom:12px">
+                <h4>Department Announcements</h4>
+              </div>
+              <div class="widget-body" style="padding:0">
+                @if (announcements().length === 0) {
+                  <div class="empty-state">No broadcast updates for this subnet.</div>
+                } @else {
+                  @for (item of announcements() | slice:0:3; track item.id) {
+                    <div class="announcement-row" [className]="'announcement-row border-' + item.priority">
+                      <span class="ann-dept">{{ item.departmentName }}</span>
+                      <span class="ann-title">{{ item.title }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    }
+
+    <!-- SIDE DRAWER: NETWORK SIMULATOR -->
+    <div class="drawer-overlay" [class.open]="isSimulatorOpen()" (click)="isSimulatorOpen.set(false)"></div>
+    <div class="drawer" [class.open]="isSimulatorOpen()">
+      <div class="drawer-header">
+        <h3>Network Profile Simulator</h3>
+        <button class="close-drawer-btn" (click)="isSimulatorOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="drawer-body">
+        <p class="drawer-desc">
+          Change this device's connection parameters to simulate automatic profile routing and tools authorization.
+        </p>
+
+        <div class="form-group">
+          <label>Quick Connect Presets</label>
+          <div class="preset-grid">
+            <button class="preset-btn" (click)="setPresetIp('192.168.1.15')">
+              <span class="badge-dot" style="background-color: #d90429"></span>
+              IT Subnet
+            </button>
+            <button class="preset-btn" (click)="setPresetIp('192.168.2.34')">
+              <span class="badge-dot" style="background-color: #0077b6"></span>
+              HR Subnet
+            </button>
+            <button class="preset-btn" (click)="setPresetIp('192.168.3.102')">
+              <span class="badge-dot" style="background-color: #2a9d8f"></span>
+              Finance Subnet
+            </button>
+            <button class="preset-btn" (click)="setPresetIp('192.168.4.88')">
+              <span class="badge-dot" style="background-color: #e76f51"></span>
+              Marketing Subnet
+            </button>
+            <button class="preset-btn" (click)="setPresetIp('192.168.5.50')">
+              <span class="badge-dot" style="background-color: #06d6a0"></span>
+              Operations Subnet
+            </button>
+            <button class="preset-btn" (click)="setPresetIp('10.0.0.12')">
+              <span class="badge-dot" style="background-color: #6b7280"></span>
+              Guest Network
+            </button>
+          </div>
+        </div>
+
+        <hr class="drawer-divider"/>
+
+        <form (submit)="applySimulation(); $event.preventDefault()">
+          <div class="form-group">
+            <label for="sim-ip">Device IP Address</label>
+            <input 
+              type="text" 
+              id="sim-ip" 
+              [ngModel]="simulatedIp()" 
+              (ngModelChange)="simulatedIp.set($event)"
+              name="simIp" 
+              placeholder="e.g. 192.168.1.15"
+            />
+            <small class="input-tip">Subnets map to: 192.168.1.x (IT), .2.x (HR), .3.x (Finance), .4.x (Marketing), .5.x (Operations)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="sim-name">Device Name (Hostname)</label>
+            <input 
+              type="text" 
+              id="sim-name" 
+              [ngModel]="simulatedDeviceName()" 
+              (ngModelChange)="simulatedDeviceName.set($event)"
+              name="simName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="sim-mac">Physical Address (MAC)</label>
+            <input 
+              type="text" 
+              id="sim-mac" 
+              [ngModel]="simulatedMac()" 
+              (ngModelChange)="simulatedMac.set($event)"
+              name="simMac"
+            />
+          </div>
+
+          <div class="drawer-footer">
+            <button type="submit" class="btn btn-primary btn-block">Apply Network Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD CUSTOM SHORTCUT -->
+    <div class="modal-overlay" *ngIf="isAddModalOpen()" (click)="isAddModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isAddModalOpen()">
+      <div class="modal-header">
+        <h3>Add Custom Link</h3>
+        <button class="modal-close" (click)="isAddModalOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <form (submit)="submitCustomShortcut(); $event.preventDefault()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="link-name">Application Name</label>
+            <input 
+              type="text" 
+              id="link-name" 
+              [ngModel]="newShortcutName()" 
+              (ngModelChange)="newShortcutName.set($event)"
+              name="linkName" 
+              placeholder="e.g. Personal Project Board" 
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="link-url">URL / Path</label>
+            <input 
+              type="url" 
+              id="link-url" 
+              [ngModel]="newShortcutUrl()" 
+              (ngModelChange)="newShortcutUrl.set($event)"
+              name="linkUrl" 
+              placeholder="https://..." 
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="link-icon">Icon Representation</label>
+              <select 
+                id="link-icon" 
+                [ngModel]="newShortcutIcon()" 
+                (ngModelChange)="newShortcutIcon.set($event)"
+                name="linkIcon"
+              >
+                <option value="link">Link Anchor</option>
+                <option value="globe">Globe Website</option>
+                <option value="mail">Mail Outlook</option>
+                <option value="calendar">Calendar</option>
+                <option value="activity">Diagnostics</option>
+                <option value="shield">Security</option>
+                <option value="server">Server</option>
+                <option value="dollar-sign">Finance</option>
+                <option value="image">Media</option>
+                <option value="cpu">Operations</option>
+              </select>
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="link-color">Color Theme</label>
+              <select 
+                id="link-color" 
+                [ngModel]="newShortcutColor()" 
+                (ngModelChange)="newShortcutColor.set($event)"
+                name="linkColor"
+              >
+                <option value="#0f172a">Navy Dark</option>
+                <option value="#0078d4">Sharepoint Blue</option>
+                <option value="#2a9d8f">Teal</option>
+                <option value="#2b2d42">Charcoal</option>
+                <option value="#10b981">Green</option>
+                <option value="#ef4444">Red</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="isAddModalOpen.set(false)">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newShortcutName() || !newShortcutUrl()">Add Shortcut</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
