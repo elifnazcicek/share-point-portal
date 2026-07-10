@@ -235,5 +235,40 @@ namespace SharePointBackend.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Status = "Logged" });
         }
+
+        // GET: api/portal/admin/users
+        [HttpGet("admin/users")]
+        public async Task<IActionResult> GetAdminUsers()
+        {
+            var users = await _context.Users
+                .Select(u => new { u.Username, u.FullName, u.Email, u.Role, u.IsActive })
+                .ToListAsync();
+            return Ok(users);
+        }
+
+        // PUT: api/portal/admin/users/{username}/role
+        [HttpPut("admin/users/{username}/role")]
+        public async Task<IActionResult> UpdateUserRole(string username, [FromQuery] string role)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
+            if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+            user.Role = role;
+
+            // Audit log
+            var log = new DeviceLog
+            {
+                DeviceName = "WORKSTATION-01",
+                IpAddress = "192.168.1.15",
+                MacAddress = "00-50-56-C0-00-08",
+                Action = $"Updated user role for '{user.Username}' to '{role}'",
+                Timestamp = DateTime.UtcNow,
+                DepartmentName = "System Admin"
+            };
+            _context.DeviceLogs.Add(log);
+
+            await _context.SaveChangesAsync();
+            return Ok(new { user.Username, user.Role });
+        }
     }
 }

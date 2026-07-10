@@ -16,12 +16,12 @@
       <!-- Alerts -->
       @if (authError()) {
         <div class="login-alert danger">
-          <span>⚠️ {{ authError() }}</span>
+          <span>{{ authError() }}</span>
         </div>
       }
       @if (authSuccess()) {
         <div class="login-alert success">
-          <span>✓ {{ authSuccess() }}</span>
+          <span>{{ authSuccess() }}</span>
         </div>
       }
 
@@ -31,7 +31,7 @@
           <div class="form-group">
             <label for="login-username">Kullanıcı Adı</label>
             <div class="input-with-icon">
-              <span class="field-icon">👤</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="user" [size]="14"></app-icon></span>
               <input 
                 type="text" 
                 id="login-username" 
@@ -48,7 +48,7 @@
           <div class="form-group">
             <label for="login-password">Şifre</label>
             <div class="input-with-icon">
-              <span class="field-icon">🔒</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="lock" [size]="14"></app-icon></span>
               <input 
                 type="password" 
                 id="login-password" 
@@ -80,6 +80,9 @@
             @if (authLoading()) { <div class="spinner spinner-sm spinner-white"></div> }
             <span>{{ authLoading() ? 'Giriş Yapılıyor...' : 'Giriş Yap' }}</span>
           </button>
+          <button type="button" class="btn btn-outline btn-block" (click)="switchAuthMode('forgot')" [disabled]="authLoading()" style="margin-top: 8px;">
+            Şifremi Yenile
+          </button>
         </form>
       }
 
@@ -89,7 +92,7 @@
           <div class="form-group">
             <label for="reg-username">Kullanıcı Adı</label>
             <div class="input-with-icon">
-              <span class="field-icon">👤</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="user" [size]="14"></app-icon></span>
               <input 
                 type="text" 
                 id="reg-username" 
@@ -106,7 +109,7 @@
           <div class="form-group">
             <label for="reg-email">E-posta Adresi</label>
             <div class="input-with-icon">
-              <span class="field-icon">✉️</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="mail" [size]="14"></app-icon></span>
               <input 
                 type="email" 
                 id="reg-email" 
@@ -122,7 +125,7 @@
           <div class="form-group">
             <label for="reg-password">Şifre</label>
             <div class="input-with-icon">
-              <span class="field-icon">🔒</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="lock" [size]="14"></app-icon></span>
               <input 
                 type="password" 
                 id="reg-password" 
@@ -139,7 +142,7 @@
           <div class="form-group">
             <label for="reg-confirm">Şifre Tekrar</label>
             <div class="input-with-icon">
-              <span class="field-icon">🔒</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="lock" [size]="14"></app-icon></span>
               <input 
                 type="password" 
                 id="reg-confirm" 
@@ -166,7 +169,7 @@
           <div class="form-group">
             <label for="forgot-username">Kullanıcı Adı</label>
             <div class="input-with-icon">
-              <span class="field-icon">👤</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="user" [size]="14"></app-icon></span>
               <input 
                 type="text" 
                 id="forgot-username" 
@@ -183,7 +186,7 @@
           <div class="form-group">
             <label for="forgot-email">Kayıtlı E-posta Adresi</label>
             <div class="input-with-icon">
-              <span class="field-icon">✉️</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="mail" [size]="14"></app-icon></span>
               <input 
                 type="email" 
                 id="forgot-email" 
@@ -210,7 +213,7 @@
           <div class="form-group">
             <label for="otp-username">Kullanıcı Adı</label>
             <div class="input-with-icon">
-              <span class="field-icon">👤</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="user" [size]="14"></app-icon></span>
               <input 
                 type="text" 
                 id="otp-username" 
@@ -224,7 +227,7 @@
           <div class="form-group">
             <label for="otp-code">Doğrulama Kodu (OTP)</label>
             <div class="input-with-icon">
-              <span class="field-icon">🔑</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="key" [size]="14"></app-icon></span>
               <input 
                 type="text" 
                 id="otp-code" 
@@ -241,7 +244,7 @@
           <div class="form-group">
             <label for="new-password">Yeni Şifre</label>
             <div class="input-with-icon">
-              <span class="field-icon">🔒</span>
+              <span class="field-icon" style="opacity:0.6;"><app-icon name="lock" [size]="14"></app-icon></span>
               <input 
                 type="password" 
                 id="new-password" 
@@ -273,339 +276,1014 @@
     </div>
   </div>
 } @else {
-  <!-- PORTAL WRAPPER (MAIN Intranet page) -->
+  <!-- PORTAL WRAPPER -->
   <div class="portal-wrapper">
-    <!-- TOP HEADER (SharePoint style) -->
+    <!-- TOP HEADER -->
     <header class="main-header">
       <div class="header-left">
-        <button class="grid-menu-btn">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <circle cx="5" cy="5" r="2"></circle><circle cx="12" cy="5" r="2"></circle><circle cx="19" cy="5" r="2"></circle>
-            <circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle>
-            <circle cx="5" cy="19" r="2"></circle><circle cx="12" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle>
+        <button class="grid-menu-btn" (click)="isSearchOpen.set(!isSearchOpen())" title="Başlat Menüsü / Arama">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <span class="logo-text">SharePoint</span>
+        <div class="ontap-logo" (click)="activeTab.set('home')" style="font-weight:600; cursor:pointer;">PortalOne</div>
       </div>
 
-      <!-- SEARCH BAR -->
-      <div class="header-search">
-        <div class="search-box">
-          <app-icon name="search" [size]="16" color="#0078d4" class="search-icon"></app-icon>
-          <input 
-            type="text" 
-            placeholder="Search this site" 
-            [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
-          />
-        </div>
-      </div>
+      <!-- CATEGORIES NAVIGATION BAR -->
+      <nav class="top-categories-nav">
+        <button class="cat-nav-btn" [class.active]="activeTab() === 'home'" (click)="activeTab.set('home')">
+          Ana Sayfa
+        </button>
+        
+        <button class="cat-nav-btn" [class.active]="activeTab() === 'workspace'" (click)="activeTab.set('workspace')">
+          Dosyalar & Belgeler
+        </button>
 
-      <div class="header-right">
+        <button class="cat-nav-btn" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')">
+          Chat (Sohbet)
+        </button>
+
+        <button class="cat-nav-btn" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
+          Yönetici Paneli
+        </button>
+      </nav>
+
+      <div class="header-right" style="gap: 12px;">
+
+        <!-- ACTIVE USER SIMULATOR DROPDOWN -->
+        <select [ngModel]="activeUserSim()" (ngModelChange)="onActiveUserSimChange($event)" class="form-select select-sm" style="background-color:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:12px; font-weight:600; width:auto; padding:3px 10px; cursor:pointer; font-family:inherit; outline:none;">
+          <option value="ahmet" style="color:#000;">Aktif Kullanıcı: Ahmet (Global Admin)</option>
+          <option value="elif" style="color:#000;">Aktif Kullanıcı: Elif (Muhasebe Dept)</option>
+          <option value="misafir" style="color:#000;">Aktif Kullanıcı: Misafir (Ziyaretçi)</option>
+        </select>
+
         <!-- SYSTEM IP INDICATOR -->
-        <button class="network-badge" (click)="isSimulatorOpen.set(true)" title="Click to simulate network changes">
+        <button class="network-badge" (click)="isSimulatorOpen.set(true)" title="Ağ Alt Yapı Simülatörü">
           <span class="status-dot green"></span>
           <span class="badge-ip">{{ device()?.ipAddress }}</span>
           <span class="badge-dept">{{ device()?.department?.name || 'Guest' }}</span>
         </button>
 
-        <button class="icon-nav-btn" title="Settings">
-          <app-icon name="settings" [size]="18" color="#ffffff"></app-icon>
-        </button>
-        <button class="icon-nav-btn" title="Help">
-          <app-icon name="help-circle" [size]="18" color="#ffffff"></app-icon>
-        </button>
-
         <!-- PROFILE CARD -->
-        <div class="profile-card-authenticated">
-          <div class="avatar-auth" [title]="currentUserFullName() || 'Kullanıcı'">
+        <div class="profile-card-authenticated" (click)="openProfileModal()" style="cursor:pointer;" title="Profil Ayarları">
+          <div class="avatar-auth">
             {{ currentUser()?.slice(0, 2) | uppercase }}
           </div>
           <div class="auth-details">
-            <span class="auth-name">{{ currentUserFullName() }}</span>
+            <span class="auth-name">{{ currentUserFullName() || currentUser() }}</span>
             <span class="auth-role">{{ currentUserRole() }}</span>
           </div>
-          <button class="logout-btn" (click)="logout()" title="Çıkış Yap">
-            <app-icon name="log-out" [size]="16" color="#ffffff"></app-icon>
-          </button>
         </div>
       </div>
     </header>
 
-    <!-- SECONDARY NAV BAR (ON TAP Style) -->
-    <nav class="sub-nav">
-      <div class="nav-left">
-        <a href="#" class="home-icon-btn">
-          <app-icon name="calendar" [size]="18" color="#334155" style="transform: scale(0.9)"></app-icon>
-        </a>
-        <div class="ontap-logo">ON<span class="logo-bold">TAP</span></div>
-        <div class="nav-links">
-          <div class="nav-link-dropdown">How do I? <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">About me <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">News & events <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">About us <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">Directorates <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">Policies <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">Apps <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
-          <div class="nav-link-dropdown">Help <app-icon name="plus" [size]="10" style="transform: rotate(45deg)"></app-icon></div>
+    <!-- WINDOWS START MENU & SEARCH OVERLAY -->
+    @if (isSearchOpen()) {
+      <div class="search-overlay-backdrop" (click)="isSearchOpen.set(false)"></div>
+      <div class="windows-search-panel">
+        
+        <!-- Left Start Rail -->
+        <div class="start-rail">
+          <div class="rail-top">
+            <div class="rail-avatar" (click)="openProfileModal(); isSearchOpen.set(false);" style="cursor:pointer;" [title]="currentUser() || 'User'">
+              {{ currentUser()?.slice(0,2) | uppercase }}
+            </div>
+            <button class="rail-btn" (click)="activeTab.set('workspace'); isSearchOpen.set(false)" title="Çalışma Alanı / Belgeler">
+              <app-icon name="calendar" [size]="18" color="#94a3b8"></app-icon>
+            </button>
+            <button class="rail-btn" (click)="isSimulatorOpen.set(true); isSearchOpen.set(false)" title="Ağ Simülatörü">
+              <app-icon name="activity" [size]="18" color="#94a3b8"></app-icon>
+            </button>
+            @if (currentUserRole() === 'IT Department' || currentUserRole() === 'Admin') {
+              <button class="rail-btn" (click)="activeTab.set('admin'); isSearchOpen.set(false)" title="Admin Paneli">
+                <app-icon name="settings" [size]="18" color="#94a3b8"></app-icon>
+              </button>
+            }
+          </div>
+          <button class="rail-btn rail-power" (click)="logout()" title="Oturumu Kapat">
+            <app-icon name="log-out" [size]="18" color="#ef4444"></app-icon>
+          </button>
         </div>
-      </div>
-      <button class="btn btn-outline btn-sm" (click)="isSimulatorOpen.set(true)">
-        <app-icon name="activity" [size]="14"></app-icon>
-        <span>Network Simulator</span>
-      </button>
-    </nav>
 
-    <!-- ERROR ALERT -->
-    @if (error()) {
-      <div class="error-banner">
-        <app-icon name="shield" [size]="24" color="#ef4444"></app-icon>
-        <div class="error-content">
-          <h4>Connection Error</h4>
-          <p>{{ error() }}</p>
+        <!-- Middle Main App Search List with Pinned Apps Pinned Rows instead of squares -->
+        <div class="start-main-area">
+          <div class="search-box-start">
+            <app-icon name="search" [size]="16" color="#94a3b8"></app-icon>
+            <input 
+              type="text" 
+              placeholder="Uygulama veya doküman arayın..." 
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+          </div>
+
+
+          <!-- Pinned Applications Section (Horizontal rows instead of squares) -->
+          @if (!searchQuery().trim()) {
+            <div class="tiles-section" style="margin-bottom: 16px;">
+              <h4>Sabitlenmiş Uygulamalar</h4>
+              <div class="pinned-rows-list">
+                @for (item of allShortcuts(); track item.id) {
+                  @if (isPinned(item.id) || item.isCustom) {
+                    <div 
+                      class="pinned-row-item" 
+                      (click)="handleToolClick(item); isSearchOpen.set(false)"
+                    >
+                      <div class="pinned-row-icon" [style.background-color]="item.color || '#0078d4'">
+                        <app-icon [name]="item.icon || 'globe'" color="#ffffff" [size]="14"></app-icon>
+                      </div>
+                      <div class="pinned-row-details">
+                        <span class="pinned-row-title">{{ item.name }}</span>
+                        <span class="pinned-row-desc">{{ item.description }}</span>
+                      </div>
+                      @if (item.isCustom) {
+                        <button class="btn-remove-collab" (click)="removeCustomShortcutLocal(item.id); $event.stopPropagation()" title="Kısayolu kaldır" style="margin-left: auto; background: transparent; border: none; color: #ef4444; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">✕</button>
+                      } @else {
+                        <button class="pin-star-btn" (click)="togglePinApp(item.id); $event.stopPropagation()">★</button>
+                      }
+                    </div>
+                  }
+                }
+                <!-- Gmail static row -->
+                <div class="pinned-row-item" (click)="handleToolClick({url: 'https://mail.google.com', isAccessible: true, name: 'Gmail'}); isSearchOpen.set(false)">
+                  <div class="pinned-row-icon" style="background-color:#ea4335;">
+                    <app-icon name="mail" color="#ffffff" [size]="14"></app-icon>
+                  </div>
+                  <div class="pinned-row-details">
+                    <span class="pinned-row-title">Gmail</span>
+                    <span class="pinned-row-desc">Kurumsal e-posta ve iletişim.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Search Results -->
+          @if (searchQuery().trim()) {
+            <div class="search-results-list" style="max-height: calc(100vh - 120px); overflow-y: auto; padding-right: 4px;">
+              <!-- 1. Shortcuts Group -->
+              @if (unifiedSearchResults().shortcuts.length > 0) {
+                <div class="search-group" style="margin-bottom: 20px;">
+                  <h5 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px;">Uygulamalar</h5>
+                  @for (item of unifiedSearchResults().shortcuts; track item.id) {
+                    <div class="search-result-item" (click)="handleToolClick(item); isSearchOpen.set(false)" style="margin-bottom: 6px;">
+                      <div class="result-icon-bg" [style.background-color]="item.color || '#0078d4'">
+                        <app-icon [name]="item.icon || 'globe'" color="#ffffff" [size]="14"></app-icon>
+                      </div>
+                      <div class="result-details">
+                        <span class="result-title">{{ item.name }}</span>
+                        <span class="result-desc">{{ item.description }}</span>
+                      </div>
+                      @if (!item.isAccessible) {
+                        <app-icon name="lock" [size]="12" color="#ef4444"></app-icon>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- 2. Tabs Group -->
+              @if (unifiedSearchResults().tabs.length > 0) {
+                <div class="search-group" style="margin-bottom: 20px;">
+                  <h5 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px;">Sayfalar & Modüller</h5>
+                  @for (tab of unifiedSearchResults().tabs; track tab.name) {
+                    <div class="search-result-item" (click)="handleTabResultClick(tab)" style="margin-bottom: 6px;">
+                      <div class="result-icon-bg" style="background-color: #8b5cf6;">
+                        <app-icon name="list" color="#ffffff" [size]="14"></app-icon>
+                      </div>
+                      <div class="result-details">
+                        <span class="result-title">{{ tab.name }}</span>
+                        <span class="result-desc">{{ tab.description }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- 3. Documents Group -->
+              @if (unifiedSearchResults().documents.length > 0) {
+                <div class="search-group" style="margin-bottom: 20px;">
+                  <h5 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px;">Dokümanlar & Dosyalar</h5>
+                  @for (doc of unifiedSearchResults().documents; track doc.id) {
+                    <div class="search-result-item" (click)="handleDocResultClick(doc)" style="margin-bottom: 6px;">
+                      <div class="result-icon-bg" style="background-color: #ef4444;">
+                        <app-icon name="file" color="#ffffff" [size]="14"></app-icon>
+                      </div>
+                      <div class="result-details">
+                        <span class="result-title">{{ doc.title }}</span>
+                        <span class="result-desc">Yazar: {{ doc.ownerUsername }} • Boyut: {{ doc.fileSize || 'Doküman' }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- 4. Employees Group -->
+              @if (unifiedSearchResults().users && unifiedSearchResults().users.length > 0) {
+                <div class="search-group" style="margin-bottom: 20px;">
+                  <h5 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px;">Çalışanlar & İletişim</h5>
+                  @for (user of unifiedSearchResults().users; track user.username) {
+                    <div class="search-result-item" (click)="handleUserResultClick(user)" style="margin-bottom: 6px;">
+                      <div class="result-icon-bg" style="background-color: #10b981;">
+                        <app-icon name="user" color="#ffffff" [size]="14"></app-icon>
+                      </div>
+                      <div class="result-details">
+                        <span class="result-title">{{ user.fullName || user.username }}</span>
+                        <span class="result-desc">Departman: {{ user.role }} • @{{ user.username }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Empty State -->
+              @if (unifiedSearchResults().shortcuts.length === 0 && unifiedSearchResults().tabs.length === 0 && unifiedSearchResults().documents.length === 0 && (!unifiedSearchResults().users || unifiedSearchResults().users.length === 0)) {
+                <div class="search-empty">Eşleşen uygulama, sayfa, dosya veya çalışan bulunamadı.</div>
+              }
+            </div>
+          } @else {
+            <!-- Collapsible directory lists -->
+            <div class="alphabetical-directory">
+              <h4>Kurumsal Uygulamalar</h4>
+              
+              <div class="dept-folders-list">
+                <div class="folder-header" (click)="toggleFolder('IT')">
+                  <span>IT Department Tools</span>
+                  <span class="folder-chevron">{{ isFolderExpanded('IT') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isFolderExpanded('IT')) {
+                  <div class="folder-contents">
+                    @for (item of shortcuts(); track item.id) {
+                      @if (item.departmentId === 1) {
+                        <div class="folder-item" (click)="handleToolClick(item); isSearchOpen.set(false)">
+                          <app-icon [name]="item.icon" [color]="item.color" [size]="14"></app-icon>
+                          <span>{{ item.name }}</span>
+                          @if (!item.isAccessible) { <span class="lock-tag" style="display:inline-flex; align-items:center;"><app-icon name="lock" [size]="10" color="#a80000"></app-icon></span> }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+
+                <div class="folder-header" (click)="toggleFolder('HR')">
+                  <span>HR Department Tools</span>
+                  <span class="folder-chevron">{{ isFolderExpanded('HR') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isFolderExpanded('HR')) {
+                  <div class="folder-contents">
+                    @for (item of shortcuts(); track item.id) {
+                      @if (item.departmentId === 2) {
+                        <div class="folder-item" (click)="handleToolClick(item); isSearchOpen.set(false)">
+                          <app-icon [name]="item.icon" [color]="item.color" [size]="14"></app-icon>
+                          <span>{{ item.name }}</span>
+                          @if (!item.isAccessible) { <span class="lock-tag" style="display:inline-flex; align-items:center;"><app-icon name="lock" [size]="10" color="#a80000"></app-icon></span> }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+
+                <div class="folder-header" (click)="toggleFolder('Finance')">
+                  <span>Finance Department Tools</span>
+                  <span class="folder-chevron">{{ isFolderExpanded('Finance') ? '▼' : '▶' }}</span>
+                </div>
+                @if (isFolderExpanded('Finance')) {
+                  <div class="folder-contents">
+                    @for (item of shortcuts(); track item.id) {
+                      @if (item.departmentId === 3) {
+                        <div class="folder-item" (click)="handleToolClick(item); isSearchOpen.set(false)">
+                          <app-icon [name]="item.icon" [color]="item.color" [size]="14"></app-icon>
+                          <span>{{ item.name }}</span>
+                          @if (!item.isAccessible) { <span class="lock-tag" style="display:inline-flex; align-items:center;"><app-icon name="lock" [size]="10" color="#a80000"></app-icon></span> }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Alphabetical list without header letters -->
+              <div class="alphabet-list" style="margin-top:14px;">
+                @for (group of alphabeticalShortcutsGrouped(); track group.key) {
+                  <div class="group-items">
+                    @for (item of group.items; track item.id) {
+                      <div class="group-item" (click)="handleToolClick(item); isSearchOpen.set(false)">
+                        <app-icon [name]="item.icon" [color]="item.color" [size]="12"></app-icon>
+                        <span>{{ item.name }}</span>
+                        <button class="pin-star-btn" (click)="togglePinApp(item.id); $event.stopPropagation()" [title]="isPinned(item.id) ? 'Sabitlemeyi kaldır' : 'Sabitle (Favorilere Ekle)'">
+                          {{ isPinned(item.id) ? '★' : '☆' }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
-        <button class="btn btn-primary btn-sm" (click)="loadProfile()">Retry Connection</button>
+
       </div>
     }
 
-    <!-- MAIN LOADING -->
+    <!-- MAIN LOADING OVERLAY -->
     @if (loading()) {
       <div class="loading-overlay">
         <div class="spinner"></div>
         <p>Synchronizing network profile and authorized toolsets...</p>
       </div>
     } @else {
-      <!-- MAIN CONTENT PORTAL -->
+      <!-- PORTAL CORE CONTAINER -->
       <main class="portal-container">
         
-        <!-- PRIORITY NOTICE BANNER -->
-        @if (activeAnnouncement(); as announcement) {
-          @if (isAlertBannerVisible()) {
-            <div class="announcement-banner">
-              <app-icon name="bell" [size]="18" color="#ffffff" class="banner-bell-icon"></app-icon>
-              <div class="announcement-text">
-                <strong>{{ announcement.title }}:</strong> {{ announcement.content }}
+        <!-- SECTION 1: HOME PAGE -->
+        @if (activeTab() === 'home') {
+          <div class="top-layout-grid">
+            
+            <!-- LEFT: NEWS CAROUSEL -->
+            <section class="carousel-section">
+              <div class="greet-banner">
+                <span class="greet-text">İyi Günler, {{ currentUserFullName() || currentUser() }}</span>
+                <span class="greet-divider">|</span>
+                <span class="greet-location">İstanbul <app-icon name="globe" [size]="14" color="#64748b" style="display:inline-block"></app-icon> 22°c</span>
+                <button class="tour-btn" (click)="isSimulatorOpen.set(true)">Ağ Ayarlarını Göster</button>
               </div>
-              <button class="announcement-close" (click)="dismissAlert()">
-                <app-icon name="plus" [size]="16" color="#ffffff" style="transform: rotate(45deg)"></app-icon>
-              </button>
+
+              <div class="carousel-container">
+                @for (slide of slides; track $index) {
+                  <div class="carousel-slide" [class.active]="$index === activeSlide()">
+                    <img [src]="$index === 0 ? homeImageUrl() : slide.image" [alt]="$index === 0 ? homeHeadline() : slide.title" class="slide-image" />
+                    <div class="slide-overlay">
+                      <span class="slide-date">10 Temmuz 2026</span>
+                      <h2 class="slide-title">{{ $index === 0 ? homeHeadline() : slide.title }}</h2>
+                      <p class="slide-desc">{{ $index === 0 ? homeDescription() : slide.description }}</p>
+                      <button class="read-more-btn" (click)="handleToolClick({url: 'https://company.com/news', isAccessible: true, name: slide.title})">Daha Fazla Oku</button>
+                    </div>
+                  </div>
+                }
+
+                <div class="carousel-progress-bar">
+                  @for (slide of slides; track $index) {
+                    <div 
+                      class="progress-segment" 
+                      [class.active]="$index === activeSlide()"
+                      (click)="selectSlide($index)"
+                    ></div>
+                  }
+                </div>
+
+                <div class="carousel-bottom-links">
+                  @for (slide of slides; track $index) {
+                    <button 
+                      class="bottom-link-btn" 
+                      [class.active]="$index === activeSlide()"
+                      (click)="selectSlide($index)"
+                    >
+                      {{ slide.title | slice:0:28 }}...
+                    </button>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <!-- RIGHT: MY APPS TILES -->
+            <section class="apps-section">
+              <div class="apps-header">
+                <h3>Kısayollarım</h3>
+                <button class="edit-apps-btn" (click)="isEditShortcutsModalOpen.set(true)" style="background:transparent; border:none; color:var(--primary); font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                  <app-icon name="settings" [size]="14" color="#0078d4"></app-icon> Düzenle
+                </button>
+              </div>
+
+              <div class="apps-grid">
+                @for (app of allShortcuts() | slice:0:12; track app.id) {
+                  <div 
+                    class="app-tile" 
+                    [class.locked]="!app.isAccessible"
+                    (click)="handleToolClick(app)"
+                    (contextmenu)="onShortcutContextMenu($event, app)"
+                    [style.background-color]="app.color"
+                  >
+                    @if (!app.isAccessible) {
+                      <div class="tile-lock"><app-icon name="lock" [size]="12" color="#ffffff"></app-icon></div>
+                    }
+                    <div class="tile-icon-wrapper">
+                      <app-icon [name]="app.icon" color="#ffffff" [size]="24"></app-icon>
+                    </div>
+                    <span class="tile-title">{{ app.name }}</span>
+                  </div>
+                }
+              </div>
+            </section>
+          </div>
+
+          <!-- Admin Dashboard Widgets Section (Visible only to Admin/IT) -->
+          @if (currentUserRole() === 'IT Department' || currentUserRole() === 'Admin') {
+            <section class="admin-dashboard-widgets-section" style="width:100%; margin-bottom:20px;">
+              <div class="section-title">
+                <h3>Kurumsal Gösterge Paneli</h3>
+              </div>
+
+              <div class="widgets-row" style="margin-bottom:20px;">
+                <div class="dashboard-widget-card">
+                  <div class="widget-card-header">
+                    <app-icon name="calendar" [size]="16" color="#0078d4"></app-icon>
+                    <span>Görevler</span>
+                  </div>
+                  <div class="widget-card-body">
+                    <div class="badge-huge">1 Teslimat</div>
+                    <div class="widget-subtext">Harcamalar ve beyan faturaları onayda</div>
+                  </div>
+                </div>
+
+                <div class="dashboard-widget-card">
+                  <div class="widget-card-header">
+                    <app-icon name="dollar-sign" [size]="16" color="#10b981"></app-icon>
+                    <span>Expenses 2.0</span>
+                  </div>
+                  <div class="widget-card-body">
+                    <div class="badge-huge">$80.21</div>
+                    <div class="widget-subtext">IK beyan edilmemiş seyahat bakiyesi</div>
+                  </div>
+                </div>
+
+                <div class="dashboard-widget-card">
+                  <div class="widget-card-header">
+                    <app-icon name="activity" [size]="16" color="#8b5cf6"></app-icon>
+                    <span>Insights</span>
+                  </div>
+                  <div class="widget-card-body insights-body">
+                    <div class="insights-title">Zihninizi dinlendirin</div>
+                    <div class="widget-subtext">Gözlerinizi 5 dakika ekrandan ayırın</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- System Access Audit Logs Panel (Admin Only) -->
+              <div class="widget-panel" style="margin-bottom:20px;">
+                <div class="widget-header">
+                  <h3>Sistem Erişim Logları (Audit)</h3>
+                  <app-icon name="terminal" [size]="16" color="#0078d4"></app-icon>
+                </div>
+                <div class="widget-body audit-list">
+                  @for (log of recentLogs() | slice:0:5; track log.id) {
+                    <div class="audit-item">
+                      <div class="audit-dot"></div>
+                      <div class="audit-info">
+                        <span class="audit-action">{{ log.action }}</span>
+                        <div class="audit-meta">
+                          <span>{{ log.ipAddress }}</span> &bull; 
+                          <span>{{ log.departmentName }}</span> &bull; 
+                          <span>{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- Three-Column Layout for Lunch Menu, Events, and Monthly Calendar -->
+          <div class="bottom-layout-grid-three-cols">
+            
+            <!-- COLUMN 1: YEMEK MENÜSÜ -->
+            <div class="widget-panel">
+              <div class="widget-header">
+                <h3>Haftalık Yemek Menüsü</h3>
+                <app-icon name="globe" [size]="16" color="#2a9d8f"></app-icon>
+              </div>
+              <div class="widget-body lunch-list">
+                <div class="lunch-day-row"><strong>Pazartesi:</strong> {{ lunchMenu.Pazartesi }}</div>
+                <div class="lunch-day-row"><strong>Salı:</strong> {{ lunchMenu.Sali }}</div>
+                <div class="lunch-day-row"><strong>Çarşamba:</strong> {{ lunchMenu.Carsamba }}</div>
+                <div class="lunch-day-row"><strong>Perşembe:</strong> {{ lunchMenu.Persembe }}</div>
+                <div class="lunch-day-row"><strong>Cuma:</strong> {{ lunchMenu.Cuma }}</div>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: ÖNEMLİ ETKİNLİKLER -->
+            <div class="widget-panel">
+              <div class="widget-header">
+                <h3>Önemli Etkinlikler & Ajanda</h3>
+                <app-icon name="calendar" [size]="16" color="#0078d4"></app-icon>
+              </div>
+              <div class="widget-body" style="display:flex; flex-direction:column; box-sizing:border-box;">
+                @if (selectedCalendarDate()) {
+                  <div style="background: rgba(0, 120, 212, 0.05); padding: 6px 12px; border-radius: 24px; font-size: 11.5px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border: 1px solid rgba(0, 120, 212, 0.15);">
+                    <span style="font-weight:600; color: #0078d4;">Filtre: {{ selectedCalendarDate() }}</span>
+                    <button type="button" (click)="selectedCalendarDate.set(null)" style="background:none; border:none; color:#ef4444; font-size:11px; cursor:pointer; font-weight:600;">Temizle</button>
+                  </div>
+                }
+                <!-- Events Feed scroll wrapper -->
+                <div class="events-feed-scroll-container">
+                  <div class="events-feed">
+                    @for (ev of filteredStaticEvents(); track ev.id) {
+                      <div class="event-item static-event">
+                        <span class="event-bullet red"></span>
+                        <div class="event-info">
+                          <span class="event-title">{{ ev.name }} (Ortak)</span>
+                          <span class="event-date">{{ ev.date }}</span>
+                        </div>
+                      </div>
+                    }
+                    @for (ev of filteredPersonalEvents(); track ev.id) {
+                      <div class="event-item personal-event">
+                        <span class="event-bullet blue"></span>
+                        <div class="event-info">
+                          <span class="event-title">{{ ev.name }}</span>
+                          <span class="event-date">{{ ev.date }}</span>
+                        </div>
+                        <button class="btn-remove-event" (click)="removePersonalEvent(ev.id)" title="Etkinliği kaldır">✕</button>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Toggleable Add Event Button / Form -->
+                <div class="add-event-toggle-section">
+                  <button type="button" class="btn-toggle-add-event" (click)="isAddEventFormOpen.set(!isAddEventFormOpen())">
+                    {{ isAddEventFormOpen() ? 'Kapat' : '+ Yeni Etkinlik Ekle' }}
+                  </button>
+                  
+                  @if (isAddEventFormOpen()) {
+                    <form (submit)="addPersonalEvent(); $event.preventDefault();" class="add-event-dropdown-form">
+                      <input type="text" [(ngModel)]="newEventName" name="newEventName" placeholder="Etkinlik başlığı..." required />
+                      <input type="date" [(ngModel)]="newEventDate" name="newEventDate" required />
+                      <button type="submit" class="btn btn-primary btn-sm btn-block">Ekle</button>
+                    </form>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- COLUMN 3: TAKVİM GRID -->
+            <div class="widget-panel">
+              <div class="widget-header">
+                <h3>Aylık Takvim</h3>
+                <app-icon name="calendar" [size]="16" color="#8b5cf6"></app-icon>
+              </div>
+              <div class="widget-body calendar-widget-body">
+                <div class="calendar-month-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 12px; font-weight: 700; font-size: 13.5px; color: var(--text-main); border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 6px;">
+                  <button type="button" (click)="prevMonth()" style="background: none; border: none; color: #0078d4; cursor: pointer; font-weight: 700; font-size: 20px; padding: 0 8px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; outline: none;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">‹</button>
+                  <span>{{ monthNames[currentMonth()] }} {{ currentYear() }}</span>
+                  <button type="button" (click)="nextMonth()" style="background: none; border: none; color: #0078d4; cursor: pointer; font-weight: 700; font-size: 20px; padding: 0 8px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; outline: none;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">›</button>
+                </div>
+                <div class="calendar-weekdays">
+                  <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+                </div>
+                <div class="calendar-days-grid">
+                  @for (cell of calendarDays(); track $index) {
+                    @if (cell.dayNumber === null) {
+                      <span class="day-empty"></span>
+                    } @else {
+                      <span 
+                        class="day-num" 
+                        [class.today]="cell.isToday" 
+                        [class.has-event]="cell.hasEvent" 
+                        [class.selected-day]="selectedCalendarDate() === getCellDateString(cell.dayNumber)"
+                        (click)="selectCalendarDay(cell.dayNumber)"
+                        [title]="cell.eventTitle || ''"
+                      >
+                        {{ cell.dayNumber }}
+                      </span>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+
+        <!-- SECTION 2: DOSYALAR & BELGELER MODÜLÜ (DMS, Not Defteri, Workspaces) -->
+        @if (activeTab() === 'workspace') {
+          <div class="docs-module-layout" style="display: flex; gap: 20px; width: 100%; height: 100%; box-sizing: border-box;">
+            <!-- Inside Left Sidebar Menu -->
+            <aside class="docs-sidebar" style="width: 220px; flex-shrink: 0; background: #faf9f8; border-right: 1px solid var(--border-color); padding: 24px 16px; display: flex; flex-direction: column; gap: 20px;">
+              <div class="docs-nav-group">
+                <h4 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">Doküman Havuzu</h4>
+                <button (click)="workspaceSubTab.set('dms')" style="width: 100%; text-align: left; padding: 6px 12px; background: transparent; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: block; border-radius: 4px;" [style.color]="workspaceSubTab() === 'dms' ? '#0078d4' : '#605e5c'">
+                  Dosya Yöneticisi
+                </button>
+              </div>
+              <div class="docs-nav-group">
+                <h4 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">Kişisel Alan</h4>
+                <button (click)="workspaceSubTab.set('notepad')" style="width: 100%; text-align: left; padding: 6px 12px; background: transparent; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: block; border-radius: 4px;" [style.color]="workspaceSubTab() === 'notepad' ? '#0078d4' : '#605e5c'">
+                  Not Defteri
+                </button>
+              </div>
+              <div class="docs-nav-group">
+                <h4 style="font-size: 11px; font-weight: 700; color: #a19f9d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">Projeler</h4>
+                <button (click)="workspaceSubTab.set('workspaces')" style="width: 100%; text-align: left; padding: 6px 12px; background: transparent; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: block; border-radius: 4px;" [style.color]="workspaceSubTab() === 'workspaces' ? '#0078d4' : '#605e5c'">
+                  Ortak Çalışma Alanı
+                </button>
+              </div>
+            </aside>
+
+            <!-- Inside Right Content Container -->
+            <div class="docs-main-container" style="flex: 1; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px; overflow-y: auto;">
+              
+              <!-- A. DOSYA YÖNETİCİSİ TABI (DMS) -->
+              @if (workspaceSubTab() === 'dms') {
+                <div class="docs-tab-content">
+                  <div class="dms-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
+                    <div class="dms-filters" style="display: flex; gap: 8px;">
+                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'all'" (click)="dmsFilter.set('all')">Tüm Belgeler</button>
+                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'received'" (click)="dmsFilter.set('received')">Gelenler</button>
+                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'sent'" (click)="dmsFilter.set('sent')">Gönderilenler</button>
+                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'public'" (click)="dmsFilter.set('public')">Şirket Ortak</button>
+                    </div>
+                    <button class="btn btn-primary btn-sm" (click)="isUploadPanelOpen.set(true)">Dosya Yükle</button>
+                  </div>
+
+                  <!-- drag drop zone -->
+                  <div id="drag-drop-zone" class="drag-drop-zone" style="border: 2px dashed var(--primary); background-color: rgba(0, 120, 212, 0.05); text-align: center; padding: 24px; border-radius: var(--radius-sm); margin-bottom: 16px; cursor: pointer;" (click)="isUploadPanelOpen.set(true)">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--primary);">Dosyaları buraya sürükleyin veya seçmek için tıklayın</span>
+                  </div>
+
+                  <div class="dms-files-table" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                    <div class="table-header-dms" style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.5fr; font-weight: 700; font-size: 12px; padding: 12px; border-bottom: 2px solid var(--border-color); background-color: #faf9f8;">
+                      <span>Dosya Adı</span>
+                      <span>Tür / Departman</span>
+                      <span>Yüklenme Tarihi</span>
+                      <span>Boyut</span>
+                      <span>Aksiyon</span>
+                    </div>
+                    <div class="table-body-dms" style="display: flex; flex-direction: column;">
+                      @if (filteredFiles().length === 0) {
+                        <div style="padding: 20px; text-align: center; font-size: 13px; color: var(--text-muted);">Bu kategoride kayıtlı dosya bulunamadı.</div>
+                      }
+                      @for (doc of filteredFiles(); track doc.id) {
+                        <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.5fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="selectDoc(doc)">
+                          <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <span style="display:inline-flex; align-items:center; opacity:0.6;"><app-icon name="file" [size]="13"></app-icon></span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ doc.title }}</span>
+                            @if (doc.lockedBy) {
+                              <span style="font-size: 10px; background-color: #ffe6e6; color: #a80000; padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="lock" [size]="10" color="#a80000"></app-icon> Kilitli: {{ doc.lockedBy }}</span>
+                            }
+                          </div>
+                          <span style="color: var(--text-muted);">{{ doc.isFile ? 'Dosya' : 'Doküman' }}</span>
+                          <span style="color: var(--text-muted);">{{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</span>
+                          <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
+                          <div style="display: flex; gap: 6px; flex-wrap: wrap;" (click)="$event.stopPropagation();">
+                            @if (!doc.lockedBy) {
+                              <button class="btn btn-outline btn-xs" (click)="lockDocument(doc)">Kilitle</button>
+                            } @else if (doc.lockedBy === (currentUserFullName() || currentUser())) {
+                              <button class="btn btn-outline btn-xs" (click)="unlockDocument(doc)">Kilidi Aç</button>
+                            }
+                            <button class="btn btn-outline btn-xs" (click)="openVersionHistory(doc)">Sürümler</button>
+                            @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') {
+                              <button class="btn btn-outline btn-xs btn-delete" (click)="deleteActiveDocumentDirect(doc)">Sil</button>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- B. KİŞİSEL NOT DEFTERİ TABI -->
+              @if (workspaceSubTab() === 'notepad') {
+                <div class="docs-tab-content">
+                  <div class="notepad-grid" style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; min-height: 480px;">
+                    <!-- Left Note List -->
+                    <div class="notes-sidebar" style="border-right: 1px solid var(--border-color); padding-right: 12px; display: flex; flex-direction: column; gap: 12px;">
+                      <button class="btn btn-primary btn-sm w-100" (click)="createNewNote()" style="border-radius: 6px;">Yeni Not Ekle</button>
+                      <div class="notes-list-scroll" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; max-height: 420px;">
+                        @for (note of personalNotes(); track note.id) {
+                          <div class="note-list-item" [class.active]="activeNoteId() === note.id" (click)="selectNote(note)" style="padding: 12px; border-radius: 6px; border: 1px solid #edebe9; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 4px;" [style.border-color]="activeNoteId() === note.id ? '#0078d4' : '#edebe9'" [style.background-color]="activeNoteId() === note.id ? '#ffffff' : '#faf9f8'">
+                            <h5 style="margin: 0; font-size: 13px; font-weight: 600;" [style.color]="activeNoteId() === note.id ? '#242424' : '#605e5c'">{{ note.title }}</h5>
+                            <span style="font-size: 10px;" [style.color]="activeNoteId() === note.id ? '#0078d4' : '#a19f9d'">{{ note.date }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                    <!-- Right Content Editor -->
+                    <div class="note-editor" style="display: flex; flex-direction: column; gap: 12px;">
+                      <div class="editor-title-bar" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="note-title" [(ngModel)]="noteTitleInput" placeholder="Not Başlığı..." style="flex: 1; padding: 8px 12px; font-size: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: 6px; outline: none;" />
+                        <div style="position: relative;">
+                          <button class="btn btn-outline btn-sm" (click)="isNoteShareMenuOpen.set(!isNoteShareMenuOpen())" style="border-radius: 6px;">Paylaş</button>
+                          @if (isNoteShareMenuOpen()) {
+                            <div class="share-dropdown-menu" style="position: absolute; right: 0; top: 34px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: var(--shadow-sm); z-index: 10; display: flex; flex-direction: column; width: 180px;">
+                              <button style="padding: 8px 12px; text-align: left; background: none; border: none; font-size: 12px; cursor: pointer;" (click)="shareNoteInChat()">Sohbette Paylaş (Dosya)</button>
+                              <button style="padding: 8px 12px; text-align: left; background: none; border: none; font-size: 12px; cursor: pointer;" (click)="copyNoteLink()">Bağlantıyı Kopyala</button>
+                            </div>
+                          }
+                        </div>
+                        <button class="btn btn-primary btn-sm" (click)="saveNote()" style="border-radius: 6px;">Notu Kaydet</button>
+                      </div>
+                      <textarea id="note-content" [(ngModel)]="noteContentInput" placeholder="Notunuzu yazmaya başlayın..." style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; resize: none; min-height: 380px; outline: none;"></textarea>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- C. ORTAK ÇALIŞMA ALANI TABI -->
+              @if (workspaceSubTab() === 'workspaces') {
+                <div class="docs-tab-content">
+                  <div class="workspace-d-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Ortak Çalışma Odaları (Workspace)</h3>
+                    <button class="btn btn-primary btn-sm" (click)="createNewWorkspace()">Ortak Çalışma Alanı Aç</button>
+                  </div>
+                  <div class="workspaces-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+                    @for (ws of workspaces(); track ws.id) {
+                      <div class="ws-proj-card" style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; background: #ffffff;" (click)="openWorkspaceDetail(ws)">
+                        <div class="ws-proj-title">
+                          <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--primary);">{{ ws.name }}</h4>
+                          <p style="margin: 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.4;">{{ ws.desc }}</p>
+                        </div>
+                        <div class="ws-proj-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid #f1f1f1; padding-top: 8px;">
+                          <span style="font-size: 11px; color: var(--text-muted);">{{ ws.files?.length || 0 }} Dosya / Görsel</span>
+                          <button class="btn btn-outline btn-xs" (click)="$event.stopPropagation(); openWorkspaceDetail(ws)">Odaya Gir</button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+            </div>
+          </div>
+
+          <!-- MODAL: DOSYA ÖNİZLEME MODALI -->
+          @if (activeDoc(); as doc) {
+            <div class="modal-overlay" (click)="activeDoc.set(null)"></div>
+            <div class="modal" style="max-width: 600px;">
+              <div class="modal-header">
+                <h3>Dosya Önizleme: {{ doc.title }}</h3>
+                <button class="modal-close" (click)="activeDoc.set(null)">
+                  <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+                </button>
+              </div>
+              <div class="modal-body" style="font-family: inherit;">
+                <div class="document-metadata-card" style="padding: 12px; background: #faf9f8; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 11.5px; line-height: 1.6;">
+                  <div><strong>Dosya Türü:</strong> {{ doc.isFile ? 'Yüklenen Dosya' : 'Doküman' }}</div>
+                  <div><strong>Departman:</strong> Muhasebe / IT / İK</div>
+                  <div><strong>Yazar:</strong> {{ doc.ownerUsername }}</div>
+                  <div><strong>Tarih:</strong> {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</div>
+                  <div><strong>Boyut:</strong> {{ doc.fileSize }}</div>
+                  <div style="margin-top: 8px; border-top: 1px solid #f1f1f1; padding-top: 8px;">
+                    <strong>Yükleyen Notu (Comment):</strong>
+                    <p style="margin: 4px 0 0 0; font-style: italic; color: var(--text-muted);">{{ doc.uploaderComment || 'Açıklama belirtilmedi.' }}</p>
+                  </div>
+                </div>
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; background: #ffffff;">
+                  <strong>Belge İçeriği:</strong>
+                  @if (doc.isFile) {
+                    <div style="text-align: center; padding: 24px 12px;">
+                      <app-icon name="globe" [size]="48" color="#0078d4" style="margin-bottom: 12px;"></app-icon>
+                      <p style="margin: 0 0 12px 0; font-size: 13px;">Bu çalışma alanı bir kurumsal dosyaya aittir.</p>
+                      <a [href]="doc.fileUrl" target="_blank" class="btn btn-primary btn-sm">Dosyayı İndir / Bağlantıyı Aç</a>
+                    </div>
+                  } @else {
+                    <p style="white-space: pre-wrap; font-size: 13px; margin: 8px 0 0 0;">{{ doc.content || 'Boş not içeriği.' }}</p>
+                  }
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-outline" (click)="activeDoc.set(null)">Kapat</button>
+              </div>
             </div>
           }
         }
 
-        <!-- TOP SPLIT SECTION (Carousel 60% | Apps Grid 40%) -->
-        <div class="top-layout-grid">
-          
-          <!-- LEFT: NEWS CAROUSEL -->
-          <section class="carousel-section">
-            <!-- Greet Banner -->
-            <div class="greet-banner">
-              <span class="greet-text">Good Afternoon, {{ currentUserFullName() || device()?.deviceName }}</span>
-              <span class="greet-divider">|</span>
-              <span class="greet-location">Coventry <app-icon name="globe" [size]="14" color="#64748b" style="display:inline-block"></app-icon> 16°c</span>
-              <button class="tour-btn" (click)="isSimulatorOpen.set(true)">Show network settings</button>
+        <!-- SECTION 3: ADMIN SETTINGS & AUDIT LOG FEED -->
+        @if (activeTab() === 'admin') {
+          <div class="admin-panel-layout" style="display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;">
+            <div class="admin-header">
+              <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--primary);">Kurumsal Yönetici Paneli</h2>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Sistem yetkilendirmelerini, ağ limitlerini ve denetim kayıtlarını bu alandan yönetebilirsiniz.</p>
             </div>
 
-            <div class="carousel-container">
-              @for (slide of slides; track $index) {
-                <div class="carousel-slide" [class.active]="$index === activeSlide()">
-                  <img [src]="slide.image" [alt]="slide.title" class="slide-image" />
-                  <div class="slide-overlay">
-                    <span class="slide-date">22nd November 2026</span>
-                    <h2 class="slide-title">{{ slide.title }}</h2>
-                    <p class="slide-desc">{{ slide.description }}</p>
-                    <button class="read-more-btn" (click)="handleToolClick({url: 'https://company.com/news', isAccessible: true, name: slide.title})">Read more</button>
-                  </div>
-                </div>
-              }
-
-              <!-- CAROUSEL PROGRESS INDICATORS -->
-              <div class="carousel-progress-bar">
-                @for (slide of slides; track $index) {
-                  <div 
-                    class="progress-segment" 
-                    [class.active]="$index === activeSlide()"
-                    (click)="selectSlide($index)"
-                  ></div>
-                }
-              </div>
-
-              <!-- CAROUSEL BOTTOM SLIDE LINKS -->
-              <div class="carousel-bottom-links">
-                @for (slide of slides; track $index) {
-                  <button 
-                    class="bottom-link-btn" 
-                    [class.active]="$index === activeSlide()"
-                    (click)="selectSlide($index)"
-                  >
-                    {{ slide.title | slice:0:30 }}...
-                  </button>
-                }
-              </div>
-            </div>
-          </section>
-
-          <!-- RIGHT: MY APPS GRID -->
-          <section class="apps-section">
-            <div class="apps-header">
-              <h3>My Apps</h3>
-              <button class="edit-apps-btn" (click)="openAddModal()">
-                <app-icon name="settings" [size]="14" color="#0078d4" style="margin-right:4px"></app-icon> Edit
-              </button>
+            <!-- Admin Sub Tabs Menu -->
+            <div class="admin-panel-tabs" style="display: flex; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+              <button class="btn" [class.btn-primary]="adminSubTab() === 'users'" [class.btn-outline]="adminSubTab() !== 'users'" (click)="adminSubTab.set('users')">Kullanıcı Rol Ataması</button>
+              <button class="btn" [class.btn-primary]="adminSubTab() === 'network'" [class.btn-outline]="adminSubTab() !== 'network'" (click)="adminSubTab.set('network')">Güvenli Ağ & Limitler</button>
+              <button class="btn" [class.btn-primary]="adminSubTab() === 'logs'" [class.btn-outline]="adminSubTab() !== 'logs'" (click)="adminSubTab.set('logs')">Audit Log Raporu</button>
+              <button class="btn" [class.btn-primary]="adminSubTab() === 'home-edit'" [class.btn-outline]="adminSubTab() !== 'home-edit'" (click)="adminSubTab.set('home-edit')">Ana Sayfa Özelleştirme</button>
             </div>
 
-            <div class="apps-grid">
-              @for (app of filteredShortcuts(); track app.id) {
-                <div 
-                  class="app-tile" 
-                  [class.locked]="!app.isAccessible"
-                  (click)="handleToolClick(app)"
-                  [style.background-color]="app.color"
-                >
-                  @if (!app.isAccessible) {
-                    <div class="tile-lock">
-                      <app-icon name="lock" [size]="12" color="#ffffff"></app-icon>
-                    </div>
-                  }
+            <div class="admin-content-area" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px;">
+              
+              <!-- Tab 1: Kullanıcı Rol Ataması -->
+              @if (adminSubTab() === 'users') {
+                <div class="admin-tab-section active">
+                  <h3>Kullanıcı Rol ve Departman Yönetimi</h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Tüm kurumsal çalışanların rollerini ve departman yetkilerini düzenleyebilirsiniz.</p>
                   
-                  <div class="tile-icon-wrapper">
-                    <app-icon [name]="app.icon" color="#ffffff" [size]="24"></app-icon>
+                  <div class="approvals-table-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                    <table class="admin-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                      <thead>
+                        <tr style="background-color: #faf9f8; border-bottom: 2px solid var(--border-color); text-align: left;">
+                          <th style="padding: 12px;">Kullanıcı</th>
+                          <th style="padding: 12px;">E-posta</th>
+                          <th style="padding: 12px;">Rol (Yetki)</th>
+                          <th style="padding: 12px;">Aksiyon</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (u of adminUsers(); track u.username) {
+                          <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                              <div class="avatar-xs" style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                {{ u.fullName.slice(0, 2) | uppercase }}
+                              </div>
+                              {{ u.fullName }}
+                            </td>
+                            <td style="padding: 12px; color: var(--text-muted);">{{ u.email }}</td>
+                            <td style="padding: 12px;">
+                              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background-color: rgba(0, 120, 212, 0.1); color: var(--primary);">{{ u.role }}</span>
+                            </td>
+                            <td style="padding: 12px;">
+                              <select [ngModel]="u.role" (ngModelChange)="changeUserRole(u.username, $event)" class="form-select select-sm" style="padding: 4px 8px; font-size: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; cursor: pointer;">
+                                <option value="Admin">Admin</option>
+                                <option value="IT Department">IT Department</option>
+                                <option value="HR Department">HR Department</option>
+                                <option value="Finance Department">Finance Department</option>
+                                <option value="Marketing Department">Marketing Department</option>
+                                <option value="Operations Department">Operations Department</option>
+                                <option value="Guest">Guest</option>
+                              </select>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
                   </div>
-                  <span class="tile-title">{{ app.name }}</span>
                 </div>
               }
 
-              @for (custom of customShortcuts(); track custom.id) {
-                <div 
-                  class="app-tile custom-tile" 
-                  (click)="handleToolClick({url: custom.url, isAccessible: true, name: custom.name})"
-                  [style.background-color]="custom.color"
-                >
-                  <button class="tile-delete-btn" (click)="deleteCustomShortcut(custom.id); $event.stopPropagation()">
-                    <app-icon name="plus" [size]="10" color="#ffffff" style="transform: rotate(45deg)"></app-icon>
-                  </button>
-                  <div class="tile-icon-wrapper">
-                    <app-icon [name]="custom.icon" color="#ffffff" [size]="24"></app-icon>
+              <!-- Tab 2: Güvenli Ağ & Limitler -->
+              @if (adminSubTab() === 'network') {
+                <div class="admin-tab-section active">
+                  <h3>Ağ Güvenliği ve Dosya Yükleme Limitleri</h3>
+                  <div class="admin-settings-form" style="display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin-top: 16px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Yetkili Şirket İçi IP (Subnet) Aralığı</label>
+                      <input type="text" [(ngModel)]="adminSubnetInput" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px;" />
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Maksimum Dosya Boyutu (MB)</label>
+                      <input type="number" [(ngModel)]="adminMaxFileSize" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px;" />
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">İzin Verilen Dosya Uzantıları (Virgülle Ayırın)</label>
+                      <input type="text" [(ngModel)]="adminExtensions" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px;" />
+                    </div>
+                    <button class="btn btn-primary" (click)="saveAdminSettings()" style="align-self: flex-start; margin-top: 8px;">Ayarları Kaydet</button>
                   </div>
-                  <span class="tile-title">{{ custom.name }} (Custom)</span>
                 </div>
               }
 
-              <div class="app-tile add-tile" (click)="openAddModal()">
-                <div class="tile-icon-wrapper">
-                  <app-icon name="plus" color="#0078d4" [size]="24"></app-icon>
+              <!-- Tab 3: Audit Log Raporu -->
+              @if (adminSubTab() === 'logs') {
+                <div class="admin-tab-section active">
+                  <h3>Sistem Denetim İzi (Audit Logs)</h3>
+                  <div class="log-filters" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <input type="text" [(ngModel)]="logSearchUser" placeholder="Cihaz adına göre filtrele..." style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 200px; outline: none;" />
+                    <input type="text" [(ngModel)]="logSearchAction" placeholder="İşleme göre filtrele..." style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 200px; outline: none;" />
+                  </div>
+
+                  <div class="approvals-table-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                    <table class="admin-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                      <thead>
+                        <tr style="background-color: #faf9f8; border-bottom: 2px solid var(--border-color); text-align: left;">
+                          <th style="padding: 10px 12px;">Cihaz Adı</th>
+                          <th style="padding: 10px 12px;">IP Adresi</th>
+                          <th style="padding: 10px 12px;">Aksiyon</th>
+                          <th style="padding: 10px 12px;">Departman</th>
+                          <th style="padding: 10px 12px;">Zaman</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @if (filteredLogs().length === 0) {
+                          <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Eşleşen log kaydı bulunamadı.</td></tr>
+                        }
+                        @for (log of filteredLogs(); track log.id) {
+                          <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 10px 12px;">{{ log.deviceName }}</td>
+                            <td style="padding: 10px 12px;"><code>{{ log.ipAddress }}</code></td>
+                            <td style="padding: 10px 12px;">{{ log.action }}</td>
+                            <td style="padding: 10px 12px;">{{ log.departmentName }}</td>
+                            <td style="padding: 10px 12px; color: var(--text-muted);">{{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <span class="tile-title" style="color: #0078d4;">Add Link</span>
-              </div>
+              }
+
+              <!-- Tab 4: Ana Sayfa Özelleştirme -->
+              @if (adminSubTab() === 'home-edit') {
+                <div class="admin-tab-section active">
+                  <h3>Ana Sayfa Tanıtım Paneli Yönetimi</h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Ana sayfanın sol üst köşesindeki dinamik bilgilendirme görselini ve metnini güncelleyin.</p>
+                  
+                  <div class="admin-settings-form" style="display: flex; flex-direction: column; gap: 16px; max-width: 600px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Görsel URL'si</label>
+                      <input type="text" [(ngModel)]="homeImageUrl" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px;" />
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Manşet Başlığı</label>
+                      <input type="text" [(ngModel)]="homeHeadline" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px;" />
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Açıklama Yazısı</label>
+                      <textarea [(ngModel)]="homeDescription" rows="4" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; resize: none; outline: none;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" (click)="updateHomePageInfo()" style="align-self: flex-start;">Ana Sayfayı Güncelle</button>
+                  </div>
+                </div>
+              }
+
             </div>
-          </section>
+          </div>
+        }
 
-        </div>
-
-        <!-- BOTTOM SPLIT SECTION (Widgets 60% | Search 40%) -->
-        <div class="bottom-layout-grid">
-          
-          <!-- LEFT: DASHBOARD WIDGETS -->
-          <section class="dashboard-section">
-            <div class="section-title">
-              <h3>Dashboard</h3>
-              <a href="#" class="see-all-link">See all</a>
-            </div>
-
-            <div class="widgets-row">
-              <div class="dashboard-widget-card">
-                <div class="widget-card-header">
-                  <app-icon name="calendar" [size]="16" color="#0078d4"></app-icon>
-                  <span>Tasks</span>
-                </div>
-                <div class="widget-card-body">
-                  <div class="badge-huge">1 due today</div>
-                  <div class="widget-subtext">Unsubmitted expense balance due by 25th</div>
-                </div>
-              </div>
-
-              <div class="dashboard-widget-card">
-                <div class="widget-card-header">
-                  <app-icon name="dollar-sign" [size]="16" color="#10b981"></app-icon>
-                  <span>Expenses 2.0</span>
-                </div>
-                <div class="widget-card-body">
-                  <div class="badge-huge">$80.21</div>
-                  <div class="widget-subtext">Unsubmitted expense balance due by 25th</div>
-                </div>
-              </div>
-
-              <div class="dashboard-widget-card">
-                <div class="widget-card-header">
-                  <app-icon name="activity" [size]="16" color="#8b5cf6"></app-icon>
-                  <span>Insights</span>
-                </div>
-                <div class="widget-card-body insights-body">
-                  <div class="insights-title">Give your mind a break</div>
-                  <div class="widget-subtext">Take 5 minutes with Headspace</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="widget-panel mt-20">
-              <div class="widget-header">
-                <h3>Subnet Access Logs (Audit)</h3>
-                <app-icon name="terminal" [size]="16" color="#0078d4"></app-icon>
-              </div>
-              <div class="widget-body audit-list">
-                @for (log of recentLogs() | slice:0:5; track log.id) {
-                  <div class="audit-item">
-                    <div class="audit-dot"></div>
-                    <div class="audit-info">
-                      <span class="audit-action">{{ log.action }}</span>
-                      <div class="audit-meta">
-                        <span>{{ log.ipAddress }}</span> &bull; 
-                        <span>{{ log.departmentName }}</span> &bull; 
-                        <span>{{ log.timestamp | date:'HH:mm:ss' }}</span>
+        <!-- SECTION 4: SOHBET (FULL SCREEN CHAT VIEW) -->
+        @if (activeTab() === 'chat') {
+          <div class="full-chat-container" style="display: grid; grid-template-columns: 240px 1fr; gap: 20px; height: 580px; box-sizing: border-box; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+            <!-- Left Contact List -->
+            <aside class="chat-sidebar-users" style="border-right: 1px solid var(--border-color); padding: 16px; display: flex; flex-direction: column; gap: 16px; background: #ffffff;">
+              <h4 style="margin: 0 0 10px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Çalışma Arkadaşlarım</h4>
+              <div class="chat-users-scroll" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; max-height: 480px;">
+                @for (usr of chatContacts(); track usr.username) {
+                  <div class="chat-user-item" [class.active]="activeChatUser()?.username === usr.username" (click)="selectChatUser(usr)" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;" [style.background-color]="activeChatUser()?.username === usr.username ? 'rgba(0,120,212,0.05)' : 'transparent'">
+                    <div style="position: relative;">
+                      <div class="avatar-sm" [style.background-color]="usr.username === 'ai_bot' ? '#10b981' : 'var(--primary)'" style="width: 32px; height: 32px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">
+                        @if (usr.username === 'ai_bot') {
+                          🤖
+                        } @else {
+                          {{ usr.fullName.slice(0, 2) | uppercase }}
+                        }
                       </div>
+                      <span class="online-indicator" style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #ffffff;" [style.background-color]="usr.online ? '#2a9d8f' : '#cbd5e1'"></span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden;">
+                      <span style="font-size: 12.5px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.fullName }}</span>
+                      <span style="font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.role }}</span>
                     </div>
                   </div>
                 }
               </div>
-            </div>
-          </section>
+            </aside>
 
-          <!-- RIGHT: PEOPLE SEARCH -->
-          <section class="search-section">
-            <div class="section-title">
-              <h3>People search</h3>
-            </div>
-            
-            <div class="people-search-card">
-              <div class="search-box-large">
-                <app-icon name="search" [size]="18" color="#64748b" class="search-icon-large"></app-icon>
-                <input type="text" placeholder="Search by name, team or job title" />
+            <!-- Right Chat Room -->
+            <div class="chat-room" style="display: flex; flex-direction: column; height: 100%; background: #ffffff;">
+              <div class="chat-room-header" style="padding: 14px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; width: 100%; box-sizing: border-box;">
+                @if (activeChatUser(); as activeUser) {
+                  <div class="avatar-sm" [style.background-color]="activeUser.username === 'ai_bot' ? '#10b981' : 'var(--primary)'" style="width: 36px; height: 36px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px;">
+                    @if (activeUser.username === 'ai_bot') {
+                      🤖
+                    } @else {
+                      {{ activeUser.fullName.slice(0, 2) | uppercase }}
+                    }
+                  </div>
+                  <div>
+                    <h4 style="margin: 0; font-size: 14px; font-weight: 600;">{{ activeUser.fullName }}</h4>
+                    <span style="font-size: 11px; color: var(--text-muted);">{{ activeUser.role }}</span>
+                  </div>
+                }
+                <!-- Chat Message Search Input -->
+                <div class="chat-search-wrapper" style="margin-left: auto; position: relative; width: 200px; display: flex; align-items: center;">
+                  <input type="text" [ngModel]="chatMessageSearchQuery()" (ngModelChange)="chatMessageSearchQuery.set($event)" placeholder="Sohbette ara..." style="width: 100%; padding: 6px 30px 6px 12px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 14px; outline: none; font-family: inherit;" />
+                  <span style="position: absolute; right: 10px; color: var(--text-muted); pointer-events: none; display: flex; align-items: center; opacity: 0.6;">
+                    <app-icon name="search" [size]="12"></app-icon>
+                  </span>
+                </div>
               </div>
-              <button class="directory-btn" (click)="handleToolClick({url: 'https://company.com/directory', isAccessible: true, name: 'Staff Directory'})">
-                See Staff Directory
-              </button>
-            </div>
 
-            <div class="broadcasts-card mt-20">
-              <div class="widget-header" style="padding:0 0 12px 0; border-bottom:1px solid #e2e8f0; margin-bottom:12px">
-                <h4>Department Announcements</h4>
-              </div>
-              <div class="widget-body" style="padding:0">
-                @if (announcements().length === 0) {
-                  <div class="empty-state">No broadcast updates for this subnet.</div>
-                } @else {
-                  @for (item of announcements() | slice:0:3; track item.id) {
-                    <div class="announcement-row" [className]="'announcement-row border-' + item.priority">
-                      <span class="ann-dept">{{ item.departmentName }}</span>
-                      <span class="ann-title">{{ item.title }}</span>
-                    </div>
-                  }
+              <!-- Message feed -->
+              <div class="chat-messages-area" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; background-color: #faf9f8; max-height: 400px;">
+                @for (msg of filteredChatMessages(); track $index) {
+                  <div class="chat-bubble-item" style="display: flex; flex-direction: column; max-width: 65%; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px;" [style.align-self]="msg.sender === currentUser() ? 'flex-end' : 'flex-start'" [style.background-color]="msg.sender === currentUser() ? 'var(--primary)' : '#ffffff'" [style.color]="msg.sender === currentUser() ? '#ffffff' : 'var(--text-main)'" [style.border]="msg.sender === currentUser() ? 'none' : '1px solid var(--border-color)'">
+                    @if (msg.isSharedNote) {
+                      <div class="shared-note-card" style="border-left: 3px solid #8b5cf6; padding-left: 8px; margin-bottom: 6px; background: rgba(139, 92, 246, 0.05); padding: 6px; border-radius: 2px; color: #000; cursor: pointer;" (click)="workspaceSubTab.set('notepad'); activeTab.set('workspace')">
+                        <strong style="display: block; font-size: 10px; color: #8b5cf6; text-transform: uppercase;">Paylaşılan Not</strong>
+                        <span style="font-weight: 600; font-size: 12px; color: #242424;">{{ msg.noteTitle }}</span>
+                      </div>
+                    }
+                    <span>{{ msg.text }}</span>
+                    <span style="font-size: 9px; align-self: flex-end; margin-top: 4px;" [style.color]="msg.sender === currentUser() ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)'">{{ msg.time }}</span>
+                  </div>
                 }
               </div>
-            </div>
-          </section>
 
-        </div>
+              <!-- Input bar -->
+              <div class="chat-input-bar" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; background: #ffffff;">
+                <input type="text" [ngModel]="fullChatInput()" (ngModelChange)="fullChatInput.set($event)" (keydown.enter)="sendFullChatMessage()" placeholder="Bir mesaj yazın..." style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; outline: none; font-family: inherit;" />
+                <button type="button" class="btn btn-primary" (click)="sendFullChatMessage()">Gönder</button>
+              </div>
+            </div>
+          </div>
+        }
+
       </main>
     }
 
@@ -698,88 +1376,302 @@
       </div>
     </div>
 
-    <!-- MODAL: ADD CUSTOM SHORTCUT -->
-    <div class="modal-overlay" *ngIf="isAddModalOpen()" (click)="isAddModalOpen.set(false)"></div>
-    <div class="modal" *ngIf="isAddModalOpen()">
+    <!-- MODAL: COLLABORATOR INVITATION (Notion shared workspace invitees) -->
+    <div class="modal-overlay" *ngIf="isCollaboratorModalOpen()" (click)="isCollaboratorModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isCollaboratorModalOpen()">
       <div class="modal-header">
-        <h3>Add Custom Link</h3>
-        <button class="modal-close" (click)="isAddModalOpen.set(false)">
+        <h3>Çalışma Alanına Davet Et</h3>
+        <button class="modal-close" (click)="isCollaboratorModalOpen.set(false)">
           <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
         </button>
       </div>
-      <form (submit)="submitCustomShortcut(); $event.preventDefault()">
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="link-name">Application Name</label>
-            <input 
-              type="text" 
-              id="link-name" 
-              [ngModel]="newShortcutName()" 
-              (ngModelChange)="newShortcutName.set($event)"
-              name="linkName" 
-              placeholder="e.g. Personal Project Board" 
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="link-url">URL / Path</label>
-            <input 
-              type="url" 
-              id="link-url" 
-              [ngModel]="newShortcutUrl()" 
-              (ngModelChange)="newShortcutUrl.set($event)"
-              name="linkUrl" 
-              placeholder="https://..." 
-              required
-            />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label for="link-icon">Icon Representation</label>
-              <select 
-                id="link-icon" 
-                [ngModel]="newShortcutIcon()" 
-                (ngModelChange)="newShortcutIcon.set($event)"
-                name="linkIcon"
-              >
-                <option value="link">Link Anchor</option>
-                <option value="globe">Globe Website</option>
-                <option value="mail">Mail Outlook</option>
-                <option value="calendar">Calendar</option>
-                <option value="activity">Diagnostics</option>
-                <option value="shield">Security</option>
-                <option value="server">Server</option>
-                <option value="dollar-sign">Finance</option>
-                <option value="image">Media</option>
-                <option value="cpu">Operations</option>
-              </select>
+      <div class="modal-body">
+        <p class="tip-text">Notu paylaşmak istediğiniz kurumsal personelin kullanıcı adını girin.</p>
+        <div class="form-group">
+          <label for="invite-username">Kullanıcı Adı</label>
+          <input 
+            type="text" 
+            id="invite-username" 
+            [(ngModel)]="inviteUsername" 
+            placeholder="örn: hr_user" 
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="inviteCanEdit" />
+            <span>Düzenleme yetkisi ver (Yazma İzni)</span>
+          </label>
+        </div>
+        <button class="btn btn-primary btn-block" (click)="inviteUser(); isCollaboratorModalOpen.set(false)">Davet Gönder</button>
+        
+        <hr class="drawer-divider mt-20" />
+        
+        <h4>Aktif Davet Edilenler</h4>
+        <div class="collaborators-list">
+          @for (c of collaborators(); track c.id) {
+            <div class="collaborator-row">
+              <span>{{ c.collaboratorUsername }} ({{ c.canEdit ? 'Düzenleyebilir' : 'Görüntüleyebilir' }})</span>
+              <button class="btn-remove-collab" (click)="removeCollaborator(c.collaboratorUsername)" title="Erişimi kaldır">✕</button>
             </div>
+          }
+          @if (collaborators().length === 0) {
+            <div class="empty-state">Bu sayfa henüz kimseyle paylaşılmadı.</div>
+          }
+        </div>
+      </div>
+    </div>
 
-            <div class="form-group flex-1">
-              <label for="link-color">Color Theme</label>
-              <select 
-                id="link-color" 
-                [ngModel]="newShortcutColor()" 
-                (ngModelChange)="newShortcutColor.set($event)"
-                name="linkColor"
-              >
-                <option value="#0f172a">Navy Dark</option>
-                <option value="#0078d4">Sharepoint Blue</option>
-                <option value="#2a9d8f">Teal</option>
-                <option value="#2b2d42">Charcoal</option>
-                <option value="#10b981">Green</option>
-                <option value="#ef4444">Red</option>
-              </select>
+    <!-- PANEL: UPLOAD FILE DETAILS -->
+    <div class="modal-overlay" *ngIf="isUploadPanelOpen()" (click)="isUploadPanelOpen.set(false)"></div>
+    <div class="modal" *ngIf="isUploadPanelOpen()">
+      <div class="modal-header">
+        <h3>Kurumsal Dosya Yüklemesi</h3>
+        <button class="modal-close" (click)="isUploadPanelOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="file-title">Dosya İsmi</label>
+          <input type="text" id="file-title" [(ngModel)]="newFileTitle" placeholder="Örn: Yıllık İK İzin Formu.docx" />
+        </div>
+        <div class="form-group">
+          <label for="file-url">Dosya Sunucu URL</label>
+          <input type="text" id="file-url" [(ngModel)]="newFileUrl" placeholder="https://company.com/storage/forms.docx" />
+        </div>
+        <div class="form-group">
+          <label for="file-size">Dosya Boyutu</label>
+          <input type="text" id="file-size" [(ngModel)]="newFileSize" placeholder="1.2 MB" />
+        </div>
+        <div class="form-group">
+          <label for="file-comment">Dosya Ek Açıklaması (Comment)</label>
+          <textarea id="file-comment" [(ngModel)]="newFileComment" placeholder="Dosyaya eklenecek not..." style="height: 80px; font-family:inherit; font-size:13px; padding:6px; border:1px solid #edebe9; outline:none; border-radius:2px;"></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" (click)="createNewDocument(true)">Dosyayı Çalışma Alanına Ekle</button>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD CUSTOM SHORTCUT & SELECT SYSTEM APPS -->
+    <div class="modal-overlay" *ngIf="isEditShortcutsModalOpen()" (click)="isEditShortcutsModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isEditShortcutsModalOpen()" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>Kısayollarımı Düzenle</h3>
+        <button class="modal-close" (click)="isEditShortcutsModalOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Part 1: Add Custom Shortcut URL -->
+        <div class="custom-shortcut-form-block" style="background: #f8fafc; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 20px;">
+          <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:6px;">
+            <app-icon name="globe" [size]="15" color="#0078d4"></app-icon> Web Bağlantısı (URL) Ekle
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display:block;">Kısayol Başlığı</label>
+              <input 
+                type="text" 
+                [ngModel]="customShortcutTitle()" 
+                (ngModelChange)="customShortcutTitle.set($event)" 
+                placeholder="Örn: Gmail veya E-Devlet" 
+                style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; width:100%; box-sizing:border-box; font-family: inherit;" 
+              />
             </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display:block;">Web Adresi (URL)</label>
+              <input 
+                type="text" 
+                [ngModel]="customShortcutUrl()" 
+                (ngModelChange)="customShortcutUrl.set($event)" 
+                placeholder="Örn: mail.google.com" 
+                style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; width:100%; box-sizing:border-box; font-family: inherit;" 
+              />
+            </div>
+            <button type="button" class="btn btn-primary" (click)="addCustomShortcutLocal(); isEditShortcutsModalOpen.set(false);" style="font-size: 12.5px; padding: 10px; width: 100%; font-weight: 600; margin-top: 6px;">
+              Kısayolu Ekle & Kaydet
+            </button>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" (click)="isAddModalOpen.set(false)">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="!newShortcutName() || !newShortcutUrl()">Add Shortcut</button>
+
+        <!-- Part 2: Select from Existing System Tools -->
+        <div style="text-align: center;">
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px 0;">Sistemde kayıtlı kurumsal uygulamalardan seçim yapmak ister misiniz?</p>
+          <button type="button" class="btn btn-outline" (click)="isEditShortcutsModalOpen.set(false); isSearchOpen.set(true);" style="width: 100%; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px;">
+            <app-icon name="list" [size]="15" color="#0078d4"></app-icon> Var Olan Araçlardan Seç
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EDIT PROFILE SETTINGS -->
+    <div class="modal-overlay" *ngIf="isProfileModalOpen()" (click)="isProfileModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isProfileModalOpen()">
+      <div class="modal-header">
+        <h3>Profil Bilgilerini Düzenle</h3>
+        <button class="modal-close" (click)="isProfileModalOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <form (submit)="saveProfileSettings(); $event.preventDefault()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="prof-fullname">Ad Soyad</label>
+            <input type="text" id="prof-fullname" [(ngModel)]="profileFullName" name="profileFullName" required />
+          </div>
+          <div class="form-group">
+            <label for="prof-email">E-posta Adresi</label>
+            <input type="email" id="prof-email" [(ngModel)]="profileEmail" name="profileEmail" required />
+          </div>
+          <div class="form-group">
+            <label for="prof-phone">Telefon Numarası</label>
+            <input type="text" id="prof-phone" [(ngModel)]="profilePhone" name="profilePhone" />
+          </div>
+          <div class="form-group">
+            <label for="prof-birthdate">Doğum Tarihi</label>
+            <input type="date" id="prof-birthdate" [(ngModel)]="profileBirthdate" name="profileBirthdate" />
+          </div>
+          <div class="form-group">
+            <button type="button" class="btn btn-outline" (click)="openChangePasswordModal()" style="width: 100%; font-weight: 600; margin-top: 8px; font-family: inherit;">
+              Şifremi Değiştirmek İstiyorum
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <button type="button" class="btn btn-outline btn-delete" (click)="logout(); isProfileModalOpen.set(false)">Oturumu Kapat</button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-outline" (click)="isProfileModalOpen.set(false)">Vazgeç</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
         </div>
       </form>
     </div>
+
+    <!-- MODAL: CHANGE PASSWORD -->
+    <div class="modal-overlay" *ngIf="isChangePasswordModalOpen()" (click)="isChangePasswordModalOpen.set(false); isProfileModalOpen.set(true);"></div>
+    <div class="modal" *ngIf="isChangePasswordModalOpen()" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>Şifremi Değiştir</h3>
+        <button class="modal-close" (click)="isChangePasswordModalOpen.set(false); isProfileModalOpen.set(true);">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <form (submit)="changePassword(); $event.preventDefault()">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="chg-old-password" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Eski Şifreniz</label>
+            <input type="password" id="chg-old-password" [ngModel]="profileOldPassword()" (ngModelChange)="profileOldPassword.set($event)" name="profileOldPassword" required placeholder="Eski şifrenizi girin" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid var(--border-color); outline:none; border-radius:4px; font-family:inherit; font-size:13px;" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="chg-new-password" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Yeni Şifreniz</label>
+            <input type="password" id="chg-new-password" [ngModel]="profileNewPassword()" (ngModelChange)="profileNewPassword.set($event)" name="profileNewPassword" required placeholder="Yeni şifrenizi girin" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid var(--border-color); outline:none; border-radius:4px; font-family:inherit; font-size:13px;" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="chg-confirm-password" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Yeni Şifreniz (Tekrar)</label>
+            <input type="password" id="chg-confirm-password" [ngModel]="profileConfirmNewPassword()" (ngModelChange)="profileConfirmNewPassword.set($event)" name="profileConfirmNewPassword" required placeholder="Yeni şifrenizi tekrar girin" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid var(--border-color); outline:none; border-radius:4px; font-family:inherit; font-size:13px;" />
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end; gap:8px;">
+          <button type="button" class="btn btn-outline" (click)="isChangePasswordModalOpen.set(false); isProfileModalOpen.set(true);">İptal</button>
+          <button type="submit" class="btn btn-primary">Şifreyi Güncelle</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- FLOATING DRAWER FAB SYSTEM (📢 ONLY) -->
+    <div class="drawer-fab-container">
+      <!-- Announcements Bubble -->
+      <button class="drawer-fab" id="fab-announcements" (click)="isAnnouncementsDrawerOpen.set(!isAnnouncementsDrawerOpen())" title="📢 Duyurular">
+        📢
+      </button>
+    </div>
+
+    <!-- FLOATING SLIDING DRAWER: CHAT CLIENT -->
+    <div class="drawer-overlay" [class.open]="isChatDrawerOpen()" (click)="isChatDrawerOpen.set(false)"></div>
+    <div class="sliding-right-drawer" [class.open]="isChatDrawerOpen()">
+      <div class="drawer-header">
+        <h3>Kurumsal Sohbet & Destek</h3>
+        <button class="close-drawer-btn" (click)="isChatDrawerOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="drawer-body chat-drawer-body">
+        <div class="chat-feed-container">
+          @for (msg of messages(); track $index) {
+            <div 
+              class="chat-bubble-item" 
+              [class.self]="msg.sender !== 'Sistem Yöneticisi' && msg.sender !== 'hr_user' && msg.sender !== 'fin_user' && msg.sender !== 'Kurumsal Destek Botu'"
+            >
+              <div class="bubble-sender">{{ msg.sender }}</div>
+              <div class="bubble-text">{{ msg.text }}</div>
+              <div class="bubble-time">{{ msg.time }}</div>
+            </div>
+          }
+        </div>
+        <form (submit)="sendChatMessage(); $event.preventDefault();" class="chat-form-input-box">
+          <input 
+            type="text" 
+            [ngModel]="chatInput()" 
+            (ngModelChange)="chatInput.set($event)" 
+            name="chatInput" 
+            placeholder="Mesajınızı yazın..." 
+            required 
+          />
+          <button type="submit" class="btn btn-primary">Gönder</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- FLOATING SLIDING DRAWER: ANNOUNCEMENTS -->
+    <div class="drawer-overlay" [class.open]="isAnnouncementsDrawerOpen()" (click)="isAnnouncementsDrawerOpen.set(false)"></div>
+    <div class="sliding-right-drawer" [class.open]="isAnnouncementsDrawerOpen()">
+      <div class="drawer-header">
+        <h3>Duyurular Paneli</h3>
+        <button class="close-drawer-btn" (click)="isAnnouncementsDrawerOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="drawer-body">
+        <div class="broadcasts-card">
+          <div class="announcements-header-tabs">
+            <button [class.active]="announcementFilter() === 'all'" (click)="announcementFilter.set('all')">Tüm Duyurular</button>
+            <button [class.active]="announcementFilter() === 'dept'" (click)="announcementFilter.set('dept')">Departmanım</button>
+          </div>
+          <div class="widget-body" style="padding: 10px 0 0 0">
+            @if (filteredAnnouncements().length === 0) {
+              <div class="empty-state">Bu filtreye uygun aktif duyuru bulunmamaktadır.</div>
+            } @else {
+              @for (item of filteredAnnouncements(); track item.id) {
+                <div class="announcement-row" [className]="'announcement-row border-' + item.priority">
+                  <span class="ann-dept">{{ item.departmentName }}</span>
+                  <span class="ann-title">{{ item.title }}</span>
+                  <p class="ann-content" style="font-size: 11px; margin: 4px 0 0 0; color: #64748b;">{{ item.content }}</p>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM CONTEXT MENU FOR SHORTCUT TILES -->
+    <div 
+      *ngIf="contextMenuVisible()" 
+      class="custom-context-menu" 
+      [style.left.px]="contextMenuX()" 
+      [style.top.px]="contextMenuY()"
+      style="position: fixed; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 4px 0; z-index: 9999; min-width: 150px;"
+      (click)="$event.stopPropagation()"
+    >
+      <button 
+        (click)="removeShortcutViaContextMenu()" 
+        style="width: 100%; border: none; background: transparent; padding: 8px 16px; font-size: 13px; text-align: left; cursor: pointer; color: #ef4444; font-family: inherit; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background 0.2s;"
+        onmouseover="this.style.background='#faf9f8'"
+        onmouseout="this.style.background='transparent'"
+      >
+        <app-icon name="trash" [size]="13" color="#ef4444"></app-icon> Kısayolu Kaldır
+      </button>
+    </div>
+
   </div>
 }

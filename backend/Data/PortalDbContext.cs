@@ -18,6 +18,9 @@ namespace SharePointBackend.Data
         public DbSet<DeviceLog> DeviceLogs { get; set; }
         public DbSet<CustomShortcut> CustomShortcuts { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<WorkspaceDocument> WorkspaceDocuments { get; set; }
+        public DbSet<DocumentCollaborator> DocumentCollaborators { get; set; }
+        public DbSet<AdminApprovalRequest> AdminApprovalRequests { get; set; }
 
         private string HashPassword(string password)
         {
@@ -143,6 +146,106 @@ namespace SharePointBackend.Data
                 new User { Id = 3, Username = "hr_user", PasswordHash = HashPassword("hr123"), FullName = "HR Manager", Role = "HR Department", Email = "hr@company.com", PhoneNumber = "555-0102" },
                 new User { Id = 4, Username = "fin_user", PasswordHash = HashPassword("fin123"), FullName = "Financial Analyst", Role = "Finance Department", Email = "finance@company.com", PhoneNumber = "555-0103" },
                 new User { Id = 5, Username = "ops_user", PasswordHash = HashPassword("ops123"), FullName = "Operations Supervisor", Role = "Operations Department", Email = "ops@company.com", PhoneNumber = "555-0104" }
+            );
+
+            // Seed Documents
+            modelBuilder.Entity<WorkspaceDocument>().HasData(
+                new WorkspaceDocument
+                {
+                    Id = 1,
+                    Title = "Şirket El Kitabı (Handbook)",
+                    Content = "# Şirket Çalışma El Kitabı\n\nKurumsal portalımıza hoş geldiniz! Bu çalışma alanı tüm personelimizin okuması için kamuya açıktır. Şirket kurallarını ve çalışma standartlarını buradan inceleyebilirsiniz.",
+                    OwnerUsername = "admin",
+                    IsPublic = true,
+                    CreatedDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss")
+                },
+                new WorkspaceDocument
+                {
+                    Id = 2,
+                    Title = "Q3 Finansal Bütçe Planı",
+                    Content = "# Q3 Departman Bütçeleri\n\nBu gizli not, şirketimizin üçüncü çeyrek departman bütçe planlamalarını barındırır. Sadece yetkilendirilen çalışanlar düzenleme hakkına sahiptir.",
+                    OwnerUsername = "fin_user",
+                    IsPublic = false,
+                    CreatedDate = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+                },
+                new WorkspaceDocument
+                {
+                    Id = 3,
+                    Title = "Yıllık İSG Güvenlik Protokolü.pdf",
+                    Content = "# İş Sağlığı ve Güvenliği Protokolü\n\nTüm departmanların uyması gereken 2026 yılı güncel İSG kuralları ve acil durum tahliye planı.",
+                    OwnerUsername = "admin",
+                    IsPublic = true,
+                    CreatedDate = DateTime.UtcNow.AddDays(-15).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.AddDays(-15).ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsFile = true,
+                    FileUrl = "https://company.com/files/isg-protokolu-2026.pdf",
+                    FileSize = "3.2 MB",
+                    UploaderComment = "Yıllık denetim öncesi güncellenen ana İSG dokümanı."
+                },
+                new WorkspaceDocument
+                {
+                    Id = 4,
+                    Title = "2026 İK İzin ve Prim Yönetmeliği.docx",
+                    Content = "# İK İzin ve Prim Yönetmeliği\n\nÇalışanların yıllık izin hakları, prim hakediş kriterleri ve yan haklar detayları.",
+                    OwnerUsername = "hr_user",
+                    IsPublic = true,
+                    CreatedDate = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsFile = true,
+                    FileUrl = "https://company.com/files/ik-izin-yonetmelik.docx",
+                    FileSize = "1.8 MB",
+                    UploaderComment = "Yönetim kurulu onaylı güncel yönetmelik."
+                },
+                new WorkspaceDocument
+                {
+                    Id = 5,
+                    Title = "Departman Gider Tablosu Q2.xlsx",
+                    Content = "# Q2 Finansal Gider Analizi\n\nNisan-Haziran dönemine ait tüm departmanların detaylandırılmış harcama kalemleri.",
+                    OwnerUsername = "fin_user",
+                    IsPublic = false,
+                    CreatedDate = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsFile = true,
+                    FileUrl = "https://company.com/files/departman-giderleri-q2.xlsx",
+                    FileSize = "4.5 MB",
+                    UploaderComment = "Çeyrek sonu kapatma rakamları."
+                },
+                new WorkspaceDocument
+                {
+                    Id = 6,
+                    Title = "Kurumsal Ağ Topolojisi Şeması.png",
+                    Content = "# Şirket İçi Ağ Mimarisi\n\nIntranet, DMZ, güvenli subnet ve VPN erişim şemasını gösteren ağ topoloji görseli.",
+                    OwnerUsername = "it_user",
+                    IsPublic = false,
+                    CreatedDate = DateTime.UtcNow.AddDays(-20).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.AddDays(-20).ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsFile = true,
+                    FileUrl = "https://company.com/files/network-topology-v2.png",
+                    FileSize = "8.4 MB",
+                    UploaderComment = "Yeni omurga switch kurulumu sonrası ağ şeması güncellemesi."
+                }
+            );
+
+            // Seed Collaborators
+            modelBuilder.Entity<DocumentCollaborator>().HasData(
+                new DocumentCollaborator { Id = 1, DocumentId = 2, CollaboratorUsername = "admin", CanEdit = true },
+                new DocumentCollaborator { Id = 2, DocumentId = 2, CollaboratorUsername = "hr_user", CanEdit = false }
+            );
+
+            // Seed Mock Admin Approval Request
+            modelBuilder.Entity<AdminApprovalRequest>().HasData(
+                new AdminApprovalRequest
+                {
+                    Id = 1,
+                    RequestedByUsername = "it_user",
+                    Title = "Kurumsal Sunucu Mimari Şeması (server-architecture.png)",
+                    Description = "Lütfen IT subnet'inde kullanılmak üzere hazırladığım sunucu mimari şemasını onaylayın. Ek açıklama: server-diagnostic.txt alt yapısına göre test edilmiştir.",
+                    IsApproved = false,
+                    IsPending = true,
+                    CreatedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+                }
             );
         }
     }

@@ -184,6 +184,91 @@ namespace SharePointBackend.Controllers
             });
         }
 
+        [HttpPost("update-profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Username))
+                return BadRequest("Kullanıcı adı zorunludur.");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == request.Username.ToLower());
+            if (user == null) return NotFound("Kullanıcı bulunamadı.");
+
+            user.FullName = request.FullName ?? user.FullName;
+            user.Email = request.Email ?? user.Email;
+            user.PhoneNumber = request.PhoneNumber ?? user.PhoneNumber;
+
+            if (!string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                user.PasswordHash = HashPassword(request.NewPassword);
+            }
+
+            // Log
+            var log = new DeviceLog
+            {
+                DeviceName = "WORKSTATION-01",
+                IpAddress = "192.168.1.15",
+                MacAddress = "00-50-56-C0-00-08",
+                Action = $"Updated profile information for user: {user.Username}",
+                Timestamp = DateTime.UtcNow,
+                DepartmentName = user.Role
+            };
+            _context.DeviceLogs.Add(log);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new AuthResponse
+            {
+                Success = true,
+                Username = user.Username,
+                FullName = user.FullName,
+                Role = user.Role,
+                Token = Guid.NewGuid().ToString()
+            });
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Username) || 
+                string.IsNullOrWhiteSpace(request.OldPassword) || 
+                string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return BadRequest(new { Success = false, Error = "Tüm alanlar zorunludur." });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == request.Username.ToLower());
+            if (user == null) return NotFound(new { Success = false, Error = "Kullanıcı bulunamadı." });
+
+            var oldHash = HashPassword(request.OldPassword);
+            if (user.PasswordHash != oldHash)
+            {
+                return BadRequest(new { Success = false, Error = "Eski şifreniz hatalı." });
+            }
+
+            var newHash = HashPassword(request.NewPassword);
+            if (oldHash == newHash)
+            {
+                return BadRequest(new { Success = false, Error = "Yeni şifre eski şifreyle aynı olamaz." });
+            }
+
+            user.PasswordHash = newHash;
+
+            var log = new DeviceLog
+            {
+                DeviceName = "WORKSTATION-01",
+                IpAddress = "192.168.1.15",
+                MacAddress = "00-50-56-C0-00-08",
+                Action = $"Changed password for user: {user.Username}",
+                Timestamp = DateTime.UtcNow,
+                DepartmentName = user.Role
+            };
+            _context.DeviceLogs.Add(log);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Success = true, Message = "Şifreniz başarıyla değiştirildi." });
+        }
+
         private string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();
@@ -208,9 +293,18 @@ namespace SharePointBackend.Controllers
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string? FullName { get; set; }
-        public string? Role { get; set; } // Department
+        public string? Role { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
+    }
+
+    public class UpdateProfileRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? NewPassword { get; set; }
     }
 
     public class ResetPasswordRequestDto
@@ -234,5 +328,12 @@ namespace SharePointBackend.Controllers
         public string Role { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string OldPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
     }
 }
