@@ -898,18 +898,64 @@
                     <button class="btn btn-primary btn-sm" (click)="isUploadPanelOpen.set(true)">Dosya Yükle</button>
                   </div>
 
-                  <!-- drag drop zone -->
-                  <div 
-                    id="drag-drop-zone" 
-                    class="drag-drop-zone" 
-                    style="border: 2px dashed var(--primary); background-color: rgba(0, 120, 212, 0.05); text-align: center; padding: 24px; border-radius: var(--radius-sm); margin-bottom: 16px; cursor: pointer; transition: all 0.2s;" 
-                    (click)="triggerFileSelect()"
-                    (dragover)="onDragOver($event)"
-                    (dragleave)="onDragLeave($event)"
-                    (drop)="onFileDropped($event)"
-                  >
-                    <span style="font-size: 13px; font-weight: 600; color: var(--primary);">Dosyaları buraya sürükleyin veya seçmek için tıklayın</span>
-                    <input type="file" id="hidden-file-input" style="display: none;" (change)="onFileSelected($event)" />
+                  <!-- drag drop and upload settings zone -->
+                  <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; margin-bottom: 16px; background: #faf9f8; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); align-items: stretch;">
+                    <!-- Sol Bölüm: Sürükle Bırak / Dosya Seçici -->
+                    <div 
+                      id="drag-drop-zone" 
+                      class="drag-drop-zone" 
+                      style="border: 2px dashed var(--primary); background-color: #ffffff; text-align: center; padding: 16px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; box-sizing: border-box;" 
+                      (click)="triggerFileSelect()"
+                      (dragover)="onDragOver($event)"
+                      (dragleave)="onDragLeave($event)"
+                      (drop)="onFileDropped($event)"
+                    >
+                      <app-icon name="file" [size]="28" color="var(--primary)" style="margin-bottom: 8px;"></app-icon>
+                      <span style="font-size: 12px; font-weight: 600; color: var(--primary); line-height: 1.4; max-width: 180px; word-wrap: break-word; overflow: hidden; text-overflow: ellipsis;">
+                        {{ selectedUploadFile() ? selectedUploadFile()!.name : 'Dosyaları buraya sürükleyin veya seçin' }}
+                      </span>
+                      <input type="file" id="hidden-file-input" style="display: none;" (change)="onFileSelected($event)" />
+                    </div>
+
+                    <!-- Sağ Bölüm: Dosya Adı ve Gizlilik Ayarları -->
+                    <div style="display: flex; flex-direction: column; gap: 10px; justify-content: space-between;">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">DOSYA BAŞLIĞI</label>
+                          <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileTitle()" (ngModelChange)="uploadFileTitle.set($event)" placeholder="Dosya adı girin..." />
+                        </div>
+                        <div>
+                          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">GİZLİLİK AYARI</label>
+                          <select class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="uploadFilePrivacy()" (ngModelChange)="uploadFilePrivacy.set($event)">
+                            <option value="Public">Şirket Ortak (Public)</option>
+                            <option value="Department">Departman (Grup)</option>
+                            <option value="Private">Gizli (Sadece Ben)</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">EK AÇIKLAMA / NOT</label>
+                        <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileComment()" (ngModelChange)="uploadFileComment.set($event)" placeholder="Dosya hakkında kısa not girin (opsiyonel)..." />
+                      </div>
+
+                      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                        <div style="flex: 1;">
+                          @if (uploadFilePrivacy() === 'Private') {
+                            <div style="display: flex; flex-direction: column;">
+                              <label style="font-size: 10px; font-weight: 700; color: #f59f0b; display: block; margin-bottom: 2px;">ERİŞİM ŞİFRESİ (OPSİYONEL)</label>
+                              <input type="password" class="form-control" style="font-size: 12px; height: 28px; padding: 2px 6px; border-radius: 4px; border: 1px solid #f59f0b; width: 100%; box-sizing: border-box;" [ngModel]="uploadFilePassword()" (ngModelChange)="uploadFilePassword.set($event)" placeholder="Şifre belirleyin..." />
+                            </div>
+                          }
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                          <button type="button" class="btn btn-outline btn-sm" style="height: 32px; font-size: 12px;" (click)="cancelUploadSelection()" [disabled]="!selectedUploadFile()">Temizle</button>
+                          <button type="button" class="btn btn-primary btn-sm" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;" (click)="uploadSelectedFileWithMetadata()" [disabled]="!selectedUploadFile()">
+                            <app-icon name="plus" [size]="12"></app-icon> Sisteme Yükle
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="dms-files-table" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">

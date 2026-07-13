@@ -69,6 +69,7 @@ interface WorkspaceDocument {
   isPasswordProtected?: boolean;
   isUnlockedInMemory?: boolean;
   lastModifiedBy?: string;
+  accessPassword?: string | null;
 }
 
 interface DocumentVersion {
@@ -324,6 +325,13 @@ export class App implements OnInit {
   protected readonly newFileSize = signal<string>('');
   protected readonly newFileComment = signal<string>('');
   protected readonly isUploadPanelOpen = signal<boolean>(false);
+
+  // New Upload Form state (embedded next to upload drop area)
+  protected readonly selectedUploadFile = signal<File | null>(null);
+  protected readonly uploadFileTitle = signal<string>('');
+  protected readonly uploadFilePrivacy = signal<string>('Public');
+  protected readonly uploadFilePassword = signal<string>('');
+  protected readonly uploadFileComment = signal<string>('');
 
   // DMS and Notepad sub-state
   protected readonly dmsFilter = signal<'all' | 'received' | 'sent' | 'public'>('all');
@@ -1433,7 +1441,9 @@ export class App implements OnInit {
   protected onFileSelected(event: any) {
     const files = event.target.files;
     if (files && files.length > 0) {
-      this.uploadFileAndCreateDoc(files[0]);
+      const file = files[0];
+      this.selectedUploadFile.set(file);
+      this.uploadFileTitle.set(file.name);
     }
   }
 
@@ -1447,7 +1457,9 @@ export class App implements OnInit {
     }
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      this.uploadFileAndCreateDoc(files[0]);
+      const file = files[0];
+      this.selectedUploadFile.set(file);
+      this.uploadFileTitle.set(file.name);
     }
   }
 
@@ -1471,28 +1483,40 @@ export class App implements OnInit {
     }
   }
 
-  private uploadFileAndCreateDoc(file: File) {
+  protected uploadSelectedFileWithMetadata() {
+    const file = this.selectedUploadFile();
+    if (!file) {
+      alert('Lütfen önce bir dosya sürükleyin veya seçin.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
-    const comment = prompt('Dosya için açıklama girin (İsteğe bağlı):') || 'Kullanıcı tarafından kurumsal çalışma alanına eklendi.';
+    const title = this.uploadFileTitle() || file.name;
+    const privacy = this.uploadFilePrivacy();
+    const password = this.uploadFilePassword();
+    const comment = this.uploadFileComment() || 'Dosya seçilerek yüklendi.';
 
     this.http.post<any>(`${this.workspaceUrl}/upload`, formData).subscribe({
       next: (res) => {
         const payload: WorkspaceDocument = {
-          title: res.title,
-          content: `# ${res.title}\n\nEk Açıklama: ${comment}`,
+          title: title,
+          content: `# ${title}\n\nEk Açıklama: ${comment}`,
           ownerUsername: this.currentUser() || 'Guest',
-          isPublic: false,
+          isPublic: privacy === 'Public',
+          privacy: privacy,
           isFile: true,
           fileUrl: res.fileUrl,
           fileSize: res.fileSize,
-          uploaderComment: comment
+          uploaderComment: comment,
+          accessPassword: privacy === 'Private' && password ? password : null
         };
 
         this.http.post<WorkspaceDocument>(`${this.workspaceUrl}/documents`, payload).subscribe({
           next: () => {
             this.loadDocuments();
+            this.cancelUploadSelection();
             alert('Dosya başarıyla yüklendi ve sisteme eklendi!');
           },
           error: (err) => {
@@ -1504,6 +1528,14 @@ export class App implements OnInit {
         alert(err.error || 'Dosya yükleme hatası. Dosya boyutu limitini aşmış olabilir.');
       }
     });
+  }
+
+  protected cancelUploadSelection() {
+    this.selectedUploadFile.set(null);
+    this.uploadFileTitle.set('');
+    this.uploadFilePrivacy.set('Public');
+    this.uploadFilePassword.set('');
+    this.uploadFileComment.set('');
   }
 
   protected deleteActiveDocumentDirect(doc: WorkspaceDocument) {
