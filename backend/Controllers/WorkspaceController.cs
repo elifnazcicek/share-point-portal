@@ -141,7 +141,8 @@ namespace SharePointBackend.Controllers
                         FileSize = doc.FileSize ?? string.Empty,
                         ModifiedBy = doc.LastModifiedBy ?? doc.OwnerUsername,
                         ModifiedDate = doc.ModifiedDate ?? doc.CreatedDate,
-                        Comment = doc.UploaderComment ?? "İlk Sürüm"
+                        Comment = doc.UploaderComment ?? "İlk Sürüm",
+                        Content = doc.Content ?? string.Empty
                     };
                     _context.DocumentVersions.Add(originalVersion);
                     maxVer = 1;
@@ -156,7 +157,8 @@ namespace SharePointBackend.Controllers
                     FileSize = request.FileSize ?? doc.FileSize ?? string.Empty,
                     ModifiedBy = username,
                     ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
-                    Comment = request.UploaderComment ?? $"Sürüm {newVerNum} Güncellemesi"
+                    Comment = request.UploaderComment ?? $"Sürüm {newVerNum} Güncellemesi",
+                    Content = request.Content ?? string.Empty
                 };
                 _context.DocumentVersions.Add(nextVersion);
             }
@@ -403,6 +405,79 @@ namespace SharePointBackend.Controllers
                 .ToListAsync();
 
             return Ok(versions);
+        }
+
+        // POST: api/workspace/documents/{id}/restore/{versionNumber}?username=user1
+        [HttpPost("documents/{id}/restore/{versionNumber}")]
+        public async Task<IActionResult> RestoreVersion(int id, int versionNumber, [FromQuery] string username)
+        {
+            var doc = await _context.WorkspaceDocuments.FindAsync(id);
+            if (doc == null) return NotFound("Belge bulunamadı.");
+
+            bool isOwner = doc.OwnerUsername.ToLower() == username.ToLower();
+            bool isCollaboratorWithEdit = await _context.DocumentCollaborators
+                .AnyAsync(c => c.DocumentId == id && c.CollaboratorUsername.ToLower() == username.ToLower() && c.CanEdit);
+
+            if (doc.EditPermission == "OwnerOnly" && !isOwner)
+            {
+                return Forbid("Bu belgeyi sadece sahibi geri yükleyebilir.");
+            }
+
+            if (!isOwner && !isCollaboratorWithEdit)
+            {
+                return Forbid("Bu belgeyi geri yükleme yetkiniz yok.");
+            }
+
+            var version = await _context.DocumentVersions
+                .FirstOrDefaultAsync(v => v.DocumentId == id && v.VersionNumber == versionNumber);
+
+            if (version == null) return NotFound("Sürüm bulunamadı.");
+
+            var maxVer = await _context.DocumentVersions
+                .Where(v => v.DocumentId == id)
+                .Select(v => (int?)v.VersionNumber)
+                .MaxAsync() ?? 0;
+
+            if (maxVer == 0)
+            {
+                var originalVersion = new DocumentVersion
+                {
+                    DocumentId = id,
+                    VersionNumber = 1,
+                    FileUrl = doc.FileUrl ?? string.Empty,
+                    FileSize = doc.FileSize ?? string.Empty,
+                    ModifiedBy = doc.LastModifiedBy ?? doc.OwnerUsername,
+                    ModifiedDate = doc.ModifiedDate ?? doc.CreatedDate,
+                    Comment = doc.UploaderComment ?? "İlk Sürüm",
+                    Content = doc.Content ?? string.Empty
+                };
+                _context.DocumentVersions.Add(originalVersion);
+                maxVer = 1;
+            }
+
+            var newVerNum = maxVer + 1;
+            var nextVersion = new DocumentVersion
+            {
+                DocumentId = id,
+                VersionNumber = newVerNum,
+                FileUrl = version.FileUrl,
+                FileSize = version.FileSize,
+                ModifiedBy = username,
+                ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                Comment = $"v{versionNumber}.0 sürümünden geri yüklendi.",
+                Content = version.Content
+            };
+            _context.DocumentVersions.Add(nextVersion);
+
+            doc.FileUrl = version.FileUrl;
+            doc.FileSize = version.FileSize;
+            doc.Content = version.Content;
+            doc.ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            doc.LastModifiedBy = username;
+            doc.UploaderComment = $"v{versionNumber}.0 sürümünden geri yüklendi.";
+
+            await _context.SaveChangesAsync();
+            return Ok(doc);
         }
     }
 

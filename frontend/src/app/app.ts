@@ -1396,6 +1396,24 @@ export class App implements OnInit {
     });
   }
 
+  protected restoreDocumentVersion(ver: DocumentVersion) {
+    if (!ver || !ver.documentId) return;
+    const user = this.currentUser() || 'admin';
+
+    if (confirm(`Bu belgeyi v${ver.versionNumber}.0 sürümüne geri yüklemek istediğinize emin misiniz?`)) {
+      this.http.post<any>(`${this.workspaceUrl}/documents/${ver.documentId}/restore/${ver.versionNumber}?username=${encodeURIComponent(user)}`, {}).subscribe({
+        next: () => {
+          this.isVersionModalOpen.set(false);
+          this.loadDocuments();
+          alert('Belge başarıyla eski sürümüne geri yüklendi.');
+        },
+        error: (err) => {
+          alert(err.error || 'Sürüm geri yüklenirken bir hata oluştu.');
+        }
+      });
+    }
+  }
+
   protected triggerFileSelect() {
     const fileInput = document.getElementById('hidden-file-input');
     if (fileInput) fileInput.click();

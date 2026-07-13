@@ -26,5 +26,7 @@ namespace SharePointBackend.Models
 
         [MaxLength(500)]
         public string? Comment { get; set; }
+
+        public string Content { get; set; } = string.Empty;
     }
 }

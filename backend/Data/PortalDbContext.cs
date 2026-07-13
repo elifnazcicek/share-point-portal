@@ -270,7 +270,8 @@ namespace SharePointBackend.Data
                     FileSize = "1.2 MB",
                     ModifiedBy = "fin_user",
                     ModifiedDate = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd HH:mm:ss"),
-                    Comment = "İlk taslak sürüm oluşturuldu."
+                    Comment = "İlk taslak sürüm oluşturuldu.",
+                    Content = "# Q3 Departman Bütçeleri v1\n\nİlk bütçe taslağı."
                 },
                 new DocumentVersion
                 {
@@ -281,7 +282,8 @@ namespace SharePointBackend.Data
                     FileSize = "1.4 MB",
                     ModifiedBy = "admin",
                     ModifiedDate = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss"),
-                    Comment = "Yönetici geri bildirimleri bütçeye eklendi."
+                    Comment = "Yönetici geri bildirimleri bütçeye eklendi.",
+                    Content = "# Q3 Departman Bütçeleri v2\n\nGüncellenen bütçe taslağı."
                 }
             );
 
