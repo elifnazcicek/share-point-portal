@@ -357,10 +357,28 @@ export class App implements OnInit {
 
   // Chat State
   protected readonly chatInput = signal<string>('');
-  protected readonly messages = signal<{sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string}[]>([
-    { sender: 'Sistem Yöneticisi', text: 'Merhaba, portal üzerinden ilgili departman klasörlerine erişebilirsiniz.', time: '09:00' },
-    { sender: 'hr_user', text: 'Dosyalar sekmesi üzerinden kişisel belgelerinizi yönetebilirsiniz.', time: '09:30' }
+  protected readonly chatHistories = signal<Record<string, {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string}[]>>({
+    'elif': [
+      { sender: 'elif', text: 'Merhaba Ahmet Bey, bütçe sunumu için raporu hazırladım. Dosyalar kısmından inceleyebilirsiniz.', time: '09:30' }
+    ],
+    'admin': [
+      { sender: 'admin', text: 'Tüm departman yetkililerine duyuru: Akşam yapılacak veritabanı bakımı sırasında kısa süreli kesintiler yaşanabilir.', time: '09:00' }
+    ],
+    'ai_bot': [
+      { sender: 'ai_bot', text: 'Merhaba! Ben PortalOne yapay zeka asistanıyım. Sistemdeki aktif çalışanlar, belgeler, son duyurular veya cihaz ağ durumunuz hakkında bana dilediğiniz soruyu sorabilirsiniz.', time: '08:30' }
+    ],
+    'misafir': []
+  });
+
+  protected readonly drawerMessages = signal<{sender: string, text: string, time: string}[]>([
+    { sender: 'Kurumsal Destek Botu', text: 'Merhaba! Ben kurumsal hızlı destek robotuyum. Portal ile ilgili genel sorularınızı buradan yanıtlayabilirim.', time: '09:00' }
   ]);
+
+  protected readonly activeChatMessages = computed(() => {
+    const activeUser = this.activeChatUser();
+    if (!activeUser) return [];
+    return this.chatHistories()[activeUser.username] || [];
+  });
 
   // Carousel News Slides
   protected readonly activeSlide = signal<number>(0);
@@ -884,7 +902,7 @@ export class App implements OnInit {
     const time = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     const user = this.currentUserFullName() || this.currentUser() || 'User';
 
-    this.messages.update(current => [...current, { sender: user, text, time }]);
+    this.drawerMessages.update(current => [...current, { sender: user, text, time }]);
     this.chatInput.set('');
 
     // Mock response after 1 second
@@ -898,7 +916,7 @@ export class App implements OnInit {
       } else if (normalizedText.includes('profil') || normalizedText.includes('şifre')) {
         reply = 'Profil bilgilerinizi güncellemek için sağ üstteki isminize tıklayabilirsiniz.';
       }
-      this.messages.update(current => [...current, { sender: 'Kurumsal Destek Botu', text: reply, time }]);
+      this.drawerMessages.update(current => [...current, { sender: 'Kurumsal Destek Botu', text: reply, time }]);
     }, 1000);
   }
 
@@ -1340,7 +1358,7 @@ export class App implements OnInit {
     };
 
     // Add to messages signal
-    this.messages.update(list => [...list, payload]);
+    this.appendMessageToActiveChat(payload);
     this.isNoteShareMenuOpen.set(false);
     alert(`"${note.title}" notu sohbet üzerinden ${activeUser.fullName} ile paylaşıldı.`);
   }
@@ -1390,7 +1408,7 @@ export class App implements OnInit {
       noteTitle: ''
     };
 
-    this.messages.update(list => [...list, payload]);
+    this.appendMessageToActiveChat(payload);
     this.fullChatInput.set('');
     this.chatMessageSearchQuery.set(''); // Clear search filter when sending message
 
@@ -1405,7 +1423,7 @@ export class App implements OnInit {
       };
 
       // Add typing indicator
-      this.messages.update(list => [...list, typingMsg]);
+      this.appendMessageToActiveChat(typingMsg);
 
       // Trigger HTTP request with retry logic
       this.sendAiRequestWithRetry(input, user, typingMsg, 1, 3);
@@ -1419,19 +1437,19 @@ export class App implements OnInit {
           isSharedNote: false,
           noteTitle: ''
         };
-        this.messages.update(list => [...list, reply]);
+        this.appendMessageToActiveChat(reply);
       }, 1000);
     }
   }
 
   private sendAiRequestWithRetry(message: string, username: string, typingMsg: any, attempt: number, maxAttempts: number) {
-    this.http.post<{ response: string }>(`${this.apiUrl}/portal/ai/chat`, {
+    this.http.post<{ response: string }>(`${this.apiUrl}/ai/chat`, {
       message: message,
       username: username
     }).subscribe({
       next: (res) => {
         // Remove typing indicator and add response
-        this.messages.update(list => list.filter(m => m !== typingMsg));
+        this.removeMessageFromActiveChat(typingMsg);
 
         const reply = {
           sender: 'ai_bot',
@@ -1440,7 +1458,7 @@ export class App implements OnInit {
           isSharedNote: false,
           noteTitle: ''
         };
-        this.messages.update(list => [...list, reply]);
+        this.appendMessageToActiveChat(reply);
       },
       error: (err) => {
         if (attempt < maxAttempts) {
@@ -1450,7 +1468,7 @@ export class App implements OnInit {
           }, 2000);
         } else {
           // All retries failed, remove typing indicator and show error
-          this.messages.update(list => list.filter(m => m !== typingMsg));
+          this.removeMessageFromActiveChat(typingMsg);
 
           const reply = {
             sender: 'ai_bot',
@@ -1459,14 +1477,40 @@ export class App implements OnInit {
             isSharedNote: false,
             noteTitle: ''
           };
-          this.messages.update(list => [...list, reply]);
+          this.appendMessageToActiveChat(reply);
         }
       }
     });
   }
 
+  private appendMessageToActiveChat(msg: {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string}) {
+    const activeUser = this.activeChatUser();
+    if (!activeUser) return;
+
+    this.chatHistories.update(histories => {
+      const userHistory = histories[activeUser.username] || [];
+      return {
+        ...histories,
+        [activeUser.username]: [...userHistory, msg]
+      };
+    });
+  }
+
+  private removeMessageFromActiveChat(msg: any) {
+    const activeUser = this.activeChatUser();
+    if (!activeUser) return;
+
+    this.chatHistories.update(histories => {
+      const userHistory = histories[activeUser.username] || [];
+      return {
+        ...histories,
+        [activeUser.username]: userHistory.filter(m => m !== msg)
+      };
+    });
+  }
+
   protected filteredChatMessages() {
-    const list = this.messages();
+    const list = this.activeChatMessages();
     const query = this.normalizeTurkish(this.chatMessageSearchQuery().trim());
     if (!query) return list;
 

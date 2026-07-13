@@ -1608,7 +1608,7 @@
       </div>
       <div class="drawer-body chat-drawer-body">
         <div class="chat-feed-container">
-          @for (msg of messages(); track $index) {
+          @for (msg of drawerMessages(); track $index) {
             <div 
               class="chat-bubble-item" 
               [class.self]="msg.sender !== 'Sistem Yöneticisi' && msg.sender !== 'hr_user' && msg.sender !== 'fin_user' && msg.sender !== 'Kurumsal Destek Botu'"
