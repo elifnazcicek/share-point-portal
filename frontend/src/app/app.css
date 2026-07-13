@@ -478,17 +478,20 @@
 }
 
 .app-tile {
-  height: 96px;
+  height: 60px;
   padding: 12px;
   color: #ffffff;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   cursor: pointer;
   transition: var(--transition-smooth);
   box-sizing: border-box;
   box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
 }
 
 .app-tile:hover {

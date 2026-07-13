@@ -668,9 +668,6 @@
                     @if (!app.isAccessible) {
                       <div class="tile-lock"><app-icon name="lock" [size]="12" color="#ffffff"></app-icon></div>
                     }
-                    <div class="tile-icon-wrapper">
-                      <app-icon [name]="app.icon" color="#ffffff" [size]="24"></app-icon>
-                    </div>
                     <span class="tile-title">{{ app.name }}</span>
                   </div>
                 }
@@ -750,15 +747,15 @@
             
             <!-- COLUMN 1: YEMEK MENÜSÜ -->
             <div class="widget-panel">
-              <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3>Haftalık Yemek Menüsü</h3>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  @if (currentUserRole() === 'Admin' || currentUser()?.toLowerCase() === 'admin') {
-                    <button type="button" (click)="openLunchMenuEdit()" title="Yemek Menüsünü Güncelle" style="background: transparent; border: none; cursor: pointer; color: var(--primary); display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; hover: background-color: rgba(0, 120, 212, 0.1); padding: 0;">
-                      <app-icon name="settings" [size]="12"></app-icon>
+                  @if (currentUserRole() === 'Admin') {
+                    <button class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px;" (click)="openLunchMenuEdit()" title="Yemek Menüsünü Güncelle">
+                      <app-icon name="settings" [size]="11"></app-icon> Düzenle
                     </button>
                   }
-                  <app-icon name="utensils" [size]="16" color="#2a9d8f"></app-icon>
+                  <app-icon name="coffee" [size]="16" color="#2a9d8f"></app-icon>
                 </div>
               </div>
               <div class="widget-body lunch-list">
@@ -1949,53 +1946,46 @@
       </button>
     </div>
 
-    <!-- MODAL: YEMEK MENÜSÜ GÜNCELLEME (ADMIN) -->
-    @if (isLunchModalOpen()) {
-      <div class="modal-overlay" (click)="isLunchModalOpen.set(false)"></div>
-      <div class="modal" style="max-width: 500px;">
+    <!-- ADMIN LUNCH MENU EDIT MODAL -->
+    @if (isLunchMenuModalOpen()) {
+      <div class="modal-overlay" (click)="isLunchMenuModalOpen.set(false)"></div>
+      <div class="modal" style="max-width: 500px; z-index: 10000;">
         <div class="modal-header">
-          <h3>Haftalık Yemek Menüsü Güncelle (Yönetici)</h3>
-          <button class="modal-close" (click)="isLunchModalOpen.set(false)">
+          <h3>Yemek Menüsünü Güncelle (Yalnızca Admin)</h3>
+          <button class="modal-close" (click)="isLunchMenuModalOpen.set(false)">
             <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
           </button>
         </div>
-        <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 14px;">
-          <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
-            Yemek menüsünü aşağıdaki günlere göre tek tek düzenleyebilir veya en alttaki <strong>Toplu İçe Aktar</strong> alanına kopyalayıp tek seferde güncelleyebilirsiniz.
-          </p>
-          
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center;">
-              <label style="font-weight: 700; font-size: 11.5px;">Pazartesi</label>
-              <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="editLunchPazartesi()" (ngModelChange)="editLunchPazartesi.set($event)" />
-            </div>
-            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center;">
-              <label style="font-weight: 700; font-size: 11.5px;">Salı</label>
-              <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="editLunchSali()" (ngModelChange)="editLunchSali.set($event)" />
-            </div>
-            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center;">
-              <label style="font-weight: 700; font-size: 11.5px;">Çarşamba</label>
-              <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="editLunchCarsamba()" (ngModelChange)="editLunchCarsamba.set($event)" />
-            </div>
-            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center;">
-              <label style="font-weight: 700; font-size: 11.5px;">Perşembe</label>
-              <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="editLunchPersembe()" (ngModelChange)="editLunchPersembe.set($event)" />
-            </div>
-            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center;">
-              <label style="font-weight: 700; font-size: 11.5px;">Cuma</label>
-              <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="editLunchCuma()" (ngModelChange)="editLunchCuma.set($event)" />
-            </div>
+        <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 12px;">
+          <div style="background: rgba(0, 120, 212, 0.05); padding: 10px; border-radius: 4px; font-size: 11.5px; line-height: 1.4; color: var(--primary);">
+            <strong>Hızlı İçe Aktar (Format: Pazartesi=Yemekler, Salı=Yemekler...):</strong>
+            <textarea class="form-control" style="font-size: 11px; height: 60px; margin-top: 6px; font-family: monospace; width: 100%; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px;" placeholder="Pazartesi: Yemek 1, Yemek 2&#10;Salı: Yemek 3, Yemek 4..." (input)="parseLunchMenuImport($any($event.target).value)"></textarea>
           </div>
-
-          <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-            <label style="font-weight: 700; font-size: 11px; color: var(--primary); display: block; margin-bottom: 4px;">TOPLU METİN İÇE AKTAR</label>
-            <textarea class="form-control" rows="4" style="font-size: 11.5px; width: 100%; box-sizing: border-box; resize: vertical; font-family: monospace; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-color);" [ngModel]="bulkLunchInput()" (ngModelChange)="bulkLunchInput.set($event)" placeholder="Pazartesi: Yemek1, Yemek2&#10;Salı: Yemek3, Yemek4&#10;..."></textarea>
-            <button type="button" class="btn btn-outline btn-xs" style="margin-top: 6px; width: 100%;" (click)="processBulkLunchImport()">Toplu Metni Çözümle ve İçe Aktar</button>
+          
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">PAZARTESİ</label>
+            <input type="text" class="form-control" style="font-size: 12px; height: 32px; width: 100%; box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px;" [(ngModel)]="lunchMenuEdit.Pazartesi" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">SALI</label>
+            <input type="text" class="form-control" style="font-size: 12px; height: 32px; width: 100%; box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px;" [(ngModel)]="lunchMenuEdit.Sali" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">ÇARŞAMBA</label>
+            <input type="text" class="form-control" style="font-size: 12px; height: 32px; width: 100%; box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px;" [(ngModel)]="lunchMenuEdit.Carsamba" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">PERŞEMBE</label>
+            <input type="text" class="form-control" style="font-size: 12px; height: 32px; width: 100%; box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px;" [(ngModel)]="lunchMenuEdit.Persembe" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">CUMA</label>
+            <input type="text" class="form-control" style="font-size: 12px; height: 32px; width: 100%; box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px;" [(ngModel)]="lunchMenuEdit.Cuma" />
           </div>
         </div>
         <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end;">
-          <button type="button" class="btn btn-outline btn-sm" (click)="isLunchModalOpen.set(false)">Vazgeç</button>
-          <button type="button" class="btn btn-primary btn-sm" (click)="saveLunchMenuEdit()">Kaydet ve Yayınla</button>
+          <button class="btn btn-outline btn-sm" (click)="isLunchMenuModalOpen.set(false)">Vazgeç</button>
+          <button class="btn btn-primary btn-sm" (click)="saveLunchMenu()">Kaydet</button>
         </div>
       </div>
     }
