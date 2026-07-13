@@ -963,7 +963,9 @@
                           <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap;" (click)="$event.stopPropagation();">
                             @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') {
-                              <button class="btn btn-outline btn-xs" (click)="openPrivacyModal(doc)">Gizlilik / Ayarlar</button>
+                               <button class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; gap: 4px;" (click)="openPrivacyModal(doc)">
+                                 <app-icon name="settings" [size]="12"></app-icon> Ayarlar
+                               </button>
                             }
                             <button class="btn btn-outline btn-xs" (click)="openVersionHistory(doc)">Sürümler</button>
                             @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') {
@@ -1212,11 +1214,11 @@
                         <div style="display: flex; gap: 8px; align-items: center;">
                           @if (ver.fileUrl) {
                             <a [href]="ver.fileUrl" target="_blank" title="Dosyayı İndir" style="color: var(--primary); display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); transition: all 0.2s; text-decoration: none;">
-                              <app-icon name="globe" [size]="12"></app-icon>
+                              <app-icon name="download" [size]="12"></app-icon>
                             </a>
                           }
                           <button type="button" title="Sürümü Geri Yükle" style="border: 1px solid var(--border-color); color: #107c41; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; background: var(--card-bg); cursor: pointer; transition: all 0.2s;" (click)="restoreDocumentVersion(ver)">
-                            <app-icon name="unlock" [size]="12"></app-icon>
+                            <app-icon name="rotate-ccw" [size]="12"></app-icon>
                           </button>
                         </div>
                       </div>
