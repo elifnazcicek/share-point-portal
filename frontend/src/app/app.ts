@@ -201,13 +201,22 @@ export class App implements OnInit {
   protected readonly isAnnouncementsDrawerOpen = signal<boolean>(false);
 
   // Cafeteria Lunch Menu (Yemek Menüsü)
-  protected readonly lunchMenu = {
+  protected readonly lunchMenu = signal<Record<string, string>>({
     Pazartesi: 'Mercimek Çorbası, İzmir Köfte, Pirinç Pilavı, Cacık',
     Sali: 'Yayla Çorbası, Tavuk Sote, Makarna, Kemalpaşa Tatlısı',
     Carsamba: 'Ezogelin Çorbası, Kuru Fasulye, Bulgur Pilavı, Turşu',
     Persembe: 'Tarhana Çorbası, Fırın Poşetinde Tavuk, Fırın Patates, Salata',
     Cuma: 'Düğün Çorbası, Kadınbudu Köfte, Erişte, Ayran'
-  };
+  });
+
+  // Lunch Menu edit state
+  protected readonly isLunchModalOpen = signal<boolean>(false);
+  protected readonly editLunchPazartesi = signal<string>('');
+  protected readonly editLunchSali = signal<string>('');
+  protected readonly editLunchCarsamba = signal<string>('');
+  protected readonly editLunchPersembe = signal<string>('');
+  protected readonly editLunchCuma = signal<string>('');
+  protected readonly bulkLunchInput = signal<string>('');
 
   // Events Calendar (Önemli Etkinlikler)
   protected readonly events = signal<PortalEvent[]>([
@@ -654,6 +663,14 @@ export class App implements OnInit {
     const savedCustoms = localStorage.getItem('custom_shortcuts');
     if (savedCustoms) {
       this.customShortcuts.set(JSON.parse(savedCustoms));
+    }
+
+    // Restore lunch menu from localStorage
+    const savedMenu = localStorage.getItem('lunchMenu');
+    if (savedMenu) {
+      try {
+        this.lunchMenu.set(JSON.parse(savedMenu));
+      } catch (e) {}
     }
 
     this.loadProfile();
@@ -1929,5 +1946,97 @@ export class App implements OnInit {
   protected getCellDateString(day: number | null): string {
     if (day === null) return '';
     return `${this.currentYear()}-${String(this.currentMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  protected openLunchMenuEdit() {
+    const menu = this.lunchMenu();
+    this.editLunchPazartesi.set(menu['Pazartesi'] || '');
+    this.editLunchSali.set(menu['Sali'] || '');
+    this.editLunchCarsamba.set(menu['Carsamba'] || '');
+    this.editLunchPersembe.set(menu['Persembe'] || '');
+    this.editLunchCuma.set(menu['Cuma'] || '');
+
+    // Pre-populate bulk import textarea with readable default template
+    const bulkText = `Pazartesi: ${menu['Pazartesi'] || ''}\nSalı: ${menu['Sali'] || ''}\nÇarşamba: ${menu['Carsamba'] || ''}\nPerşembe: ${menu['Persembe'] || ''}\nCuma: ${menu['Cuma'] || ''}`;
+    this.bulkLunchInput.set(bulkText);
+
+    this.isLunchModalOpen.set(true);
+  }
+
+  protected saveLunchMenuEdit() {
+    const updatedMenu: Record<string, string> = {
+      Pazartesi: this.editLunchPazartesi() || '',
+      Sali: this.editLunchSali() || '',
+      Carsamba: this.editLunchCarsamba() || '',
+      Persembe: this.editLunchPersembe() || '',
+      Cuma: this.editLunchCuma() || ''
+    };
+
+    this.lunchMenu.set(updatedMenu);
+    localStorage.setItem('lunchMenu', JSON.stringify(updatedMenu));
+    this.isLunchModalOpen.set(false);
+    alert('Yemek menüsü başarıyla kaydedildi ve yayınlandı.');
+  }
+
+  protected processBulkLunchImport() {
+    const text = this.bulkLunchInput();
+    if (!text.trim()) {
+      alert('Lütfen toplu içe aktarmak istediğiniz metni girin.');
+      return;
+    }
+
+    try {
+      // Try JSON parsing first
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') {
+        const newMenu: Record<string, string> = { ...this.lunchMenu() };
+        for (const key of ['Pazartesi', 'Sali', 'Carsamba', 'Persembe', 'Cuma']) {
+          // match key in case-insensitive way
+          const matchKey = Object.keys(parsed).find(k => k.toLowerCase() === key.toLowerCase() || (key === 'Sali' && k.toLowerCase() === 'salı') || (key === 'Carsamba' && k.toLowerCase() === 'çarşamba') || (key === 'Persembe' && k.toLowerCase() === 'perşembe'));
+          if (matchKey) {
+            newMenu[key] = parsed[matchKey];
+          }
+        }
+        this.lunchMenu.set(newMenu);
+        localStorage.setItem('lunchMenu', JSON.stringify(newMenu));
+        this.isLunchModalOpen.set(false);
+        alert('Yemek menüsü başarıyla JSON olarak aktarıldı.');
+        return;
+      }
+    } catch (e) {
+      // Parse line by line text: "Pazartesi: yemekler"
+      const lines = text.split('\n');
+      const newMenu: Record<string, string> = { ...this.lunchMenu() };
+      let parsedAny = false;
+
+      for (const line of lines) {
+        const parts = line.split(':');
+        if (parts.length >= 2) {
+          const dayInput = parts[0].trim().toLowerCase();
+          const foodVal = parts.slice(1).join(':').trim();
+
+          let targetDay: string | null = null;
+          if (dayInput.includes('pazartesi')) targetDay = 'Pazartesi';
+          else if (dayInput.includes('sali') || dayInput.includes('salı')) targetDay = 'Sali';
+          else if (dayInput.includes('carsamba') || dayInput.includes('çarşamba')) targetDay = 'Carsamba';
+          else if (dayInput.includes('persembe') || dayInput.includes('perşembe')) targetDay = 'Persembe';
+          else if (dayInput.includes('cuma')) targetDay = 'Cuma';
+
+          if (targetDay && foodVal) {
+            newMenu[targetDay] = foodVal;
+            parsedAny = true;
+          }
+        }
+      }
+
+      if (parsedAny) {
+        this.lunchMenu.set(newMenu);
+        localStorage.setItem('lunchMenu', JSON.stringify(newMenu));
+        this.isLunchModalOpen.set(false);
+        alert('Yemek menüsü satır satır okunarak başarıyla içe aktarıldı.');
+      } else {
+        alert('Geçersiz format. Lütfen "Pazartesi: Yemekler..." biçiminde girin.');
+      }
+    }
   }
 }
