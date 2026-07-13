@@ -32,5 +32,15 @@ namespace SharePointBackend.Models
         public string? FileUrl { get; set; }
         public string? FileSize { get; set; }
         public string? UploaderComment { get; set; } // Comment on upload
+
+        // Privacy and Access Controls
+        [MaxLength(50)]
+        public string Privacy { get; set; } = "Public"; // Public, Private, Department
+
+        [MaxLength(50)]
+        public string EditPermission { get; set; } = "Everyone"; // Everyone, OwnerOnly
+
+        [MaxLength(255)]
+        public string? AccessPassword { get; set; }
     }
 }

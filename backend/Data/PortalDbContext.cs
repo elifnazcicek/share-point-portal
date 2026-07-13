@@ -158,7 +158,10 @@ namespace SharePointBackend.Data
                     OwnerUsername = "admin",
                     IsPublic = true,
                     CreatedDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss"),
-                    ModifiedDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss")
+                    ModifiedDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss"),
+                    Privacy = "Public",
+                    EditPermission = "Everyone",
+                    AccessPassword = null
                 },
                 new WorkspaceDocument
                 {
@@ -168,7 +171,10 @@ namespace SharePointBackend.Data
                     OwnerUsername = "fin_user",
                     IsPublic = false,
                     CreatedDate = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss"),
-                    ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+                    ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Privacy = "Private",
+                    EditPermission = "OwnerOnly",
+                    AccessPassword = null
                 },
                 new WorkspaceDocument
                 {
@@ -182,7 +188,10 @@ namespace SharePointBackend.Data
                     IsFile = true,
                     FileUrl = "https://company.com/files/isg-protokolu-2026.pdf",
                     FileSize = "3.2 MB",
-                    UploaderComment = "Yıllık denetim öncesi güncellenen ana İSG dokümanı."
+                    UploaderComment = "Yıllık denetim öncesi güncellenen ana İSG dokümanı.",
+                    Privacy = "Public",
+                    EditPermission = "Everyone",
+                    AccessPassword = null
                 },
                 new WorkspaceDocument
                 {
@@ -196,7 +205,10 @@ namespace SharePointBackend.Data
                     IsFile = true,
                     FileUrl = "https://company.com/files/ik-izin-yonetmelik.docx",
                     FileSize = "1.8 MB",
-                    UploaderComment = "Yönetim kurulu onaylı güncel yönetmelik."
+                    UploaderComment = "Yönetim kurulu onaylı güncel yönetmelik.",
+                    Privacy = "Public",
+                    EditPermission = "Everyone",
+                    AccessPassword = null
                 },
                 new WorkspaceDocument
                 {
@@ -210,7 +222,10 @@ namespace SharePointBackend.Data
                     IsFile = true,
                     FileUrl = "https://company.com/files/departman-giderleri-q2.xlsx",
                     FileSize = "4.5 MB",
-                    UploaderComment = "Çeyrek sonu kapatma rakamları."
+                    UploaderComment = "Çeyrek sonu kapatma rakamları.",
+                    Privacy = "Private",
+                    EditPermission = "OwnerOnly",
+                    AccessPassword = null
                 },
                 new WorkspaceDocument
                 {
@@ -224,7 +239,10 @@ namespace SharePointBackend.Data
                     IsFile = true,
                     FileUrl = "https://company.com/files/network-topology-v2.png",
                     FileSize = "8.4 MB",
-                    UploaderComment = "Yeni omurga switch kurulumu sonrası ağ şeması güncellemesi."
+                    UploaderComment = "Yeni omurga switch kurulumu sonrası ağ şeması güncellemesi.",
+                    Privacy = "Department",
+                    EditPermission = "OwnerOnly",
+                    AccessPassword = null
                 }
             );
 

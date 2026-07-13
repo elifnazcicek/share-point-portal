@@ -25,32 +25,55 @@ namespace SharePointBackend.Controllers
         {
             var user = username ?? string.Empty;
 
+            // Fetch user's role (department name) to apply Department Privacy filter
+            var currentUserObj = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == user.ToLower());
+            string currentUserRole = currentUserObj?.Role ?? string.Empty;
+
             // Fetch public docs, owned docs, or docs shared with user
             var sharedDocIds = await _context.DocumentCollaborators
                 .Where(c => c.CollaboratorUsername.ToLower() == user.ToLower())
                 .Select(c => c.DocumentId)
                 .ToListAsync();
 
-            var docs = await _context.WorkspaceDocuments
-                .Where(d => d.IsPublic || d.OwnerUsername.ToLower() == user.ToLower() || sharedDocIds.Contains(d.Id))
-                .ToListAsync();
+            var docs = await _context.WorkspaceDocuments.ToListAsync();
 
-            var result = docs.Select(d => new
-            {
-                d.Id,
-                d.Title,
-                d.Content,
-                d.OwnerUsername,
-                d.IsPublic,
-                d.CreatedDate,
-                d.ModifiedDate,
-                d.IsFile,
-                d.FileUrl,
-                d.FileSize,
-                d.UploaderComment,
-                // Check if user has edit permission
-                CanEdit = d.OwnerUsername.ToLower() == user.ToLower() || 
-                          _context.DocumentCollaborators.Any(c => c.DocumentId == d.Id && c.CollaboratorUsername.ToLower() == user.ToLower() && c.CanEdit)
+            // Filter lists based on new privacy logic
+            var filteredDocs = docs.Where(d =>
+                d.Privacy == "Public" || d.IsPublic ||
+                d.OwnerUsername.ToLower() == user.ToLower() ||
+                sharedDocIds.Contains(d.Id) ||
+                (d.Privacy == "Department" && !string.IsNullOrEmpty(currentUserRole) &&
+                 _context.Users.Any(u => u.Username.ToLower() == d.OwnerUsername.ToLower() && u.Role == currentUserRole))
+            ).ToList();
+
+            var result = filteredDocs.Select(d => {
+                bool isPasswordProtected = !string.IsNullOrEmpty(d.AccessPassword);
+                bool isOwner = d.OwnerUsername.ToLower() == user.ToLower();
+                bool hasAccess = isOwner || sharedDocIds.Contains(d.Id);
+
+                // Obfuscate text and file URLs for password-protected files if user doesn't have direct ownership/collaborator rights yet
+                bool shouldObfuscate = isPasswordProtected && !hasAccess;
+
+                return new
+                {
+                    d.Id,
+                    d.Title,
+                    Content = shouldObfuscate ? "Bu dosya şifrelenmiştir. Erişmek için şifre girmeniz gerekmektedir." : d.Content,
+                    d.OwnerUsername,
+                    IsPublic = d.Privacy == "Public" || d.IsPublic,
+                    d.Privacy,
+                    d.EditPermission,
+                    IsPasswordProtected = isPasswordProtected,
+                    d.CreatedDate,
+                    d.ModifiedDate,
+                    d.IsFile,
+                    FileUrl = shouldObfuscate ? null : d.FileUrl,
+                    d.FileSize,
+                    d.UploaderComment,
+                    // Check edit permissions
+                    CanEdit = (isOwner || _context.DocumentCollaborators.Any(c => c.DocumentId == d.Id && c.CollaboratorUsername.ToLower() == user.ToLower() && c.CanEdit)) &&
+                              (d.EditPermission == "Everyone" || isOwner)
+                };
             }).ToList();
 
             return Ok(result);
@@ -65,6 +88,8 @@ namespace SharePointBackend.Controllers
 
             document.CreatedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
             document.ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            document.Privacy = string.IsNullOrWhiteSpace(document.Privacy) ? "Public" : document.Privacy;
+            document.EditPermission = string.IsNullOrWhiteSpace(document.EditPermission) ? "Everyone" : document.EditPermission;
 
             _context.WorkspaceDocuments.Add(document);
             await _context.SaveChangesAsync();
@@ -84,6 +109,12 @@ namespace SharePointBackend.Controllers
             bool isCollaboratorWithEdit = await _context.DocumentCollaborators
                 .AnyAsync(c => c.DocumentId == id && c.CollaboratorUsername.ToLower() == username.ToLower() && c.CanEdit);
 
+            // Enforce OwnerOnly edit restriction
+            if (doc.EditPermission == "OwnerOnly" && !isOwner)
+            {
+                return Forbid("Bu belge sadece sahibi tarafından düzenlenebilir.");
+            }
+
             if (!isOwner && !isCollaboratorWithEdit)
             {
                 return Forbid("Bu belgeyi düzenleme yetkiniz yok.");
@@ -91,7 +122,6 @@ namespace SharePointBackend.Controllers
 
             doc.Title = request.Title;
             doc.Content = request.Content;
-            doc.IsPublic = request.IsPublic;
             doc.ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             // Update file properties if any
@@ -245,5 +275,58 @@ namespace SharePointBackend.Controllers
             await _context.SaveChangesAsync();
             return Ok(req);
         }
+
+        // POST: api/workspace/documents/{id}/verify-password
+        [HttpPost("documents/{id}/verify-password")]
+        public async Task<IActionResult> VerifyPassword(int id, [FromBody] PasswordVerifyDto request)
+        {
+            var doc = await _context.WorkspaceDocuments.FindAsync(id);
+            if (doc == null) return NotFound("Belge bulunamadı.");
+
+            if (doc.AccessPassword == request.Password)
+            {
+                return Ok(new
+                {
+                    Success = true,
+                    Content = doc.Content,
+                    FileUrl = doc.FileUrl
+                });
+            }
+
+            return BadRequest("Hatalı erişim şifresi.");
+        }
+
+        // PUT: api/workspace/documents/{id}/privacy?username=user1
+        [HttpPut("documents/{id}/privacy")]
+        public async Task<IActionResult> UpdatePrivacy(int id, [FromQuery] string username, [FromBody] PrivacyUpdateDto request)
+        {
+            var doc = await _context.WorkspaceDocuments.FindAsync(id);
+            if (doc == null) return NotFound("Belge bulunamadı.");
+
+            if (doc.OwnerUsername.ToLower() != username.ToLower())
+            {
+                return Forbid("Sadece belge sahibi gizlilik ayarlarını değiştirebilir.");
+            }
+
+            doc.Privacy = request.Privacy;
+            doc.EditPermission = request.EditPermission;
+            doc.AccessPassword = string.IsNullOrWhiteSpace(request.AccessPassword) ? null : request.AccessPassword;
+            doc.ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            await _context.SaveChangesAsync();
+            return Ok(doc);
+        }
+    }
+
+    public class PasswordVerifyDto
+    {
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class PrivacyUpdateDto
+    {
+        public string Privacy { get; set; } = "Public";
+        public string EditPermission { get; set; } = "Everyone";
+        public string? AccessPassword { get; set; }
     }
 }

@@ -64,7 +64,10 @@ interface WorkspaceDocument {
   fileSize?: string;
   uploaderComment?: string;
   canEdit?: boolean;
-  lockedBy?: string;
+  privacy?: string;
+  editPermission?: string;
+  isPasswordProtected?: boolean;
+  isUnlockedInMemory?: boolean;
 }
 
 interface DocumentCollaborator {
@@ -379,6 +382,19 @@ export class App implements OnInit {
     if (!activeUser) return [];
     return this.chatHistories()[activeUser.username] || [];
   });
+
+  // File Privacy Modal States
+  protected readonly isPrivacyModalOpen = signal<boolean>(false);
+  protected readonly selectedPrivacyDoc = signal<WorkspaceDocument | null>(null);
+  protected readonly modalPrivacy = signal<string>("Public");
+  protected readonly modalEditPermission = signal<string>("Everyone");
+  protected readonly modalAccessPassword = signal<string>("");
+
+  // File Password Verification Prompt Modal States
+  protected readonly isPasswordPromptOpen = signal<boolean>(false);
+  protected readonly passwordPromptDoc = signal<WorkspaceDocument | null>(null);
+  protected readonly enteredPassword = signal<string>("");
+  protected readonly passwordError = signal<string | null>(null);
 
   // Carousel News Slides
   protected readonly activeSlide = signal<number>(0);
@@ -1279,14 +1295,74 @@ export class App implements OnInit {
     return list;
   }
 
-  protected lockDocument(doc: WorkspaceDocument) {
-    doc.lockedBy = this.currentUserFullName() || this.currentUser() || 'User';
-    alert(`"${doc.title}" belgesi düzenleme için kilitlendi (Check-Out).`);
+  protected openPrivacyModal(doc: WorkspaceDocument) {
+    this.selectedPrivacyDoc.set(doc);
+    this.modalPrivacy.set(doc.privacy || 'Public');
+    this.modalEditPermission.set(doc.editPermission || 'Everyone');
+    this.modalAccessPassword.set(''); // Clear input for security
+    this.isPrivacyModalOpen.set(true);
   }
 
-  protected unlockDocument(doc: WorkspaceDocument) {
-    doc.lockedBy = undefined;
-    alert(`"${doc.title}" belgesinin kilidi açıldı (Check-In).`);
+  protected savePrivacySettings() {
+    const doc = this.selectedPrivacyDoc();
+    if (!doc || !doc.id) return;
+
+    const payload = {
+      privacy: this.modalPrivacy(),
+      editPermission: this.modalEditPermission(),
+      accessPassword: this.modalAccessPassword()
+    };
+
+    const user = this.currentUser() || 'admin';
+    this.http.put<any>(`${this.workspaceUrl}/documents/${doc.id}/privacy?username=${encodeURIComponent(user)}`, payload).subscribe({
+      next: () => {
+        this.isPrivacyModalOpen.set(false);
+        this.loadDocuments();
+        alert('Dosya gizlilik ve güvenlik ayarları başarıyla kaydedildi.');
+      },
+      error: (err) => {
+        alert(err.error || 'Ayarlar kaydedilirken hata oluştu.');
+      }
+    });
+  }
+
+  protected openDocumentSecurely(doc: WorkspaceDocument) {
+    if (doc.isPasswordProtected && !doc.isUnlockedInMemory) {
+      this.passwordPromptDoc.set(doc);
+      this.enteredPassword.set('');
+      this.passwordError.set(null);
+      this.isPasswordPromptOpen.set(true);
+    } else {
+      this.previewDocumentDirect(doc);
+    }
+  }
+
+  protected verifyDocumentPassword() {
+    const doc = this.passwordPromptDoc();
+    const password = this.enteredPassword().trim();
+    if (!doc || !doc.id) return;
+
+    this.http.post<any>(`${this.workspaceUrl}/documents/${doc.id}/verify-password`, { password }).subscribe({
+      next: (res) => {
+        // Unlock doc content and URL in memory
+        doc.content = res.content;
+        doc.fileUrl = res.fileUrl;
+        doc.isUnlockedInMemory = true;
+
+        this.isPasswordPromptOpen.set(false);
+        this.previewDocumentDirect(doc);
+      },
+      error: (err) => {
+        this.passwordError.set(err.error?.error || 'Hatalı erişim şifresi.');
+      }
+    });
+  }
+
+  private previewDocumentDirect(doc: WorkspaceDocument) {
+    this.activeDoc.set(doc);
+    if (doc.id) {
+      this.loadCollaborators(doc.id);
+    }
   }
 
   protected openVersionHistory(doc: WorkspaceDocument) {

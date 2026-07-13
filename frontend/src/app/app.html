@@ -916,22 +916,25 @@
                         <div style="padding: 20px; text-align: center; font-size: 13px; color: var(--text-muted);">Bu kategoride kayıtlı dosya bulunamadı.</div>
                       }
                       @for (doc of filteredFiles(); track doc.id) {
-                        <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.5fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="selectDoc(doc)">
+                        <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.5fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="openDocumentSecurely(doc)">
                           <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             <span style="display:inline-flex; align-items:center; opacity:0.6;"><app-icon name="file" [size]="13"></app-icon></span>
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ doc.title }}</span>
-                            @if (doc.lockedBy) {
-                              <span style="font-size: 10px; background-color: #ffe6e6; color: #a80000; padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="lock" [size]="10" color="#a80000"></app-icon> Kilitli: {{ doc.lockedBy }}</span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 4px;">{{ doc.title }}</span>
+                            @if (doc.privacy === 'Private') {
+                              <span style="font-size: 10px; background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="lock" [size]="10" color="#ef4444"></app-icon> Sadece Ben</span>
+                            } @else if (doc.privacy === 'Department') {
+                              <span style="font-size: 10px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="server" [size]="10" color="#3b82f6"></app-icon> Departman</span>
+                            }
+                            @if (doc.isPasswordProtected) {
+                              <span style="font-size: 10px; background-color: rgba(245, 158, 11, 0.1); color: #f59f0b; border: 1px solid rgba(245, 158, 11, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="shield" [size]="10" color="#f59f0b"></app-icon> Şifreli</span>
                             }
                           </div>
                           <span style="color: var(--text-muted);">{{ doc.isFile ? 'Dosya' : 'Doküman' }}</span>
                           <span style="color: var(--text-muted);">{{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</span>
                           <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap;" (click)="$event.stopPropagation();">
-                            @if (!doc.lockedBy) {
-                              <button class="btn btn-outline btn-xs" (click)="lockDocument(doc)">Kilitle</button>
-                            } @else if (doc.lockedBy === (currentUserFullName() || currentUser())) {
-                              <button class="btn btn-outline btn-xs" (click)="unlockDocument(doc)">Kilidi Aç</button>
+                            @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase()) {
+                              <button class="btn btn-outline btn-xs" (click)="openPrivacyModal(doc)">Gizlilik / Ayarlar</button>
                             }
                             <button class="btn btn-outline btn-xs" (click)="openVersionHistory(doc)">Sürümler</button>
                             @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') {
@@ -1046,6 +1049,96 @@
               </div>
               <div class="modal-footer">
                 <button class="btn btn-outline" (click)="activeDoc.set(null)">Kapat</button>
+              </div>
+            </div>
+          }
+
+          <!-- MODAL: GİZLİLİK VE GÜVENLİK AYARLARI MODALI -->
+          @if (isPrivacyModalOpen(); as open) {
+            <div class="modal-overlay" (click)="isPrivacyModalOpen.set(false)"></div>
+            <div class="modal" style="max-width: 440px; background-color: #ffd166; color: #2b2d42; border-radius: var(--radius-sm); border: none; box-shadow: var(--shadow-lg);">
+              <div class="modal-header" style="border-bottom: 1px solid rgba(43, 45, 66, 0.15); padding: 16px 20px;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #2b2d42;">Dosya Ayarları - {{ selectedPrivacyDoc()?.title }}</h3>
+                <button class="modal-close" (click)="isPrivacyModalOpen.set(false)" style="color: #2b2d42; opacity: 0.7;">
+                  <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+                </button>
+              </div>
+              <div class="modal-body" style="padding: 20px; font-family: inherit; display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-weight: 600; font-size: 12.5px; color: #2b2d42;">Gizlilik</label>
+                  <select 
+                    [ngModel]="modalPrivacy()" 
+                    (ngModelChange)="modalPrivacy.set($event)" 
+                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(43, 45, 66, 0.2); border-radius: 6px; background-color: #ffffff; color: #2b2d42; font-family: inherit; outline: none;"
+                  >
+                    <option value="Public">Herkese Açık</option>
+                    <option value="Private">Gizli (Sadece Ben)</option>
+                    <option value="Department">Departmana Özel</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-weight: 600; font-size: 12.5px; color: #2b2d42;">Düzenleme Yetkisi</label>
+                  <select 
+                    [ngModel]="modalEditPermission()" 
+                    (ngModelChange)="modalEditPermission.set($event)" 
+                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(43, 45, 66, 0.2); border-radius: 6px; background-color: #ffffff; color: #2b2d42; font-family: inherit; outline: none;"
+                  >
+                    <option value="Everyone">Herkes</option>
+                    <option value="OwnerOnly">Sadece Sahibi</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-weight: 600; font-size: 12.5px; color: #2b2d42;">Erişim Şifresi (Kaldırmak için boş bırakın)</label>
+                  <input 
+                    type="text" 
+                    [ngModel]="modalAccessPassword()" 
+                    (ngModelChange)="modalAccessPassword.set($event)" 
+                    placeholder="Yeni şifre girin..." 
+                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(43, 45, 66, 0.2); border-radius: 6px; background-color: #ffffff; color: #2b2d42; font-family: inherit; outline: none;"
+                  />
+                </div>
+              </div>
+              <div class="modal-footer" style="border-top: none; padding: 16px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-outline" (click)="isPrivacyModalOpen.set(false)" style="border-color: rgba(43, 45, 66, 0.3); color: #2b2d42; font-size: 12.5px; border-radius: 20px; padding: 6px 16px;">İptal</button>
+                <button type="button" class="btn btn-primary" (click)="savePrivacySettings()" style="background-color: #0078d4; border-color: #0078d4; color: #ffffff; font-size: 12.5px; border-radius: 20px; padding: 6px 16px;">Ayarları Kaydet</button>
+              </div>
+            </div>
+          }
+
+          <!-- MODAL: ŞİFRE SORMA MODALI -->
+          @if (isPasswordPromptOpen(); as open) {
+            <div class="modal-overlay" (click)="isPasswordPromptOpen.set(false)"></div>
+            <div class="modal" style="max-width: 380px;">
+              <div class="modal-header">
+                <h3>Şifreli Belge Erişimi</h3>
+                <button class="modal-close" (click)="isPasswordPromptOpen.set(false)">
+                  <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+                </button>
+              </div>
+              <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 12px;">
+                <p style="font-size: 13px; margin: 0; color: var(--text-main);">
+                  "<strong>{{ passwordPromptDoc()?.title }}</strong>" belgesi şifrelenmiştir. Lütfen erişim şifresini giriniz:
+                </p>
+                <input 
+                  type="password" 
+                  [ngModel]="enteredPassword()" 
+                  (ngModelChange)="enteredPassword.set($event)" 
+                  (keydown.enter)="verifyDocumentPassword()"
+                  placeholder="Şifreyi giriniz..." 
+                  style="width: 100%; padding: 10px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; font-family: inherit;"
+                  class="auth-input-field"
+                />
+                @if (passwordError(); as err) {
+                  <div style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px;">
+                    {{ err }}
+                  </div>
+                }
+              </div>
+              <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline btn-sm" (click)="isPasswordPromptOpen.set(false)">İptal</button>
+                <button type="button" class="btn btn-primary btn-sm" (click)="verifyDocumentPassword()">Şifreyi Doğrula</button>
               </div>
             </div>
           }
