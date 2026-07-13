@@ -961,15 +961,19 @@
                             </span>
                           </div>
                           <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
-                          <div style="display: flex; gap: 6px; flex-wrap: wrap;" (click)="$event.stopPropagation();">
+                          <div style="display: flex; gap: 8px; align-items: center;" (click)="$event.stopPropagation();">
                             @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') {
-                               <button class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; gap: 4px;" (click)="openPrivacyModal(doc)">
-                                 <app-icon name="settings" [size]="12"></app-icon> Ayarlar
-                               </button>
+                              <button type="button" class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0;" (click)="openPrivacyModal(doc)" title="Ayarlar">
+                                <app-icon name="settings" [size]="12"></app-icon>
+                              </button>
                             }
-                            <button class="btn btn-outline btn-xs" (click)="openVersionHistory(doc)">Sürümler</button>
+                            <button type="button" class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0;" (click)="openVersionHistory(doc)" title="Sürümler">
+                              <app-icon name="clock" [size]="12"></app-icon>
+                            </button>
                             @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') {
-                              <button class="btn btn-outline btn-xs btn-delete" (click)="deleteActiveDocumentDirect(doc)">Sil</button>
+                              <button type="button" class="btn btn-outline btn-xs btn-delete" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0;" (click)="deleteActiveDocumentDirect(doc)" title="Sil">
+                                <app-icon name="trash-2" [size]="12"></app-icon>
+                              </button>
                             }
                           </div>
                         </div>
