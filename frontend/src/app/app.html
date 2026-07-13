@@ -933,7 +933,7 @@
                           <span style="color: var(--text-muted);">{{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</span>
                           <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap;" (click)="$event.stopPropagation();">
-                            @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase()) {
+                            @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') {
                               <button class="btn btn-outline btn-xs" (click)="openPrivacyModal(doc)">Gizlilik / Ayarlar</button>
                             }
                             <button class="btn btn-outline btn-xs" (click)="openVersionHistory(doc)">Sürümler</button>
@@ -1056,20 +1056,20 @@
           <!-- MODAL: GİZLİLİK VE GÜVENLİK AYARLARI MODALI -->
           @if (isPrivacyModalOpen(); as open) {
             <div class="modal-overlay" (click)="isPrivacyModalOpen.set(false)"></div>
-            <div class="modal" style="max-width: 440px; background-color: #ffd166; color: #2b2d42; border-radius: var(--radius-sm); border: none; box-shadow: var(--shadow-lg);">
-              <div class="modal-header" style="border-bottom: 1px solid rgba(43, 45, 66, 0.15); padding: 16px 20px;">
-                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #2b2d42;">Dosya Ayarları - {{ selectedPrivacyDoc()?.title }}</h3>
-                <button class="modal-close" (click)="isPrivacyModalOpen.set(false)" style="color: #2b2d42; opacity: 0.7;">
+            <div class="modal" style="max-width: 440px;">
+              <div class="modal-header">
+                <h3>Dosya Ayarları - {{ selectedPrivacyDoc()?.title }}</h3>
+                <button class="modal-close" (click)="isPrivacyModalOpen.set(false)">
                   <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
                 </button>
               </div>
               <div class="modal-body" style="padding: 20px; font-family: inherit; display: flex; flex-direction: column; gap: 16px;">
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <label style="font-weight: 600; font-size: 12.5px; color: #2b2d42;">Gizlilik</label>
+                  <label style="font-weight: 600; font-size: 12.5px;">Gizlilik</label>
                   <select 
                     [ngModel]="modalPrivacy()" 
                     (ngModelChange)="modalPrivacy.set($event)" 
-                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(43, 45, 66, 0.2); border-radius: 6px; background-color: #ffffff; color: #2b2d42; font-family: inherit; outline: none;"
+                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--card-bg); color: var(--text-main); font-family: inherit; outline: none;"
                   >
                     <option value="Public">Herkese Açık</option>
                     <option value="Private">Gizli (Sadece Ben)</option>
@@ -1078,31 +1078,33 @@
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <label style="font-weight: 600; font-size: 12.5px; color: #2b2d42;">Düzenleme Yetkisi</label>
+                  <label style="font-weight: 600; font-size: 12.5px;">Düzenleme Yetkisi</label>
                   <select 
                     [ngModel]="modalEditPermission()" 
                     (ngModelChange)="modalEditPermission.set($event)" 
-                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(43, 45, 66, 0.2); border-radius: 6px; background-color: #ffffff; color: #2b2d42; font-family: inherit; outline: none;"
+                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--card-bg); color: var(--text-main); font-family: inherit; outline: none;"
                   >
                     <option value="Everyone">Herkes</option>
                     <option value="OwnerOnly">Sadece Sahibi</option>
                   </select>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <label style="font-weight: 600; font-size: 12.5px; color: #2b2d42;">Erişim Şifresi (Kaldırmak için boş bırakın)</label>
-                  <input 
-                    type="text" 
-                    [ngModel]="modalAccessPassword()" 
-                    (ngModelChange)="modalAccessPassword.set($event)" 
-                    placeholder="Yeni şifre girin..." 
-                    style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(43, 45, 66, 0.2); border-radius: 6px; background-color: #ffffff; color: #2b2d42; font-family: inherit; outline: none;"
-                  />
-                </div>
+                @if (modalPrivacy() === 'Private') {
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-weight: 600; font-size: 12.5px;">Erişim Şifresi (Kaldırmak için boş bırakın)</label>
+                    <input 
+                      type="text" 
+                      [ngModel]="modalAccessPassword()" 
+                      (ngModelChange)="modalAccessPassword.set($event)" 
+                      placeholder="Yeni şifre girin..." 
+                      style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--card-bg); color: var(--text-main); font-family: inherit; outline: none;"
+                    />
+                  </div>
+                }
               </div>
-              <div class="modal-footer" style="border-top: none; padding: 16px 20px; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-outline" (click)="isPrivacyModalOpen.set(false)" style="border-color: rgba(43, 45, 66, 0.3); color: #2b2d42; font-size: 12.5px; border-radius: 20px; padding: 6px 16px;">İptal</button>
-                <button type="button" class="btn btn-primary" (click)="savePrivacySettings()" style="background-color: #0078d4; border-color: #0078d4; color: #ffffff; font-size: 12.5px; border-radius: 20px; padding: 6px 16px;">Ayarları Kaydet</button>
+              <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-outline btn-sm" (click)="isPrivacyModalOpen.set(false)">İptal</button>
+                <button type="button" class="btn btn-primary btn-sm" (click)="savePrivacySettings()">Ayarları Kaydet</button>
               </div>
             </div>
           }

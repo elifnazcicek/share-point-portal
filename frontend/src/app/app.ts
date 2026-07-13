@@ -1239,10 +1239,10 @@ export class App implements OnInit {
       this.currentUserRole.set('Admin');
       this.currentUserFullName.set('Ahmet (Global Admin)');
     } else if (user === 'elif') {
-      localStorage.setItem('username', 'elif');
+      localStorage.setItem('username', 'fin_user');
       localStorage.setItem('role', 'Finance Department');
       localStorage.setItem('fullName', 'Elif (Muhasebe Dept Admin)');
-      this.currentUser.set('elif');
+      this.currentUser.set('fin_user');
       this.currentUserRole.set('Finance Department');
       this.currentUserFullName.set('Elif (Muhasebe Dept Admin)');
     } else if (user === 'misafir') {
@@ -1310,7 +1310,7 @@ export class App implements OnInit {
     const payload = {
       privacy: this.modalPrivacy(),
       editPermission: this.modalEditPermission(),
-      accessPassword: this.modalAccessPassword()
+      accessPassword: this.modalPrivacy() === 'Private' ? this.modalAccessPassword() : ''
     };
 
     const user = this.currentUser() || 'admin';
