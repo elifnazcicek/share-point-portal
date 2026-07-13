@@ -899,8 +899,17 @@
                   </div>
 
                   <!-- drag drop zone -->
-                  <div id="drag-drop-zone" class="drag-drop-zone" style="border: 2px dashed var(--primary); background-color: rgba(0, 120, 212, 0.05); text-align: center; padding: 24px; border-radius: var(--radius-sm); margin-bottom: 16px; cursor: pointer;" (click)="isUploadPanelOpen.set(true)">
+                  <div 
+                    id="drag-drop-zone" 
+                    class="drag-drop-zone" 
+                    style="border: 2px dashed var(--primary); background-color: rgba(0, 120, 212, 0.05); text-align: center; padding: 24px; border-radius: var(--radius-sm); margin-bottom: 16px; cursor: pointer; transition: all 0.2s;" 
+                    (click)="triggerFileSelect()"
+                    (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)"
+                    (drop)="onFileDropped($event)"
+                  >
                     <span style="font-size: 13px; font-weight: 600; color: var(--primary);">Dosyaları buraya sürükleyin veya seçmek için tıklayın</span>
+                    <input type="file" id="hidden-file-input" style="display: none;" (change)="onFileSelected($event)" />
                   </div>
 
                   <div class="dms-files-table" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
@@ -1024,13 +1033,16 @@
               </div>
               <div class="modal-body" style="font-family: inherit;">
                 <div class="document-metadata-card" style="padding: 12px; background: #faf9f8; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 11.5px; line-height: 1.6;">
-                  <div><strong>Dosya Türü:</strong> {{ doc.isFile ? 'Yüklenen Dosya' : 'Doküman' }}</div>
-                  <div><strong>Departman:</strong> Muhasebe / IT / İK</div>
-                  <div><strong>Yazar:</strong> {{ doc.ownerUsername }}</div>
-                  <div><strong>Tarih:</strong> {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</div>
-                  <div><strong>Boyut:</strong> {{ doc.fileSize }}</div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div><strong>Dosya Türü:</strong> {{ doc.isFile ? 'Yüklenen Dosya' : 'Doküman' }}</div>
+                    <div><strong>Boyut:</strong> {{ doc.fileSize }}</div>
+                    <div><strong>Yükleyen (Sahip):</strong> {{ doc.ownerUsername }}</div>
+                    <div><strong>Yükleme Tarihi:</strong> {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</div>
+                    <div><strong>Güncelleyen:</strong> {{ doc.lastModifiedBy || doc.ownerUsername }}</div>
+                    <div><strong>Güncelleme Tarihi:</strong> {{ doc.modifiedDate | date:'yyyy-MM-dd HH:mm' }}</div>
+                  </div>
                   <div style="margin-top: 8px; border-top: 1px solid #f1f1f1; padding-top: 8px;">
-                    <strong>Yükleyen Notu (Comment):</strong>
+                    <strong>Yükleyen Açıklaması:</strong>
                     <p style="margin: 4px 0 0 0; font-style: italic; color: var(--text-muted);">{{ doc.uploaderComment || 'Açıklama belirtilmedi.' }}</p>
                   </div>
                 </div>
@@ -1141,6 +1153,58 @@
               <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end;">
                 <button type="button" class="btn btn-outline btn-sm" (click)="isPasswordPromptOpen.set(false)">İptal</button>
                 <button type="button" class="btn btn-primary btn-sm" (click)="verifyDocumentPassword()">Şifreyi Doğrula</button>
+              </div>
+            </div>
+          }
+
+          <!-- MODAL: SÜRÜM GEÇMİŞİ MODALI -->
+          @if (isVersionModalOpen(); as open) {
+            <div class="modal-overlay" (click)="isVersionModalOpen.set(false)"></div>
+            <div class="modal" style="max-width: 650px;">
+              <div class="modal-header">
+                <h3>Sürüm Geçmişi - {{ versionHistoryDoc()?.title }}</h3>
+                <button class="modal-close" (click)="isVersionModalOpen.set(false)">
+                  <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+                </button>
+              </div>
+              <div class="modal-body" style="font-family: inherit;">
+                <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 16px 0;">
+                  Bu belgenin geçmiş kayıtları ve sürüm detayları aşağıda listelenmiştir. İstediğiniz sürümü yanındaki buton ile indirebilirsiniz.
+                </p>
+                <div class="version-history-table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background: #ffffff;">
+                  <div style="display: grid; grid-template-columns: 1fr 2.5fr 2fr 1.5fr 1.5fr; font-weight: 700; font-size: 12px; padding: 12px; border-bottom: 2px solid var(--border-color); background-color: #faf9f8;">
+                    <span>Sürüm</span>
+                    <span>Açıklama / Not</span>
+                    <span>Güncelleme Zamanı</span>
+                    <span>Güncelleyen</span>
+                    <span>İşlem</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    @if (selectedVersions().length === 0) {
+                      <div style="padding: 16px; text-align: center; font-size: 13px; color: var(--text-muted);">Geçmiş sürüm kaydı bulunmuyor (Bu dosya v1 sürümündedir).</div>
+                    }
+                    @for (ver of selectedVersions(); track ver.id) {
+                      <div style="display: grid; grid-template-columns: 1fr 2.5fr 2fr 1.5fr 1.5fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center;">
+                        <span style="font-weight: 600; color: var(--primary);">v{{ ver.versionNumber }}.0</span>
+                        <span>{{ ver.comment || 'Açıklama girilmedi.' }}</span>
+                        <span style="color: var(--text-muted);">{{ ver.modifiedDate | date:'yyyy-MM-dd HH:mm' }}</span>
+                        <span style="font-weight: 500;">{{ ver.modifiedBy }}</span>
+                        <div>
+                          @if (ver.fileUrl) {
+                            <a [href]="ver.fileUrl" target="_blank" class="btn btn-outline btn-xs" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                              <app-icon name="globe" [size]="10"></app-icon> İndir
+                            </a>
+                          } @else {
+                            <span style="color: var(--text-muted); font-size: 11px;">Bağlantı Yok</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline btn-sm" (click)="isVersionModalOpen.set(false)">Kapat</button>
               </div>
             </div>
           }

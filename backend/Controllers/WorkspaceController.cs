@@ -70,6 +70,7 @@ namespace SharePointBackend.Controllers
                     FileUrl = shouldObfuscate ? null : d.FileUrl,
                     d.FileSize,
                     d.UploaderComment,
+                    LastModifiedBy = d.LastModifiedBy ?? d.OwnerUsername,
                     // Check edit permissions
                     CanEdit = (isOwner || _context.DocumentCollaborators.Any(c => c.DocumentId == d.Id && c.CollaboratorUsername.ToLower() == user.ToLower() && c.CanEdit)) &&
                               (d.EditPermission == "Everyone" || isOwner)
@@ -90,6 +91,7 @@ namespace SharePointBackend.Controllers
             document.ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
             document.Privacy = string.IsNullOrWhiteSpace(document.Privacy) ? "Public" : document.Privacy;
             document.EditPermission = string.IsNullOrWhiteSpace(document.EditPermission) ? "Everyone" : document.EditPermission;
+            document.LastModifiedBy = document.OwnerUsername;
 
             _context.WorkspaceDocuments.Add(document);
             await _context.SaveChangesAsync();
@@ -120,9 +122,49 @@ namespace SharePointBackend.Controllers
                 return Forbid("Bu belgeyi düzenleme yetkiniz yok.");
             }
 
+            // Version tracking logic
+            bool isContentChanged = doc.Content != request.Content || doc.FileUrl != request.FileUrl;
+            if (isContentChanged)
+            {
+                var maxVer = await _context.DocumentVersions
+                    .Where(v => v.DocumentId == id)
+                    .Select(v => (int?)v.VersionNumber)
+                    .MaxAsync() ?? 0;
+
+                if (maxVer == 0)
+                {
+                    var originalVersion = new DocumentVersion
+                    {
+                        DocumentId = id,
+                        VersionNumber = 1,
+                        FileUrl = doc.FileUrl ?? string.Empty,
+                        FileSize = doc.FileSize ?? string.Empty,
+                        ModifiedBy = doc.LastModifiedBy ?? doc.OwnerUsername,
+                        ModifiedDate = doc.ModifiedDate ?? doc.CreatedDate,
+                        Comment = doc.UploaderComment ?? "İlk Sürüm"
+                    };
+                    _context.DocumentVersions.Add(originalVersion);
+                    maxVer = 1;
+                }
+
+                var newVerNum = maxVer + 1;
+                var nextVersion = new DocumentVersion
+                {
+                    DocumentId = id,
+                    VersionNumber = newVerNum,
+                    FileUrl = request.FileUrl ?? doc.FileUrl ?? string.Empty,
+                    FileSize = request.FileSize ?? doc.FileSize ?? string.Empty,
+                    ModifiedBy = username,
+                    ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Comment = request.UploaderComment ?? $"Sürüm {newVerNum} Güncellemesi"
+                };
+                _context.DocumentVersions.Add(nextVersion);
+            }
+
             doc.Title = request.Title;
             doc.Content = request.Content;
             doc.ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            doc.LastModifiedBy = username;
 
             // Update file properties if any
             if (request.IsFile)
@@ -315,6 +357,52 @@ namespace SharePointBackend.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(doc);
+        }
+
+        // POST: api/workspace/upload
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Geçersiz dosya.");
+
+            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadDir))
+            {
+                Directory.CreateDirectory(uploadDir);
+            }
+
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var filePath = Path.Combine(uploadDir, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var fileUrl = $"http://localhost:5100/uploads/{fileName}";
+            string sizeStr = file.Length >= 1024 * 1024
+                ? $"{(double)file.Length / (1024 * 1024):F1} MB"
+                : $"{(double)file.Length / 1024:F0} KB";
+
+            return Ok(new
+            {
+                FileUrl = fileUrl,
+                FileSize = sizeStr,
+                Title = file.FileName
+            });
+        }
+
+        // GET: api/workspace/documents/{id}/versions
+        [HttpGet("documents/{id}/versions")]
+        public async Task<IActionResult> GetVersions(int id)
+        {
+            var versions = await _context.DocumentVersions
+                .Where(v => v.DocumentId == id)
+                .OrderByDescending(v => v.VersionNumber)
+                .ToListAsync();
+
+            return Ok(versions);
         }
     }
 

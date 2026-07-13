@@ -42,5 +42,8 @@ namespace SharePointBackend.Models
 
         [MaxLength(255)]
         public string? AccessPassword { get; set; }
+
+        [MaxLength(100)]
+        public string? LastModifiedBy { get; set; }
     }
 }

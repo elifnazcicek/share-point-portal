@@ -68,6 +68,18 @@ interface WorkspaceDocument {
   editPermission?: string;
   isPasswordProtected?: boolean;
   isUnlockedInMemory?: boolean;
+  lastModifiedBy?: string;
+}
+
+interface DocumentVersion {
+  id?: number;
+  documentId: number;
+  versionNumber: number;
+  fileUrl: string;
+  fileSize: string;
+  modifiedBy: string;
+  modifiedDate: string;
+  comment?: string;
 }
 
 interface DocumentCollaborator {
@@ -395,6 +407,11 @@ export class App implements OnInit {
   protected readonly passwordPromptDoc = signal<WorkspaceDocument | null>(null);
   protected readonly enteredPassword = signal<string>("");
   protected readonly passwordError = signal<string | null>(null);
+
+  // Version History States
+  protected readonly selectedVersions = signal<DocumentVersion[]>([]);
+  protected readonly isVersionModalOpen = signal<boolean>(false);
+  protected readonly versionHistoryDoc = signal<WorkspaceDocument | null>(null);
 
   // Carousel News Slides
   protected readonly activeSlide = signal<number>(0);
@@ -1366,7 +1383,98 @@ export class App implements OnInit {
   }
 
   protected openVersionHistory(doc: WorkspaceDocument) {
-    alert(`"${doc.title}" Sürüm Geçmişi:\nv1.0 - 2026-07-08 (Oluşturan: ${doc.ownerUsername}) - İlk Sürüm`);
+    if (!doc || !doc.id) return;
+    this.versionHistoryDoc.set(doc);
+    this.http.get<DocumentVersion[]>(`${this.workspaceUrl}/documents/${doc.id}/versions`).subscribe({
+      next: (res) => {
+        this.selectedVersions.set(res);
+        this.isVersionModalOpen.set(true);
+      },
+      error: (err) => {
+        alert('Sürüm geçmişi yüklenirken hata oluştu.');
+      }
+    });
+  }
+
+  protected triggerFileSelect() {
+    const fileInput = document.getElementById('hidden-file-input');
+    if (fileInput) fileInput.click();
+  }
+
+  protected onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      this.uploadFileAndCreateDoc(files[0]);
+    }
+  }
+
+  protected onFileDropped(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = document.getElementById('drag-drop-zone');
+    if (element) {
+      element.style.borderColor = 'var(--primary)';
+      element.style.backgroundColor = 'rgba(0, 120, 212, 0.05)';
+    }
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.uploadFileAndCreateDoc(files[0]);
+    }
+  }
+
+  protected onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = document.getElementById('drag-drop-zone');
+    if (element) {
+      element.style.borderColor = 'var(--primary-dark)';
+      element.style.backgroundColor = 'rgba(0, 120, 212, 0.1)';
+    }
+  }
+
+  protected onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = document.getElementById('drag-drop-zone');
+    if (element) {
+      element.style.borderColor = 'var(--primary)';
+      element.style.backgroundColor = 'rgba(0, 120, 212, 0.05)';
+    }
+  }
+
+  private uploadFileAndCreateDoc(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const comment = prompt('Dosya için açıklama girin (İsteğe bağlı):') || 'Kullanıcı tarafından kurumsal çalışma alanına eklendi.';
+
+    this.http.post<any>(`${this.workspaceUrl}/upload`, formData).subscribe({
+      next: (res) => {
+        const payload: WorkspaceDocument = {
+          title: res.title,
+          content: `# ${res.title}\n\nEk Açıklama: ${comment}`,
+          ownerUsername: this.currentUser() || 'Guest',
+          isPublic: false,
+          isFile: true,
+          fileUrl: res.fileUrl,
+          fileSize: res.fileSize,
+          uploaderComment: comment
+        };
+
+        this.http.post<WorkspaceDocument>(`${this.workspaceUrl}/documents`, payload).subscribe({
+          next: () => {
+            this.loadDocuments();
+            alert('Dosya başarıyla yüklendi ve sisteme eklendi!');
+          },
+          error: (err) => {
+            alert('Dosya döküman olarak kaydedilirken hata oluştu.');
+          }
+        });
+      },
+      error: (err) => {
+        alert(err.error || 'Dosya yükleme hatası. Dosya boyutu limitini aşmış olabilir.');
+      }
+    });
   }
 
   protected deleteActiveDocumentDirect(doc: WorkspaceDocument) {

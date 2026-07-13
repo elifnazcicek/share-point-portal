@@ -31,6 +31,8 @@ var app = builder.Build();
 // Enable CORS
 app.UseCors("AllowAngularPortal");
 
+app.UseStaticFiles();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

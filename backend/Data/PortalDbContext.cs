@@ -21,6 +21,7 @@ namespace SharePointBackend.Data
         public DbSet<WorkspaceDocument> WorkspaceDocuments { get; set; }
         public DbSet<DocumentCollaborator> DocumentCollaborators { get; set; }
         public DbSet<AdminApprovalRequest> AdminApprovalRequests { get; set; }
+        public DbSet<DocumentVersion> DocumentVersions { get; set; }
 
         private string HashPassword(string password)
         {
@@ -161,7 +162,8 @@ namespace SharePointBackend.Data
                     ModifiedDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss"),
                     Privacy = "Public",
                     EditPermission = "Everyone",
-                    AccessPassword = null
+                    AccessPassword = null,
+                    LastModifiedBy = "admin"
                 },
                 new WorkspaceDocument
                 {
@@ -174,7 +176,8 @@ namespace SharePointBackend.Data
                     ModifiedDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                     Privacy = "Private",
                     EditPermission = "OwnerOnly",
-                    AccessPassword = null
+                    AccessPassword = null,
+                    LastModifiedBy = "admin"
                 },
                 new WorkspaceDocument
                 {
@@ -191,7 +194,8 @@ namespace SharePointBackend.Data
                     UploaderComment = "Yıllık denetim öncesi güncellenen ana İSG dokümanı.",
                     Privacy = "Public",
                     EditPermission = "Everyone",
-                    AccessPassword = null
+                    AccessPassword = null,
+                    LastModifiedBy = "admin"
                 },
                 new WorkspaceDocument
                 {
@@ -208,7 +212,8 @@ namespace SharePointBackend.Data
                     UploaderComment = "Yönetim kurulu onaylı güncel yönetmelik.",
                     Privacy = "Public",
                     EditPermission = "Everyone",
-                    AccessPassword = null
+                    AccessPassword = null,
+                    LastModifiedBy = "hr_user"
                 },
                 new WorkspaceDocument
                 {
@@ -225,7 +230,8 @@ namespace SharePointBackend.Data
                     UploaderComment = "Çeyrek sonu kapatma rakamları.",
                     Privacy = "Private",
                     EditPermission = "OwnerOnly",
-                    AccessPassword = null
+                    AccessPassword = null,
+                    LastModifiedBy = "fin_user"
                 },
                 new WorkspaceDocument
                 {
@@ -242,7 +248,8 @@ namespace SharePointBackend.Data
                     UploaderComment = "Yeni omurga switch kurulumu sonrası ağ şeması güncellemesi.",
                     Privacy = "Department",
                     EditPermission = "OwnerOnly",
-                    AccessPassword = null
+                    AccessPassword = null,
+                    LastModifiedBy = "it_user"
                 }
             );
 
@@ -250,6 +257,32 @@ namespace SharePointBackend.Data
             modelBuilder.Entity<DocumentCollaborator>().HasData(
                 new DocumentCollaborator { Id = 1, DocumentId = 2, CollaboratorUsername = "admin", CanEdit = true },
                 new DocumentCollaborator { Id = 2, DocumentId = 2, CollaboratorUsername = "hr_user", CanEdit = false }
+            );
+
+            // Seed DocumentVersions
+            modelBuilder.Entity<DocumentVersion>().HasData(
+                new DocumentVersion
+                {
+                    Id = 1,
+                    DocumentId = 2,
+                    VersionNumber = 1,
+                    FileUrl = "https://company.com/files/budget-v1.docx",
+                    FileSize = "1.2 MB",
+                    ModifiedBy = "fin_user",
+                    ModifiedDate = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd HH:mm:ss"),
+                    Comment = "İlk taslak sürüm oluşturuldu."
+                },
+                new DocumentVersion
+                {
+                    Id = 2,
+                    DocumentId = 2,
+                    VersionNumber = 2,
+                    FileUrl = "https://company.com/files/budget-v2.docx",
+                    FileSize = "1.4 MB",
+                    ModifiedBy = "admin",
+                    ModifiedDate = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss"),
+                    Comment = "Yönetici geri bildirimleri bütçeye eklendi."
+                }
             );
 
             // Seed Mock Admin Approval Request
