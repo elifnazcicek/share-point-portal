@@ -962,19 +962,39 @@
                           </div>
                           <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
                           <div style="display: flex; gap: 8px; align-items: center;" (click)="$event.stopPropagation();">
-                            @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') {
-                              <button type="button" class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0;" (click)="openPrivacyModal(doc)" title="Ayarlar">
-                                <app-icon name="settings" [size]="12"></app-icon>
-                              </button>
-                            }
-                            <button type="button" class="btn btn-outline btn-xs" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0;" (click)="openVersionHistory(doc)" title="Sürümler">
+                            <button 
+                              type="button" 
+                              class="btn btn-outline btn-xs" 
+                              style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0; transition: all 0.2s;"
+                              [style.opacity]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') ? '1' : '0.3'"
+                              [style.cursor]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') ? 'pointer' : 'not-allowed'"
+                              [disabled]="!(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department')"
+                              (click)="openPrivacyModal(doc)" 
+                              title="Ayarlar"
+                            >
+                              <app-icon name="settings" [size]="12"></app-icon>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="btn btn-outline btn-xs" 
+                              style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0; transition: all 0.2s;" 
+                              (click)="openVersionHistory(doc)" 
+                              title="Sürümler"
+                            >
                               <app-icon name="clock" [size]="12"></app-icon>
                             </button>
-                            @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') {
-                              <button type="button" class="btn btn-outline btn-xs btn-delete" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0;" (click)="deleteActiveDocumentDirect(doc)" title="Sil">
-                                <app-icon name="trash-2" [size]="12"></app-icon>
-                              </button>
-                            }
+                            <button 
+                              type="button" 
+                              class="btn btn-outline btn-xs btn-delete" 
+                              style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0; transition: all 0.2s;"
+                              [style.opacity]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') ? '1' : '0.3'"
+                              [style.cursor]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') ? 'pointer' : 'not-allowed'"
+                              [disabled]="!(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin')"
+                              (click)="deleteActiveDocumentDirect(doc)" 
+                              title="Sil"
+                            >
+                              <app-icon name="trash-2" [size]="12"></app-icon>
+                            </button>
                           </div>
                         </div>
                       }
