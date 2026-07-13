@@ -1414,6 +1414,17 @@ export class App implements OnInit {
     }
   }
 
+  protected getDocumentTypeDisplay(doc: WorkspaceDocument): string {
+    if (!doc.isFile) return 'Not Defteri / Belge';
+    const titleLower = doc.title.toLowerCase();
+    if (titleLower.endsWith('.xlsx') || titleLower.endsWith('.xls')) return 'Excel Tablosu';
+    if (titleLower.endsWith('.pdf')) return 'PDF Belgesi';
+    if (titleLower.endsWith('.docx') || titleLower.endsWith('.doc')) return 'Word Belgesi';
+    if (titleLower.endsWith('.png') || titleLower.endsWith('.jpg') || titleLower.endsWith('.jpeg')) return 'Görsel / Resim';
+    const ext = doc.title.split('.').pop() || '';
+    return ext ? `${ext.toUpperCase()} Dosyası` : 'Bilinmeyen Dosya';
+  }
+
   protected triggerFileSelect() {
     const fileInput = document.getElementById('hidden-file-input');
     if (fileInput) fileInput.click();
