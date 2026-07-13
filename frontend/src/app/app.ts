@@ -1513,7 +1513,7 @@ export class App implements OnInit {
           fileUrl: res.fileUrl,
           fileSize: res.fileSize,
           uploaderComment: comment,
-          accessPassword: privacy === 'Private' && password ? password : null
+          accessPassword: (privacy === 'Private' || editPerm === 'OwnerOnly') && password ? password : null
         };
 
         this.http.post<WorkspaceDocument>(`${this.workspaceUrl}/documents`, payload).subscribe({
