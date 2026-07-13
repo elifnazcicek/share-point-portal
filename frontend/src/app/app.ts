@@ -1394,118 +1394,75 @@ export class App implements OnInit {
     this.fullChatInput.set('');
     this.chatMessageSearchQuery.set(''); // Clear search filter when sending message
 
-    // Simulate reply after 1 second
-    setTimeout(() => {
-      let replyText = 'Sorunuzu aldım, en kısa sürede dönüş sağlayacağım.';
-      const activeUser = this.activeChatUser();
-
-      if (activeUser?.username === 'ai_bot') {
-        const normInput = this.normalizeTurkish(input);
-        
-        // 1. Files / Documents queries
-        if (normInput.includes('dosya') || normInput.includes('belge') || normInput.includes('dokuman') || normInput.includes('yükle') || normInput.includes('dms')) {
-          const docList = this.documents();
-          if (docList.length > 0) {
-            const docNames = docList.map((d, i) => `${i + 1}. ${d.title} (${d.fileSize || 'Belge'})`).join('\n');
-            replyText = `Sistemde kayıtlı güncel dosyalar şunlardır:\n${docNames}\n\nBu dosyalara üst menüdeki "Dosyalar & Belgeler" sekmesinden veya sol aramadan erişebilirsiniz.`;
-          } else {
-            replyText = 'Sistemde şu an yüklü bir dosya bulunmamaktadır.';
-          }
-        }
-        // 2. Users / Employees queries
-        else if (normInput.includes('calisan') || normInput.includes('uye') || normInput.includes('kullanici') || normInput.includes('kimler var') || normInput.includes('personel')) {
-          const userList = this.adminUsers();
-          if (userList.length > 0) {
-            const userNames = userList.map((u, i) => `${i + 1}. ${u.fullName} (@${u.username}) - ${u.role}`).join('\n');
-            replyText = `Sistemde kayıtlı çalışma arkadaşlarımız şunlardır:\n${userNames}\n\nBu kişilerle sohbete başlamak için sol aramada isimlerini aratabilirsiniz.`;
-          } else {
-            replyText = 'Sistemde kayıtlı kullanıcı bulunamadı.';
-          }
-        }
-        // 3. Network / Subnet / IP queries
-        else if (normInput.includes('ip') || normInput.includes('subnet') || normInput.includes('baglanti') || normInput.includes('ag durum') || normInput.includes('vpn') || normInput.includes('network')) {
-          const dev = this.device();
-          if (dev) {
-            replyText = `Şu anki simüle edilen bağlantı bilgileriniz:\n- IP Adresi: ${dev.ipAddress}\n- Subnet/Departman: ${dev.department?.name || 'Bilinmiyor'}\n- Cihaz Adı: ${dev.deviceName}\n- MAC Adresi: ${dev.macAddress}\n\nBu bilgileri sağ üstteki ağ durum simgesine tıklayıp Simülatörden güncelleyebilirsiniz.`;
-          } else {
-            replyText = 'Bağlantı bilgileriniz yüklenemedi.';
-          }
-        }
-        // 4. Pinned shortcuts / Tools queries
-        else if (normInput.includes('arac') || normInput.includes('kisayol') || normInput.includes('tool') || normInput.includes('uygulama') || normInput.includes('gmail')) {
-          const shortcutList = this.allShortcuts();
-          if (shortcutList.length > 0) {
-            const shortcutsNames = shortcutList.map((s, i) => `${i + 1}. ${s.name} (${s.departmentId ? 'Departmana Özel' : 'Genel'})`).join('\n');
-            replyText = `Sistemde erişilebilir olan kurumsal araçlar şunlardır:\n${shortcutsNames}\n\nYeni bir araç eklemek veya kısayolları düzenlemek için ana sayfadaki "Kısayollarımı Düzenle" (Düzenle) modalını kullanabilirsiniz.`;
-          } else {
-            replyText = 'Erişilebilir kısayol bulunamadı.';
-          }
-        }
-        // 5. Notepad / personal notes queries
-        else if (normInput.includes('notlar') || normInput.includes('notum') || normInput.includes('not defter') || normInput.includes('taslak')) {
-          const notesList = this.personalNotes();
-          if (notesList.length > 0) {
-            const noteNames = notesList.map((n, i) => `${i + 1}. ${n.title} (${n.date})`).join('\n');
-            replyText = `Not defterinizde kayıtlı notlarınız:\n${noteNames}\n\nNotlarınızı düzenlemek veya yeni not eklemek için "Dosyalar & Belgeler -> Not Defteri" sekmesini ziyaret edebilirsiniz.`;
-          } else {
-            replyText = 'Not defterinizde henüz kayıtlı bir not bulunmamaktadır.';
-          }
-        }
-        // 6. Announcements queries
-        else if (normInput.includes('duyuru') || normInput.includes('ilan') || normInput.includes('haber') || normInput.includes('megafon')) {
-          const annList = this.announcements();
-          if (annList.length > 0) {
-            const annNames = annList.map((a, i) => `${i + 1}. ${a.title} (${a.departmentName || 'Genel'})`).join('\n');
-            replyText = `Departmanınıza özel ve genel aktif duyurular şunlardır:\n${annNames}\n\nDuyuruların detaylarına sağ alt köşedeki megafon simgesine 📢 tıklayarak ulaşabilirsiniz.`;
-          } else {
-            replyText = 'Şu an aktif bir duyuru bulunmamaktadır.';
-          }
-        }
-        // 7. Password change queries
-        else if (normInput.includes('sifre') || normInput.includes('parola') || normInput.includes('yenile')) {
-          replyText = 'Şifrenizi değiştirmek veya güncellemek için sağ üst köşedeki profil isminize tıklayıp açılan modal pencereden "Şifremi Değiştirmek İstiyorum" butonunu kullanabilirsiniz.';
-        }
-        // 7.5 Location and Navigation queries
-        else if (normInput.includes('nerede') || normInput.includes('yeri') || normInput.includes('nasil ulasirim') || normInput.includes('nasil giderim') || normInput.includes('nereden')) {
-          if (normInput.includes('dosya') || normInput.includes('belge') || normInput.includes('yukle') || normInput.includes('ekle') || normInput.includes('dms')) {
-            replyText = 'Dosya yükleme ve yönetimi işlemleri için:\n1. Üst menüden "Dosyalar & Belgeler" sekmesine tıklayın.\n2. Sol menüden "Dosya Yöneticisi" veya "Doküman Havuzu" alt başlığına geçin.\n3. Dosya eklemek için sağ üst taraftaki mavi "Yeni Dosya Ekle" butonunu kullanabilirsiniz.';
-          } else if (normInput.includes('not') || normInput.includes('defter') || normInput.includes('taslak')) {
-            replyText = 'Not Defterine ulaşmak için:\n1. Üst menüden "Dosyalar & Belgeler" sekmesine gidin.\n2. Sol menüden "Not Defteri" alt başlığını seçin.\n3. Buradan yeni kişisel notlar oluşturabilir, bunları kaydedebilir ve sohbetteki arkadaşlarınızla paylaşabilirsiniz.';
-          } else if (normInput.includes('simulat') || normInput.includes('ag') || normInput.includes('ip') || normInput.includes('vpn') || normInput.includes('subnet')) {
-            replyText = 'Ağ ve VPN Altyapı Simülatörüne gitmek için:\n- Sayfanın sağ üst köşesinde bulunan, yeşil noktalı IP adresinizin yazılı olduğu "Ağ Durum Rozeti"ne tıklamanız yeterlidir. Açılan simülatör panelinden intranet/extranet ayarlarını yapabilirsiniz.';
-          } else if (normInput.includes('profil') || normInput.includes('sifre') || normInput.includes('parola') || normInput.includes('kullanici')) {
-            replyText = 'Profil ayarları ve şifre değiştirme ekranı için:\n- Sayfanın en sağ üst köşesinde yer alan aktif kullanıcı simülatörünün hemen yanındaki kullanıcı adınıza tıklayarak kişisel bilgilerinizi güncelleyebilir veya şifre sıfırlama talebi gönderebilirsiniz.';
-          } else if (normInput.includes('takvim') || normInput.includes('etkinlik') || normInput.includes('ajanda') || normInput.includes('plan')) {
-            replyText = 'Takvim ve Ajanda özellikleri için:\n- Üst menüden "Ana Sayfa" sekmesine tıklayın.\n- Sayfanın sağ kolonunda yer alan takvimi göreceksiniz. Günlere tıklayarak etkinlik ekleyebilir ya da filtreleme yapabilirsiniz.';
-          } else if (normInput.includes('admin') || normInput.includes('yonetici') || normInput.includes('onay')) {
-            replyText = 'Yönetici Kontrol Paneli için:\n- Üst menünün en sağında yer alan "Yönetici Paneli" sekmesine tıklayın. Buradan ağ güvenliği limitlerini değiştirebilir, logları izleyebilir veya onay bekleyen belgeleri onaylayabilirsiniz (Sadece Admin yetkisiyle görünür).';
-          } else if (normInput.includes('duyuru') || normInput.includes('megafon') || normInput.includes('ilan')) {
-            replyText = 'Duyurular paneli için:\n- Sayfanın sağ alt köşesindeki reaktif megafon simgesine 📢 tıklayarak genel ve departman bazlı en son duyuruları içeren sağa kayan paneli (drawer) açabilirsiniz.';
-          } else if (normInput.includes('chat') || normInput.includes('sohbet') || normInput.includes('destek')) {
-            replyText = 'Sohbet özellikleri sistemde iki farklı yerdedir:\n1. Üst menüdeki "Chat (Sohbet)" sekmesinden geniş ekran mesajlaşma paneline ulaşabilirsiniz.\n2. Sağ alt köşedeki sohbet balonu simgesine tıklayarak hızlı destek botunu kayar panel olarak açabilirsiniz.';
-          } else {
-            replyText = 'Sistemdeki hangi özelliğin yerini öğrenmek istiyorsunuz? Bana "dosya yükleme nerede", "not defteri nerede", "simülatör nerede", "profil nerede" veya "takvim nerede" gibi sorular sorabilirsiniz.';
-          }
-        }
-        // 8. General hello / intro
-        else if (normInput.includes('merhaba') || normInput.includes('selam')) {
-          replyText = 'Merhaba! Ben PortalOne yapay zeka asistanıyım. Sistemdeki dosyalar, çalışanlar, notlar, duyurular, ağ bağlantınız veya kurulu uygulamalar hakkında bana dilediğiniz soruyu sorabilirsiniz.';
-        }
-        // 9. Default fallback
-        else {
-          replyText = `Sorduğunuz "${input}" konusuna dair sistemde reaktif bir eşleşme bulamadım. Ancak bana "dosyalar", "çalışanlar", "IP adresim", "notlarım", "duyurular" veya "araçlar" yazarak sistemdeki güncel canlı verileri listelememi isteyebilirsiniz.`;
-        }
-      }
-
-      const reply = {
-        sender: activeUser?.username || 'elif',
-        text: replyText,
-        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+    const activeUser = this.activeChatUser();
+    if (activeUser?.username === 'ai_bot') {
+      const typingMsg = {
+        sender: 'ai_bot',
+        text: 'PortalOne AI yanıt yazıyor...',
+        time: '...',
         isSharedNote: false,
         noteTitle: ''
       };
-      this.messages.update(list => [...list, reply]);
-    }, 1000);
+
+      // Add typing indicator
+      this.messages.update(list => [...list, typingMsg]);
+
+      // Trigger HTTP request with retry logic
+      this.sendAiRequestWithRetry(input, user, typingMsg, 1, 3);
+    } else {
+      // Simulate reply after 1 second for standard colleagues
+      setTimeout(() => {
+        const reply = {
+          sender: activeUser?.username || 'elif',
+          text: 'Sorunuzu aldım, en kısa sürede dönüş sağlayacağım.',
+          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+          isSharedNote: false,
+          noteTitle: ''
+        };
+        this.messages.update(list => [...list, reply]);
+      }, 1000);
+    }
+  }
+
+  private sendAiRequestWithRetry(message: string, username: string, typingMsg: any, attempt: number, maxAttempts: number) {
+    this.http.post<{ response: string }>(`${this.apiUrl}/portal/ai/chat`, {
+      message: message,
+      username: username
+    }).subscribe({
+      next: (res) => {
+        // Remove typing indicator and add response
+        this.messages.update(list => list.filter(m => m !== typingMsg));
+
+        const reply = {
+          sender: 'ai_bot',
+          text: res.response,
+          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+          isSharedNote: false,
+          noteTitle: ''
+        };
+        this.messages.update(list => [...list, reply]);
+      },
+      error: (err) => {
+        if (attempt < maxAttempts) {
+          // Wait 2 seconds and retry in the background while keeping the typing indicator visible
+          setTimeout(() => {
+            this.sendAiRequestWithRetry(message, username, typingMsg, attempt + 1, maxAttempts);
+          }, 2000);
+        } else {
+          // All retries failed, remove typing indicator and show error
+          this.messages.update(list => list.filter(m => m !== typingMsg));
+
+          const reply = {
+            sender: 'ai_bot',
+            text: 'Üzgünüm, şu an bağlantı limitleri nedeniyle yanıt veremiyorum. Lütfen birkaç saniye sonra sorunuzu tekrar sorun.',
+            time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+            isSharedNote: false,
+            noteTitle: ''
+          };
+          this.messages.update(list => [...list, reply]);
+        }
+      }
+    });
   }
 
   protected filteredChatMessages() {

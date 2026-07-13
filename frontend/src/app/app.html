@@ -1269,7 +1269,18 @@
                         <span style="font-weight: 600; font-size: 12px; color: #242424;">{{ msg.noteTitle }}</span>
                       </div>
                     }
-                    <span>{{ msg.text }}</span>
+                    @if (msg.text === 'PortalOne AI yanıt yazıyor...') {
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="color: var(--text-muted); font-style: italic;">PortalOne AI yanıt yazıyor</span>
+                        <span style="display: inline-flex; gap: 3px; align-items: center; height: 10px; margin-top: 4px;">
+                          <span class="typing-dot" style="width: 5px; height: 5px; background-color: var(--text-muted); border-radius: 50%; display: inline-block;"></span>
+                          <span class="typing-dot" style="width: 5px; height: 5px; background-color: var(--text-muted); border-radius: 50%; display: inline-block;"></span>
+                          <span class="typing-dot" style="width: 5px; height: 5px; background-color: var(--text-muted); border-radius: 50%; display: inline-block;"></span>
+                        </span>
+                      </div>
+                    } @else {
+                      <span>{{ msg.text }}</span>
+                    }
                     <span style="font-size: 9px; align-self: flex-end; margin-top: 4px;" [style.color]="msg.sender === currentUser() ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)'">{{ msg.time }}</span>
                   </div>
                 }
