@@ -250,6 +250,24 @@ namespace SharePointBackend.Data
                     EditPermission = "OwnerOnly",
                     AccessPassword = null,
                     LastModifiedBy = "it_user"
+                },
+                new WorkspaceDocument
+                {
+                    Id = 7,
+                    Title = "2026 Yılı Pazarlama Strateji Planı.pdf",
+                    Content = "# Pazarlama Stratejisi v3\n\nSosyal medya ve dijital reklam stratejilerinin son hali.",
+                    OwnerUsername = "elif",
+                    IsPublic = true,
+                    CreatedDate = DateTime.UtcNow.AddDays(-7).ToString("yyyy-MM-dd HH:mm:ss"),
+                    ModifiedDate = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsFile = true,
+                    FileUrl = "http://localhost:5100/uploads/strategy-v3.pdf",
+                    FileSize = "2.4 MB",
+                    UploaderComment = "Sosyal medya hedefleri ve KPI tablosu eklendi.",
+                    Privacy = "Public",
+                    EditPermission = "Everyone",
+                    AccessPassword = null,
+                    LastModifiedBy = "elif"
                 }
             );
 
@@ -284,6 +302,42 @@ namespace SharePointBackend.Data
                     ModifiedDate = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss"),
                     Comment = "Yönetici geri bildirimleri bütçeye eklendi.",
                     Content = "# Q3 Departman Bütçeleri v2\n\nGüncellenen bütçe taslağı."
+                },
+                new DocumentVersion
+                {
+                    Id = 3,
+                    DocumentId = 7,
+                    VersionNumber = 1,
+                    FileUrl = "http://localhost:5100/uploads/strategy-v1.pdf",
+                    FileSize = "2.1 MB",
+                    ModifiedBy = "elif",
+                    ModifiedDate = DateTime.UtcNow.AddDays(-7).ToString("yyyy-MM-dd HH:mm:ss"),
+                    Comment = "Pazarlama departmanı ilk taslak dökümanı.",
+                    Content = "# Pazarlama Stratejisi v1\n\nİlk pazarlama stratejisi ve vizyon metni."
+                },
+                new DocumentVersion
+                {
+                    Id = 4,
+                    DocumentId = 7,
+                    VersionNumber = 2,
+                    FileUrl = "http://localhost:5100/uploads/strategy-v2.pdf",
+                    FileSize = "2.3 MB",
+                    ModifiedBy = "admin",
+                    ModifiedDate = DateTime.UtcNow.AddDays(-4).ToString("yyyy-MM-dd HH:mm:ss"),
+                    Comment = "Bütçe sınırlandırmaları ve kanal dağılımları düzenlendi.",
+                    Content = "# Pazarlama Stratejisi v2\n\nYeni bütçe revizyonları eklenmiş strateji."
+                },
+                new DocumentVersion
+                {
+                    Id = 5,
+                    DocumentId = 7,
+                    VersionNumber = 3,
+                    FileUrl = "http://localhost:5100/uploads/strategy-v3.pdf",
+                    FileSize = "2.4 MB",
+                    ModifiedBy = "elif",
+                    ModifiedDate = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd HH:mm:ss"),
+                    Comment = "Sosyal medya hedefleri ve KPI tablosu eklendi.",
+                    Content = "# Pazarlama Stratejisi v3\n\nSosyal medya ve dijital reklam stratejilerinin son hali."
                 }
             );
 
