@@ -913,10 +913,11 @@
                   </div>
 
                   <div class="dms-files-table" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
-                    <div class="table-header-dms" style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.5fr; font-weight: 700; font-size: 12px; padding: 12px; border-bottom: 2px solid var(--border-color); background-color: #faf9f8;">
+                    <div class="table-header-dms" style="display: grid; grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 0.8fr 1.6fr; font-weight: 700; font-size: 12px; padding: 12px; border-bottom: 2px solid var(--border-color); background-color: #faf9f8;">
                       <span>Dosya Adı</span>
-                      <span>Tür / Departman</span>
-                      <span>Yüklenme Tarihi</span>
+                      <span>Tür</span>
+                      <span>Yükleyen / Tarih</span>
+                      <span>Güncelleyen / Tarih</span>
                       <span>Boyut</span>
                       <span>Aksiyon</span>
                     </div>
@@ -925,7 +926,7 @@
                         <div style="padding: 20px; text-align: center; font-size: 13px; color: var(--text-muted);">Bu kategoride kayıtlı dosya bulunamadı.</div>
                       }
                       @for (doc of filteredFiles(); track doc.id) {
-                        <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.5fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="openDocumentSecurely(doc)">
+                        <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 0.8fr 1.6fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="openDocumentSecurely(doc)">
                           <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             <span style="display:inline-flex; align-items:center; opacity:0.6;"><app-icon name="file" [size]="13"></app-icon></span>
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 4px;">{{ doc.title }}</span>
@@ -939,7 +940,14 @@
                             }
                           </div>
                           <span style="color: var(--text-muted);">{{ doc.isFile ? 'Dosya' : 'Doküman' }}</span>
-                          <span style="color: var(--text-muted);">{{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</span>
+                          <div style="display: flex; flex-direction: column; font-size: 11.5px; line-height: 1.4;">
+                            <span style="font-weight: 600; color: var(--text-main);">{{ doc.ownerUsername }}</span>
+                            <span style="color: var(--text-muted);">{{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</span>
+                          </div>
+                          <div style="display: flex; flex-direction: column; font-size: 11.5px; line-height: 1.4;">
+                            <span style="font-weight: 600; color: var(--text-main);">{{ doc.lastModifiedBy || doc.ownerUsername }}</span>
+                            <span style="color: var(--text-muted);">{{ doc.modifiedDate | date:'yyyy-MM-dd HH:mm' }}</span>
+                          </div>
                           <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
                           <div style="display: flex; gap: 6px; flex-wrap: wrap;" (click)="$event.stopPropagation();">
                             @if (doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') {
