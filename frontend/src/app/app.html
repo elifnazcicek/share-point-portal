@@ -929,11 +929,6 @@
                         <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 0.8fr 1.6fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="openDocumentSecurely(doc)">
                           <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 4px;">{{ doc.title }}</span>
-                            @if (!doc.canEdit) {
-                              <span title="Düzenlemeye Kapalı" style="color: var(--text-muted); display: inline-flex; align-items: center;" (click)="$event.stopPropagation();">
-                                <app-icon name="lock" [size]="12"></app-icon>
-                              </span>
-                            }
                             @if (doc.privacy === 'Private') {
                               <span style="font-size: 10px; background-color: rgba(100, 116, 139, 0.1); color: var(--text-muted); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="lock" [size]="10"></app-icon> Gizli</span>
                             } @else if (doc.privacy === 'Department') {
