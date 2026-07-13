@@ -332,6 +332,7 @@ export class App implements OnInit {
   protected readonly uploadFilePrivacy = signal<string>('Public');
   protected readonly uploadFilePassword = signal<string>('');
   protected readonly uploadFileComment = signal<string>('');
+  protected readonly uploadFileEditPermission = signal<string>('Everyone');
 
   // DMS and Notepad sub-state
   protected readonly dmsFilter = signal<'all' | 'received' | 'sent' | 'public'>('all');
@@ -1496,6 +1497,7 @@ export class App implements OnInit {
     const title = this.uploadFileTitle() || file.name;
     const privacy = this.uploadFilePrivacy();
     const password = this.uploadFilePassword();
+    const editPerm = this.uploadFileEditPermission();
     const comment = this.uploadFileComment() || 'Dosya seçilerek yüklendi.';
 
     this.http.post<any>(`${this.workspaceUrl}/upload`, formData).subscribe({
@@ -1506,6 +1508,7 @@ export class App implements OnInit {
           ownerUsername: this.currentUser() || 'Guest',
           isPublic: privacy === 'Public',
           privacy: privacy,
+          editPermission: editPerm,
           isFile: true,
           fileUrl: res.fileUrl,
           fileSize: res.fileSize,
@@ -1536,6 +1539,7 @@ export class App implements OnInit {
     this.uploadFilePrivacy.set('Public');
     this.uploadFilePassword.set('');
     this.uploadFileComment.set('');
+    this.uploadFileEditPermission.set('Everyone');
   }
 
   protected deleteActiveDocumentDirect(doc: WorkspaceDocument) {

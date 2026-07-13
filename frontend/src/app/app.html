@@ -919,7 +919,7 @@
 
                     <!-- Sağ Bölüm: Dosya Adı ve Gizlilik Ayarları -->
                     <div style="display: flex; flex-direction: column; gap: 10px; justify-content: space-between;">
-                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                         <div>
                           <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">DOSYA BAŞLIĞI</label>
                           <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileTitle()" (ngModelChange)="uploadFileTitle.set($event)" placeholder="Dosya adı girin..." />
@@ -930,6 +930,13 @@
                             <option value="Public">Şirket Ortak (Public)</option>
                             <option value="Department">Departman (Grup)</option>
                             <option value="Private">Gizli (Sadece Ben)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">DÜZENLEME YETKİSİ</label>
+                          <select class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="uploadFileEditPermission()" (ngModelChange)="uploadFileEditPermission.set($event)">
+                            <option value="Everyone">Herkes Düzenleyebilir</option>
+                            <option value="OwnerOnly">Sadece Ben Düzenleyebilirim</option>
                           </select>
                         </div>
                       </div>
