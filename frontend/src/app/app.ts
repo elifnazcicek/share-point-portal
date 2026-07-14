@@ -2,7 +2,6 @@ import { Component, OnInit, signal, computed, inject, HostListener } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { AppIconComponent } from './icon';
 
 interface Department {
@@ -127,7 +126,6 @@ interface PortalEvent {
 })
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly sanitizer = inject(DomSanitizer);
   private readonly apiUrl = 'http://localhost:5100/api/portal'; // Dotnet Portal API URL
   private readonly authUrl = 'http://localhost:5100/api/auth'; // Dotnet Auth API URL
   private readonly workspaceUrl = 'http://localhost:5100/api/workspace'; // Dotnet Workspace API URL
@@ -426,6 +424,7 @@ export class App implements OnInit {
   protected readonly passwordPromptDoc = signal<WorkspaceDocument | null>(null);
   protected readonly enteredPassword = signal<string>("");
   protected readonly passwordError = signal<string | null>(null);
+  protected readonly previewZoomLevel = signal<number>(1.0);
 
   // Version History States
   protected readonly selectedVersions = signal<DocumentVersion[]>([]);
@@ -872,7 +871,6 @@ export class App implements OnInit {
       next: (res) => {
         doc.fileUrl = res.fileUrl;
         doc.fileSize = res.fileSize;
-        doc.content = res.content || '';
         doc.lastModifiedBy = this.currentUser() || 'Guest';
 
         this.http.put<WorkspaceDocument>(`${this.workspaceUrl}/documents/${doc.id}?username=${encodeURIComponent(this.currentUser() || 'Guest')}`, doc).subscribe({
@@ -894,28 +892,16 @@ export class App implements OnInit {
     });
   }
 
-  protected getSafeUrl(url: string | undefined): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url || '');
+  protected zoomIn() {
+    this.previewZoomLevel.update(z => Math.min(2.0, z + 0.1));
   }
 
-  protected isImageFile(url: string | undefined, title: string | undefined = ''): boolean {
-    const checkStr = (url || title || '').toLowerCase();
-    return checkStr.endsWith('.png') || checkStr.endsWith('.jpg') || checkStr.endsWith('.jpeg') || checkStr.endsWith('.gif') || checkStr.endsWith('.webp') ||
-           checkStr.includes('.png') || checkStr.includes('.jpg') || checkStr.includes('.jpeg') || checkStr.includes('.gif') || checkStr.includes('.webp');
+  protected zoomOut() {
+    this.previewZoomLevel.update(z => Math.max(0.5, z - 0.1));
   }
 
-  protected isPdfFile(url: string | undefined, title: string | undefined = ''): boolean {
-    const checkStr = (url || title || '').toLowerCase();
-    return checkStr.endsWith('.pdf') || checkStr.includes('.pdf');
-  }
-
-  protected isExcelFile(url: string | undefined, title: string | undefined = ''): boolean {
-    const checkStr = (url || title || '').toLowerCase();
-    return checkStr.endsWith('.xlsx') || checkStr.endsWith('.xls') || checkStr.includes('.xlsx') || checkStr.includes('.xls');
-  }
-
-  protected getSafeHtml(html: string | undefined): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html || '');
+  protected resetZoom() {
+    this.previewZoomLevel.set(1.0);
   }
 
   protected deleteActiveDocument() {
@@ -1480,10 +1466,21 @@ export class App implements OnInit {
   }
 
   private previewDocumentDirect(doc: WorkspaceDocument) {
+    this.previewZoomLevel.set(1.0);
     this.activeDoc.set(doc);
     if (doc.id) {
       this.loadCollaborators(doc.id);
     }
+  }
+
+  protected getFilePreviewType(doc: WorkspaceDocument): 'pdf' | 'excel' | 'word' | 'image' | 'text' {
+    if (!doc.isFile) return 'text';
+    const titleLower = doc.title.toLowerCase();
+    if (titleLower.endsWith('.pdf')) return 'pdf';
+    if (titleLower.endsWith('.xlsx') || titleLower.endsWith('.xls')) return 'excel';
+    if (titleLower.endsWith('.docx') || titleLower.endsWith('.doc')) return 'word';
+    if (titleLower.endsWith('.png') || titleLower.endsWith('.jpg') || titleLower.endsWith('.jpeg')) return 'image';
+    return 'pdf';
   }
 
   protected openVersionHistory(doc: WorkspaceDocument) {
@@ -1599,7 +1596,7 @@ export class App implements OnInit {
       next: (res) => {
         const payload: WorkspaceDocument = {
           title: title,
-          content: res.content || `# ${title}\n\nEk Açıklama: ${comment}`,
+          content: `# ${title}\n\nEk Açıklama: ${comment}`,
           ownerUsername: this.currentUser() || 'Guest',
           isPublic: privacy === 'Public',
           privacy: privacy,
