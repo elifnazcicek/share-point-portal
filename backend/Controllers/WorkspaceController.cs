@@ -54,6 +54,9 @@ namespace SharePointBackend.Controllers
                 // Obfuscate text and file URLs for password-protected files if user doesn't have direct ownership/collaborator rights yet
                 bool shouldObfuscate = isPasswordProtected && !hasAccess;
 
+                var ownerUser = _context.Users.FirstOrDefault(u => u.Username.ToLower() == d.OwnerUsername.ToLower());
+                string ownerDepartmentName = ownerUser?.Role ?? "General";
+
                 return new
                 {
                     d.Id,
@@ -73,7 +76,8 @@ namespace SharePointBackend.Controllers
                     LastModifiedBy = d.LastModifiedBy ?? d.OwnerUsername,
                     // Check edit permissions
                     CanEdit = (isOwner || _context.DocumentCollaborators.Any(c => c.DocumentId == d.Id && c.CollaboratorUsername.ToLower() == user.ToLower() && c.CanEdit)) &&
-                              (d.EditPermission == "Everyone" || isOwner)
+                              (d.EditPermission == "Everyone" || isOwner),
+                    DepartmentName = ownerDepartmentName
                 };
             }).ToList();
 

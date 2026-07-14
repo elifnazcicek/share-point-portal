@@ -70,6 +70,7 @@ interface WorkspaceDocument {
   isUnlockedInMemory?: boolean;
   lastModifiedBy?: string;
   accessPassword?: string | null;
+  departmentName?: string;
 }
 
 interface DocumentVersion {
