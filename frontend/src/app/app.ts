@@ -201,20 +201,12 @@ export class App implements OnInit {
   protected readonly isAnnouncementsDrawerOpen = signal<boolean>(false);
 
   // Cafeteria Lunch Menu (Yemek Menüsü)
-  protected readonly lunchMenu = signal<Record<string, string>>({
+  protected readonly lunchMenu = {
     Pazartesi: 'Mercimek Çorbası, İzmir Köfte, Pirinç Pilavı, Cacık',
     Sali: 'Yayla Çorbası, Tavuk Sote, Makarna, Kemalpaşa Tatlısı',
     Carsamba: 'Ezogelin Çorbası, Kuru Fasulye, Bulgur Pilavı, Turşu',
     Persembe: 'Tarhana Çorbası, Fırın Poşetinde Tavuk, Fırın Patates, Salata',
     Cuma: 'Düğün Çorbası, Kadınbudu Köfte, Erişte, Ayran'
-  });
-  protected readonly isLunchMenuModalOpen = signal<boolean>(false);
-  protected readonly lunchMenuEdit = {
-    Pazartesi: '',
-    Sali: '',
-    Carsamba: '',
-    Persembe: '',
-    Cuma: ''
   };
 
   // Events Calendar (Önemli Etkinlikler)
@@ -1937,44 +1929,5 @@ export class App implements OnInit {
   protected getCellDateString(day: number | null): string {
     if (day === null) return '';
     return `${this.currentYear()}-${String(this.currentMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  }
-
-  protected openLunchMenuEdit() {
-    const current = this.lunchMenu();
-    this.lunchMenuEdit.Pazartesi = current['Pazartesi'] || '';
-    this.lunchMenuEdit.Sali = current['Sali'] || '';
-    this.lunchMenuEdit.Carsamba = current['Carsamba'] || '';
-    this.lunchMenuEdit.Persembe = current['Persembe'] || '';
-    this.lunchMenuEdit.Cuma = current['Cuma'] || '';
-    this.isLunchMenuModalOpen.set(true);
-  }
-
-  protected saveLunchMenu() {
-    this.lunchMenu.set({
-      Pazartesi: this.lunchMenuEdit.Pazartesi,
-      Sali: this.lunchMenuEdit.Sali,
-      Carsamba: this.lunchMenuEdit.Carsamba,
-      Persembe: this.lunchMenuEdit.Persembe,
-      Cuma: this.lunchMenuEdit.Cuma
-    });
-    this.isLunchMenuModalOpen.set(false);
-    alert('Yemek menüsü başarıyla güncellendi!');
-  }
-
-  protected parseLunchMenuImport(value: string) {
-    if (!value) return;
-    const lines = value.split('\n');
-    lines.forEach(line => {
-      const parts = line.split(/[:=]/);
-      if (parts.length >= 2) {
-        const day = parts[0].trim().toLowerCase();
-        const menu = parts.slice(1).join(':').trim();
-        if (day.includes('pazar')) this.lunchMenuEdit.Pazartesi = menu;
-        else if (day.includes('sal')) this.lunchMenuEdit.Sali = menu;
-        else if (day.includes('çarş') || day.includes('cars')) this.lunchMenuEdit.Carsamba = menu;
-        else if (day.includes('perş') || day.includes('pers')) this.lunchMenuEdit.Persembe = menu;
-        else if (day.includes('cum')) this.lunchMenuEdit.Cuma = menu;
-      }
-    });
   }
 }
