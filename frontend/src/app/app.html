@@ -792,30 +792,45 @@
         <!-- SECTION 2: DOSYALAR & BELGELER MODÜLÜ (DMS, Not Defteri, Workspaces) -->
         @if (activeTab() === 'workspace') {
           <div class="docs-module-layout" style="display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box;">
-            <!-- Horizontal Sub-Navigation at the Top -->
-            <div class="docs-top-navbar" style="display: flex; gap: 20px; border-bottom: 1px solid var(--border-color); padding: 12px 20px; background-color: #faf9f8; border-radius: var(--radius-sm); align-items: center; flex-wrap: wrap;">
-              <div class="docs-nav-group" style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 10px; font-weight: 700; color: #a19f9d; text-transform: uppercase; letter-spacing: 0.5px;">Doküman Havuzu:</span>
-                <button (click)="workspaceSubTab.set('dms')" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: transparent; border: none; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 4px;" [style.color]="workspaceSubTab() === 'dms' ? '#0078d4' : '#605e5c'" [style.background-color]="workspaceSubTab() === 'dms' ? 'rgba(0, 120, 212, 0.06)' : 'transparent'">
-                  <app-icon name="file" [size]="12" [color]="workspaceSubTab() === 'dms' ? '#0078d4' : '#605e5c'"></app-icon> Dosya Yöneticisi
-                </button>
-              </div>
-              <div style="width: 1px; height: 16px; background-color: var(--border-color);"></div>
+             <!-- Horizontal Sub-Navigation at the Top -->
+            <div class="docs-top-navbar" style="display: flex; gap: 12px; border: 1.5px solid var(--border-color); padding: 8px 12px; background-color: #f3f2f1; border-radius: 6px; align-items: center; margin-bottom: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); flex-wrap: wrap;">
               
-              <div class="docs-nav-group" style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 10px; font-weight: 700; color: #a19f9d; text-transform: uppercase; letter-spacing: 0.5px;">Kişisel Alan:</span>
-                <button (click)="workspaceSubTab.set('notepad')" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: transparent; border: none; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 4px;" [style.color]="workspaceSubTab() === 'notepad' ? '#0078d4' : '#605e5c'" [style.background-color]="workspaceSubTab() === 'notepad' ? 'rgba(0, 120, 212, 0.06)' : 'transparent'">
-                  <app-icon name="edit-3" [size]="12" [color]="workspaceSubTab() === 'notepad' ? '#0078d4' : '#605e5c'"></app-icon> Not Defteri
-                </button>
-              </div>
-              <div style="width: 1px; height: 16px; background-color: var(--border-color);"></div>
+              <button 
+                (click)="workspaceSubTab.set('dms')" 
+                style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid transparent; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; border-radius: 4px; font-family: inherit;" 
+                [style.color]="workspaceSubTab() === 'dms' ? '#ffffff' : '#444444'" 
+                [style.background-color]="workspaceSubTab() === 'dms' ? '#0078d4' : 'transparent'"
+                [style.border-color]="workspaceSubTab() === 'dms' ? '#005a9e' : 'transparent'"
+                [style.box-shadow]="workspaceSubTab() === 'dms' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+              >
+                <app-icon name="file" [size]="14" [color]="workspaceSubTab() === 'dms' ? '#ffffff' : '#444444'"></app-icon> Dosya Yöneticisi
+              </button>
               
-              <div class="docs-nav-group" style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 10px; font-weight: 700; color: #a19f9d; text-transform: uppercase; letter-spacing: 0.5px;">Projeler:</span>
-                <button (click)="workspaceSubTab.set('workspaces')" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: transparent; border: none; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 4px;" [style.color]="workspaceSubTab() === 'workspaces' ? '#0078d4' : '#605e5c'" [style.background-color]="workspaceSubTab() === 'workspaces' ? 'rgba(0, 120, 212, 0.06)' : 'transparent'">
-                  <app-icon name="users" [size]="12" [color]="workspaceSubTab() === 'workspaces' ? '#0078d4' : '#605e5c'"></app-icon> Ortak Çalışma Alanı
-                </button>
-              </div>
+              <div style="width: 1px; height: 20px; background-color: #d2d0ce;"></div>
+              
+              <button 
+                (click)="workspaceSubTab.set('notepad')" 
+                style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid transparent; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; border-radius: 4px; font-family: inherit;" 
+                [style.color]="workspaceSubTab() === 'notepad' ? '#ffffff' : '#444444'" 
+                [style.background-color]="workspaceSubTab() === 'notepad' ? '#0078d4' : 'transparent'"
+                [style.border-color]="workspaceSubTab() === 'notepad' ? '#005a9e' : 'transparent'"
+                [style.box-shadow]="workspaceSubTab() === 'notepad' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+              >
+                <app-icon name="edit-3" [size]="14" [color]="workspaceSubTab() === 'notepad' ? '#ffffff' : '#444444'"></app-icon> Not Defteri
+              </button>
+              
+              <div style="width: 1px; height: 20px; background-color: #d2d0ce;"></div>
+              
+              <button 
+                (click)="workspaceSubTab.set('workspaces')" 
+                style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid transparent; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; border-radius: 4px; font-family: inherit;" 
+                [style.color]="workspaceSubTab() === 'workspaces' ? '#ffffff' : '#444444'" 
+                [style.background-color]="workspaceSubTab() === 'workspaces' ? '#0078d4' : 'transparent'"
+                [style.border-color]="workspaceSubTab() === 'workspaces' ? '#005a9e' : 'transparent'"
+                [style.box-shadow]="workspaceSubTab() === 'workspaces' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+              >
+                <app-icon name="users" [size]="14" [color]="workspaceSubTab() === 'workspaces' ? '#ffffff' : '#444444'"></app-icon> Ortak Çalışma Alanı
+              </button>
             </div>
 
             <!-- Inside Content Container -->
