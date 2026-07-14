@@ -904,6 +904,15 @@ export class App implements OnInit {
     this.previewZoomLevel.set(1.0);
   }
 
+  protected onPreviewWheel(event: WheelEvent) {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    this.previewZoomLevel.update(z => {
+      const nextZoom = z + (direction * 0.05);
+      return Math.min(2.0, Math.max(0.5, nextZoom));
+    });
+  }
+
   protected deleteActiveDocument() {
     const doc = this.activeDoc();
     const user = this.currentUser();

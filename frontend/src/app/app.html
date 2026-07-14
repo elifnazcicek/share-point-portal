@@ -1081,7 +1081,7 @@
                   </div>
 
                   <!-- Preview Content Window -->
-                  <div style="flex: 1; overflow: auto; padding: 20px; display: flex; align-items: flex-start; justify-content: flex-start; background: #e9ecef;">
+                  <div (wheel)="onPreviewWheel($event)" style="flex: 1; overflow: auto; padding: 20px; display: flex; align-items: flex-start; justify-content: flex-start; background: #e9ecef;">
                     <div [style.transform]="'scale(' + previewZoomLevel() + ')'" style="transform-origin: top left; transition: transform 0.15s ease-out; width: 100%; height: auto;">
                       
                       <!-- CATEGORY 1: PDF -->
