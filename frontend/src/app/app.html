@@ -819,171 +819,227 @@
               
               <!-- A. DOSYA YÖNETİCİSİ TABI (DMS) -->
               @if (workspaceSubTab() === 'dms') {
-                <div class="docs-tab-content">
-                  <div class="dms-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
-                    <div class="dms-filters" style="display: flex; gap: 8px;">
-                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'all'" (click)="dmsFilter.set('all')">Tüm Belgeler</button>
-                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'received'" (click)="dmsFilter.set('received')">Gelenler</button>
-                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'sent'" (click)="dmsFilter.set('sent')">Gönderilenler</button>
-                      <button class="btn btn-outline btn-sm" [class.active]="dmsFilter() === 'public'" (click)="dmsFilter.set('public')">Şirket Ortak</button>
-                    </div>
-                    <button class="btn btn-primary btn-sm" (click)="isUploadPanelOpen.set(true)">Dosya Yükle</button>
-                  </div>
-
-                  <!-- drag drop and upload settings zone -->
-                  <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; margin-bottom: 16px; background: #faf9f8; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); align-items: stretch;">
-                    <!-- Sol Bölüm: Sürükle Bırak / Dosya Seçici -->
-                    <div 
-                      id="drag-drop-zone" 
-                      class="drag-drop-zone" 
-                      style="border: 2px dashed var(--primary); background-color: #ffffff; text-align: center; padding: 16px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; box-sizing: border-box;" 
-                      (click)="triggerFileSelect()"
-                      (dragover)="onDragOver($event)"
-                      (dragleave)="onDragLeave($event)"
-                      (drop)="onFileDropped($event)"
-                    >
-                      <app-icon name="file" [size]="28" color="var(--primary)" style="margin-bottom: 8px;"></app-icon>
-                      <span style="font-size: 12px; font-weight: 600; color: var(--primary); line-height: 1.4; max-width: 180px; word-wrap: break-word; overflow: hidden; text-overflow: ellipsis;">
-                        {{ selectedUploadFile() ? selectedUploadFile()!.name : 'Dosyaları buraya sürükleyin veya seçin' }}
-                      </span>
-                      <input type="file" id="hidden-file-input" style="display: none;" (change)="onFileSelected($event)" />
+                <div class="docs-tab-content" style="display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: 520px; align-items: start;">
+                  
+                  <!-- LEFT COLUMN: FILTERS, UPLOAD ZONE & VERTICAL FILE LIST -->
+                  <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+                    
+                    <div class="dms-filters" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                      <button class="btn btn-outline btn-xs" [class.active]="dmsFilter() === 'all'" (click)="dmsFilter.set('all')" style="padding: 4px 8px; font-size: 11px;">Tümü</button>
+                      <button class="btn btn-outline btn-xs" [class.active]="dmsFilter() === 'received'" (click)="dmsFilter.set('received')" style="padding: 4px 8px; font-size: 11px;">Gelenler</button>
+                      <button class="btn btn-outline btn-xs" [class.active]="dmsFilter() === 'sent'" (click)="dmsFilter.set('sent')" style="padding: 4px 8px; font-size: 11px;">Gidenler</button>
+                      <button class="btn btn-outline btn-xs" [class.active]="dmsFilter() === 'public'" (click)="dmsFilter.set('public')" style="padding: 4px 8px; font-size: 11px;">Ortak</button>
                     </div>
 
-                    <!-- Sağ Bölüm: Dosya Adı ve Gizlilik Ayarları -->
-                    <div style="display: flex; flex-direction: column; gap: 10px; justify-content: space-between;">
-                      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                        <div>
-                          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">DOSYA BAŞLIĞI</label>
-                          <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileTitle()" (ngModelChange)="uploadFileTitle.set($event)" placeholder="Dosya adı girin..." />
-                        </div>
-                        <div>
-                          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">GİZLİLİK AYARI</label>
-                          <select class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="uploadFilePrivacy()" (ngModelChange)="uploadFilePrivacy.set($event)">
-                            <option value="Public">Şirket Ortak (Public)</option>
-                            <option value="Department">Departman (Grup)</option>
-                            <option value="Private">Gizli (Sadece Ben)</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">DÜZENLEME YETKİSİ</label>
-                          <select class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="uploadFileEditPermission()" (ngModelChange)="uploadFileEditPermission.set($event)">
-                            <option value="Everyone">Herkes Düzenleyebilir</option>
-                            <option value="OwnerOnly">Sadece Ben Düzenleyebilirim</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">EK AÇIKLAMA / NOT</label>
-                        <input type="text" class="form-control" style="font-size: 12px; height: 32px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileComment()" (ngModelChange)="uploadFileComment.set($event)" placeholder="Dosya hakkında kısa not girin (opsiyonel)..." />
+                    <!-- drag drop and upload settings zone -->
+                    <div style="display: flex; flex-direction: column; gap: 10px; background: #faf9f8; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                      <!-- Sürükle Bırak / Dosya Seçici -->
+                      <div 
+                        id="drag-drop-zone" 
+                        class="drag-drop-zone" 
+                        style="border: 2px dashed var(--primary); background-color: #ffffff; text-align: center; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; box-sizing: border-box;" 
+                        (click)="triggerFileSelect()"
+                        (dragover)="onDragOver($event)"
+                        (dragleave)="onDragLeave($event)"
+                        (drop)="onFileDropped($event)"
+                      >
+                        <app-icon name="file" [size]="20" color="var(--primary)" style="margin-bottom: 4px;"></app-icon>
+                        <span style="font-size: 11px; font-weight: 600; color: var(--primary); line-height: 1.4; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                          {{ selectedUploadFile() ? selectedUploadFile()!.name : 'Dosya Seç veya Bırak' }}
+                        </span>
+                        <input type="file" id="hidden-file-input" style="display: none;" (change)="onFileSelected($event)" />
                       </div>
 
-                      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <div style="flex: 1;">
-                          @if (uploadFilePrivacy() === 'Private' || uploadFileEditPermission() === 'OwnerOnly') {
-                            <div style="display: flex; flex-direction: column;">
-                              <label style="font-size: 10px; font-weight: 700; color: #f59f0b; display: block; margin-bottom: 2px;">ERİŞİM ŞİFRESİ (OPSİYONEL)</label>
-                              <input type="password" class="form-control" style="font-size: 12px; height: 28px; padding: 2px 6px; border-radius: 4px; border: 1px solid #f59f0b; width: 100%; box-sizing: border-box;" [ngModel]="uploadFilePassword()" (ngModelChange)="uploadFilePassword.set($event)" placeholder="Şifre belirleyin..." />
-                            </div>
-                          }
+                      <!-- Yükleme Ayarları -->
+                      <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="margin: 0;">
+                          <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 2px;">DOSYA BAŞLIĞI</label>
+                          <input type="text" class="form-control" style="font-size: 11.5px; height: 28px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileTitle()" (ngModelChange)="uploadFileTitle.set($event)" placeholder="Başlık girin..." />
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-                          <button type="button" class="btn btn-outline btn-sm" style="height: 32px; font-size: 12px;" (click)="cancelUploadSelection()" [disabled]="!selectedUploadFile()">Temizle</button>
-                          <button type="button" class="btn btn-primary btn-sm" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;" (click)="uploadSelectedFileWithMetadata()" [disabled]="!selectedUploadFile()">
-                            <app-icon name="plus" [size]="12"></app-icon> Sisteme Yükle
-                          </button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                          <div>
+                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 2px;">GİZLİLİK</label>
+                            <select class="form-control" style="font-size: 11px; height: 28px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="uploadFilePrivacy()" (ngModelChange)="uploadFilePrivacy.set($event)">
+                              <option value="Public">Ortak (Public)</option>
+                              <option value="Department">Departman</option>
+                              <option value="Private">Sadece Ben</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 2px;">DÜZENLEME</label>
+                            <select class="form-control" style="font-size: 11px; height: 28px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="uploadFileEditPermission()" (ngModelChange)="uploadFileEditPermission.set($event)">
+                              <option value="Everyone">Herkes</option>
+                              <option value="OwnerOnly">Sadece Ben</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 2px;">AÇIKLAMA</label>
+                          <input type="text" class="form-control" style="font-size: 11.5px; height: 28px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;" [ngModel]="uploadFileComment()" (ngModelChange)="uploadFileComment.set($event)" placeholder="Kısa not..." />
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                          <div style="flex: 1;">
+                            @if (uploadFilePrivacy() === 'Private' || uploadFileEditPermission() === 'OwnerOnly') {
+                              <input type="password" class="form-control" style="font-size: 11.5px; height: 26px; padding: 2px 6px; border-radius: 4px; border: 1px solid #f59f0b; width: 100%; box-sizing: border-box;" [ngModel]="uploadFilePassword()" (ngModelChange)="uploadFilePassword.set($event)" placeholder="Şifre (Opsiyonel)..." />
+                            }
+                          </div>
+                          <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+                            <button type="button" class="btn btn-outline btn-xs" style="height: 28px; padding: 2px 8px; font-size: 11px;" (click)="cancelUploadSelection()" [disabled]="!selectedUploadFile()">Temizle</button>
+                            <button type="button" class="btn btn-primary btn-xs" style="height: 28px; padding: 2px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;" (click)="uploadSelectedFileWithMetadata()" [disabled]="!selectedUploadFile()">
+                              <app-icon name="plus" [size]="10"></app-icon> Yükle
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div class="dms-files-table" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
-                    <div class="table-header-dms" style="display: grid; grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 0.8fr 1.6fr; font-weight: 700; font-size: 12px; padding: 12px; border-bottom: 2px solid var(--border-color); background-color: #faf9f8; color: var(--text-muted);">
-                      <span>Dosya Adı</span>
-                      <span>Tür</span>
-                      <span>Yükleyen</span>
-                      <span>Son Düzenleyen</span>
-                      <span>Boyut</span>
-                      <span>Aksiyon</span>
-                    </div>
-                    <div class="table-body-dms" style="display: flex; flex-direction: column;">
+                    <!-- Dikey Dosya Listesi (Not Defteri Sol Listesi gibi) -->
+                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
                       @if (filteredFiles().length === 0) {
-                        <div style="padding: 20px; text-align: center; font-size: 13px; color: var(--text-muted);">Bu kategoride kayıtlı dosya bulunamadı.</div>
+                        <div style="padding: 20px; text-align: center; font-size: 12px; color: var(--text-muted); background: #faf9f8; border-radius: 6px; border: 1px solid var(--border-color);">Kayıtlı dosya bulunamadı.</div>
                       }
                       @for (doc of filteredFiles(); track doc.id) {
-                        <div class="dms-row-d" style="display: grid; grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 0.8fr 1.6fr; font-size: 12.5px; padding: 12px; border-bottom: 1px solid var(--border-color); align-items: center; cursor: pointer;" (click)="openDocumentSecurely(doc)">
-                          <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 4px;">{{ doc.title }}</span>
-                            @if (doc.privacy === 'Private') {
-                              <span style="font-size: 10px; background-color: rgba(100, 116, 139, 0.1); color: var(--text-muted); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="lock" [size]="10"></app-icon> Gizli</span>
-                            } @else if (doc.privacy === 'Department') {
-                              <span style="font-size: 10px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="server" [size]="10" color="#3b82f6"></app-icon> Departman</span>
-                            }
-                            @if (doc.isPasswordProtected) {
-                              <span style="font-size: 10px; background-color: rgba(245, 158, 11, 0.1); color: #f59f0b; border: 1px solid rgba(245, 158, 11, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="shield" [size]="10" color="#f59f0b"></app-icon> Şifreli</span>
-                            }
+                        <div 
+                          class="note-list-item" 
+                          [class.active]="activeDoc()?.id === doc.id" 
+                          (click)="openDocumentSecurely(doc)" 
+                          style="padding: 12px; border-radius: 6px; border: 1px solid #edebe9; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 4px; background-color: #faf9f8; position: relative;"
+                          [style.border-color]="activeDoc()?.id === doc.id ? '#0078d4' : '#edebe9'"
+                          [style.background-color]="activeDoc()?.id === doc.id ? '#ffffff' : '#faf9f8'"
+                        >
+                          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 6px;">
+                            <h5 style="margin: 0; font-size: 12px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1;" [style.color]="activeDoc()?.id === doc.id ? '#242424' : '#605e5c'">{{ doc.title }}</h5>
+                            <span style="font-size: 9.5px; background-color: rgba(0, 120, 212, 0.08); color: var(--primary); padding: 1px 5px; border-radius: 4px; font-weight: 600; flex-shrink: 0;">{{ getDocumentTypeDisplay(doc) }}</span>
                           </div>
-                          <span style="color: var(--text-muted);">{{ getDocumentTypeDisplay(doc) }}</span>
-                          <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; line-height: 1.4;">
-                            <span style="font-weight: 600; color: var(--primary); display: inline-flex; align-items: center; gap: 4px;">
-                              <app-icon [name]="doc.editPermission === 'OwnerOnly' ? 'user' : 'users'" [size]="12"></app-icon>
+                          
+                          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--text-muted); width: 100%;">
+                            <span style="display: inline-flex; align-items: center; gap: 3px;">
+                              <app-icon [name]="doc.editPermission === 'OwnerOnly' ? 'user' : 'users'" [size]="10"></app-icon>
                               {{ doc.ownerUsername }}
                             </span>
-                            <span style="color: var(--text-muted); font-size: 10.5px; display: inline-flex; align-items: center; gap: 4px;">
-                              <app-icon name="calendar" [size]="10"></app-icon>
-                              {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}
-                            </span>
+                            <span>{{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</span>
                           </div>
-                          <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; line-height: 1.4;">
-                            <span style="font-weight: 600; color: #107c41; display: inline-flex; align-items: center; gap: 4px;">
-                              <app-icon [name]="doc.editPermission === 'OwnerOnly' ? 'user' : 'users'" [size]="12"></app-icon>
-                              {{ doc.lastModifiedBy || doc.ownerUsername }}
-                            </span>
-                            <span style="color: var(--text-muted); font-size: 10.5px; display: inline-flex; align-items: center; gap: 4px;">
-                              <app-icon name="calendar" [size]="10"></app-icon>
-                              {{ doc.modifiedDate | date:'yyyy-MM-dd HH:mm' }}
-                            </span>
-                          </div>
-                          <span style="color: var(--text-muted);">{{ doc.fileSize }}</span>
-                          <div style="display: flex; gap: 8px; align-items: center;" (click)="$event.stopPropagation();">
+
+                          <!-- Actions on row bottom -->
+                          <div style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; border-top: 1px solid #edebe9; padding-top: 6px; margin-top: 4px;" (click)="$event.stopPropagation();">
                             <button 
                               type="button" 
                               class="btn btn-outline btn-xs" 
-                              style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0; transition: all 0.2s;"
+                              style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 4px; padding: 0; transition: all 0.2s;"
                               [style.opacity]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') ? '1' : '0.3'"
                               [style.cursor]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department') ? 'pointer' : 'not-allowed'"
                               [disabled]="!(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin' || currentUserRole() === 'IT Department')"
                               (click)="openPrivacyModal(doc)" 
                               title="Ayarlar"
                             >
-                              <app-icon name="settings" [size]="12"></app-icon>
+                              <app-icon name="settings" [size]="10"></app-icon>
                             </button>
                             <button 
                               type="button" 
                               class="btn btn-outline btn-xs" 
-                              style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0; transition: all 0.2s;" 
+                              style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 4px; padding: 0; transition: all 0.2s;" 
                               (click)="openVersionHistory(doc)" 
                               title="Sürümler"
                             >
-                              <app-icon name="clock" [size]="12"></app-icon>
+                              <app-icon name="clock" [size]="10"></app-icon>
                             </button>
                             <button 
                               type="button" 
                               class="btn btn-outline btn-xs btn-delete" 
-                              style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; padding: 0; transition: all 0.2s;"
+                              style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 4px; padding: 0; transition: all 0.2s;"
                               [style.opacity]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') ? '1' : '0.3'"
                               [style.cursor]="(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin') ? 'pointer' : 'not-allowed'"
                               [disabled]="!(doc.ownerUsername.toLowerCase() === currentUser()?.toLowerCase() || currentUserRole() === 'Admin')"
                               (click)="deleteActiveDocumentDirect(doc)" 
                               title="Sil"
                             >
-                              <app-icon name="trash-2" [size]="12"></app-icon>
+                              <app-icon name="trash-2" [size]="10"></app-icon>
                             </button>
                           </div>
                         </div>
                       }
                     </div>
                   </div>
+
+                  <!-- RIGHT COLUMN: INTEGRATED PREVIEWER & EDITOR -->
+                  <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #ffffff; padding: 16px; min-height: 480px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-width: 0; flex: 1; align-self: stretch;">
+                    
+                    @if (activeDoc(); as doc) {
+                      <div style="display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0;">
+                        <!-- Header with Actions -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                          <div style="flex: 1; min-width: 200px;">
+                            <input type="text" class="form-control" style="font-size: 14px; font-weight: 700; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 10px; width: 100%; box-sizing: border-box; background: #ffffff; height: 32px;" [ngModel]="doc.title" (ngModelChange)="doc.title = $event" placeholder="Dosya adı..." />
+                          </div>
+                          
+                          <div style="display: flex; gap: 6px; align-items: center;">
+                            @if (doc.isFile) {
+                              <a [href]="doc.fileUrl" target="_blank" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 4px; height: 32px; font-size: 11.5px; padding: 0 8px;">
+                                <app-icon name="download" [size]="11"></app-icon> İndir
+                              </a>
+                              
+                              <label class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 4px; height: 32px; font-size: 11.5px; cursor: pointer; margin: 0; padding: 0 8px;">
+                                <app-icon name="plus" [size]="11"></app-icon> Dosyayı Güncelle
+                                <input type="file" style="display: none;" (change)="onUpdateFileSelected($event, doc)" />
+                              </label>
+                            }
+                            
+                            <button class="btn btn-primary btn-sm" (click)="saveActiveDocument()" style="height: 32px; font-size: 11.5px; padding: 0 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                              <app-icon name="settings" [size]="11" color="#fff"></app-icon> Kaydet
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Metadata details -->
+                        <div style="padding: 10px; background: #faf9f8; border-radius: var(--radius-sm); font-size: 11px; line-height: 1.5; color: var(--text-muted); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; border: 1px solid #edebe9;">
+                          <div><strong>Tür:</strong> {{ getDocumentTypeDisplay(doc) }}</div>
+                          <div><strong>Boyut:</strong> {{ doc.fileSize || 'N/A' }}</div>
+                          <div><strong>Yükleyen:</strong> {{ doc.ownerUsername }}</div>
+                          <div><strong>Tarih:</strong> {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</div>
+                          <div><strong>Son Düzenleyen:</strong> {{ doc.lastModifiedBy || doc.ownerUsername }}</div>
+                          <div><strong>Düzenleme Tarihi:</strong> {{ doc.modifiedDate | date:'yyyy-MM-dd HH:mm' }}</div>
+                        </div>
+
+                        <!-- Description/Comment -->
+                        <div style="margin: 0; display: flex; flex-direction: column; gap: 2px;">
+                          <label style="font-weight: 700; font-size: 10px; color: var(--text-muted); text-transform: uppercase;">AÇIKLAMA</label>
+                          <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff; height: 28px;" [ngModel]="doc.uploaderComment" (ngModelChange)="doc.uploaderComment = $event" placeholder="Açıklama veya not yazın..." />
+                        </div>
+
+                        <!-- Embedded File Content Area -->
+                        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background: #faf9f8; flex: 1; min-height: 340px; display: flex; flex-direction: column; min-width: 0;">
+                          @if (doc.isFile) {
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 340px; min-width: 0;">
+                              @if (isImageFile(doc.fileUrl, doc.title)) {
+                                <img [src]="doc.fileUrl" style="max-width: 100%; max-height: 400px; object-fit: contain; display: block;" />
+                              } @else if (isPdfFile(doc.fileUrl, doc.title)) {
+                                <iframe [src]="getSafeUrl(doc.fileUrl)" style="width: 100%; height: 400px; border: none; display: block;"></iframe>
+                              } @else if (isExcelFile(doc.fileUrl, doc.title)) {
+                                <div [innerHTML]="getSafeHtml(doc.content)" style="width: 100%; height: 400px; overflow: auto; padding: 12px; box-sizing: border-box; background: #ffffff; color: #000000; display: block;" class="excel-preview-table-container"></div>
+                              } @else {
+                                <div style="text-align: center; padding: 24px;">
+                                  <app-icon name="file" [size]="40" color="#64748b" style="margin-bottom: 12px;"></app-icon>
+                                  <p style="margin: 0; font-size: 12.5px; font-weight: 600; color: var(--text-main);">Bu dosya türü doğrudan önizlenemiyor</p>
+                                  <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--text-muted);">Görüntülemek veya düzenlemek için yukarıdaki 'İndir' veya 'Dosyayı Güncelle' butonunu kullanabilirsiniz.</p>
+                                </div>
+                              }
+                            </div>
+                          } @else {
+                            <textarea class="form-control" style="font-size: 12.5px; padding: 12px; border: none; width: 100%; height: 100%; min-height: 340px; box-sizing: border-box; font-family: inherit; resize: none; background: #ffffff; outline: none; flex: 1;" [ngModel]="doc.content" (ngModelChange)="doc.content = $event" placeholder="Belge içeriği..."></textarea>
+                          }
+                        </div>
+                      </div>
+                    } @else {
+                      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); text-align: center; padding: 40px 20px;">
+                        <app-icon name="file" [size]="40" color="#a19f9d" style="margin-bottom: 12px;"></app-icon>
+                        <p style="font-size: 13.5px; font-weight: 600; margin: 0 0 4px 0; color: var(--text-main);">Belge Seçilmedi</p>
+                        <p style="font-size: 11.5px; margin: 0;">Düzenlemek veya önizlemesini görmek için soldaki listeden bir dosya seçin.</p>
+                      </div>
+                    }
+                  </div>
+
                 </div>
               }
 
@@ -1051,85 +1107,7 @@
             </div>
           </div>
 
-          <!-- MODAL: DOSYA DETAYLARI & DÜZENLEME MODALI -->
-          @if (activeDoc(); as doc) {
-            <div class="modal-overlay" (click)="activeDoc.set(null)"></div>
-            <div class="modal" style="max-width: 600px;">
-              <div class="modal-header">
-                <h3>Dosya Detayları & Düzenleme</h3>
-                <button class="modal-close" (click)="activeDoc.set(null)">
-                  <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
-                </button>
-              </div>
-              <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 16px;">
-                <!-- 1. Metadata and Details (Editable Title & Comment) -->
-                <div class="document-metadata-card" style="padding: 16px; background: #faf9f8; border-radius: var(--radius-sm); font-size: 12px; line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="form-group" style="margin: 0; grid-column: span 2;">
-                      <label style="font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">Dosya Adı</label>
-                      <input type="text" class="form-control" style="font-size: 13px; height: 32px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="doc.title" (ngModelChange)="doc.title = $event" />
-                    </div>
-                    <div><strong>Dosya Türü:</strong> {{ getDocumentTypeDisplay(doc) }}</div>
-                    <div><strong>Boyut:</strong> {{ doc.fileSize }}</div>
-                    <div><strong>Yükleyen (Sahip):</strong> {{ doc.ownerUsername }}</div>
-                    <div><strong>Yükleme Tarihi:</strong> {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</div>
-                    <div><strong>Güncelleyen:</strong> {{ doc.lastModifiedBy || doc.ownerUsername }}</div>
-                    <div><strong>Güncelleme Tarihi:</strong> {{ doc.modifiedDate | date:'yyyy-MM-dd HH:mm' }}</div>
-                    
-                    <div class="form-group" style="margin: 0; grid-column: span 2;">
-                      <label style="font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">Dosya Açıklaması</label>
-                      <textarea class="form-control" style="font-size: 12px; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; height: 60px; font-family: inherit; resize: none; background: #ffffff;" [ngModel]="doc.uploaderComment" (ngModelChange)="doc.uploaderComment = $event"></textarea>
-                    </div>
-                  </div>
-                </div>
 
-                <!-- 2. Document Content Area (If text document, let them edit it directly! If file, show download/update buttons) -->
-                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; background: #ffffff; display: flex; flex-direction: column; gap: 12px;">
-                  @if (doc.isFile) {
-                    <!-- DYNAMIC FILE VIEWER -->
-                    <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                      <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background-color: #faf9f8; display: flex; align-items: center; justify-content: center; min-height: 250px; width: 100%;">
-                        @if (isImageFile(doc.fileUrl, doc.title)) {
-                          <img [src]="doc.fileUrl" style="max-width: 100%; max-height: 350px; object-fit: contain; display: block;" />
-                        } @else if (isPdfFile(doc.fileUrl, doc.title)) {
-                          <iframe [src]="getSafeUrl(doc.fileUrl)" style="width: 100%; height: 350px; border: none; display: block;"></iframe>
-                        } @else if (isExcelFile(doc.fileUrl, doc.title)) {
-                          <div [innerHTML]="getSafeHtml(doc.content)" style="width: 100%; max-height: 350px; overflow: auto; padding: 12px; box-sizing: border-box; background: #ffffff; color: #000000; display: block;" class="excel-preview-table-container"></div>
-                        } @else {
-                          <div style="text-align: center; padding: 24px 12px; display: block;">
-                            <app-icon name="file" [size]="48" color="#64748b" style="margin-bottom: 12px;"></app-icon>
-                            <p style="margin: 0; font-size: 13px; font-weight: 600; color: var(--text-main);">Bu dosya türü doğrudan önizlenemiyor</p>
-                            <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--text-muted);">Görüntülemek için aşağıdaki 'Dosyayı İndir' butonunu kullanabilirsiniz.</p>
-                          </div>
-                        }
-                      </div>
-
-                      <div style="display: flex; gap: 10px; width: 100%; justify-content: center; margin-top: 8px;">
-                        <a [href]="doc.fileUrl" target="_blank" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; font-size: 12px;">
-                          <app-icon name="download" [size]="12"></app-icon> Dosyayı İndir
-                        </a>
-                        
-                        <!-- Update file selector button -->
-                        <label class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; font-size: 12px; cursor: pointer; margin: 0;">
-                          <app-icon name="plus" [size]="12"></app-icon> Dosyayı Güncelle (Yeni Dosya Yükle)
-                          <input type="file" style="display: none;" (change)="onUpdateFileSelected($event, doc)" />
-                        </label>
-                      </div>
-                    </div>
-                  } @else {
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                      <label style="font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Belge Not İçeriği</label>
-                      <textarea class="form-control" style="font-size: 13px; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; height: 160px; font-family: inherit; resize: vertical; background: #ffffff;" [ngModel]="doc.content" (ngModelChange)="doc.content = $event"></textarea>
-                    </div>
-                  }
-                </div>
-              </div>
-              <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
-                <button class="btn btn-outline" (click)="activeDoc.set(null)">Kapat</button>
-                <button class="btn btn-primary" (click)="saveActiveDocument(); activeDoc.set(null);">Kaydet & Kapat</button>
-              </div>
-            </div>
-          }
 
           <!-- MODAL: GİZLİLİK VE GÜVENLİK AYARLARI MODALI -->
           @if (isPrivacyModalOpen(); as open) {

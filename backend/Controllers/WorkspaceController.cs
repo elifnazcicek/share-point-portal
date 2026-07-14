@@ -51,44 +51,51 @@ namespace SharePointBackend.Controllers
             bool needsSave = false;
             foreach (var d in filteredDocs)
             {
-                if (d.IsFile && string.IsNullOrEmpty(d.Content) && !string.IsNullOrEmpty(d.FileUrl))
+                if (d.IsFile && !string.IsNullOrEmpty(d.FileUrl))
                 {
                     var ext = Path.GetExtension(d.Title ?? string.Empty).ToLowerInvariant();
                     if (ext == ".xlsx" || ext == ".xls")
                     {
-                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                        var fileName = Path.GetFileName(d.FileUrl);
-                        if (!string.IsNullOrEmpty(fileName))
+                        // Parse if empty or is a placeholder markdown title instead of an HTML table
+                        if (string.IsNullOrEmpty(d.Content) || !d.Content.Contains("<table"))
                         {
-                            var filePath = Path.Combine(uploadDir, fileName);
-                            if (System.IO.File.Exists(filePath))
+                            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                            var fileName = Path.GetFileName(d.FileUrl);
+                            if (!string.IsNullOrEmpty(fileName))
                             {
-                                try
+                                var filePath = Path.Combine(uploadDir, fileName);
+                                if (System.IO.File.Exists(filePath))
                                 {
-                                    d.Content = ConvertExcelToHtmlTable(filePath);
-                                    _context.WorkspaceDocuments.Update(d);
-                                    needsSave = true;
+                                    try
+                                    {
+                                        d.Content = ConvertExcelToHtmlTable(filePath);
+                                        _context.WorkspaceDocuments.Update(d);
+                                        needsSave = true;
+                                    }
+                                    catch {}
                                 }
-                                catch {}
                             }
                         }
                     }
                     else if (ext == ".txt" || ext == ".md" || ext == ".html" || ext == ".css" || ext == ".js" || ext == ".json")
                     {
-                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                        var fileName = Path.GetFileName(d.FileUrl);
-                        if (!string.IsNullOrEmpty(fileName))
+                        if (string.IsNullOrEmpty(d.Content) || d.Content.StartsWith("#"))
                         {
-                            var filePath = Path.Combine(uploadDir, fileName);
-                            if (System.IO.File.Exists(filePath))
+                            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                            var fileName = Path.GetFileName(d.FileUrl);
+                            if (!string.IsNullOrEmpty(fileName))
                             {
-                                try
+                                var filePath = Path.Combine(uploadDir, fileName);
+                                if (System.IO.File.Exists(filePath))
                                 {
-                                    d.Content = System.IO.File.ReadAllText(filePath);
-                                    _context.WorkspaceDocuments.Update(d);
-                                    needsSave = true;
+                                    try
+                                    {
+                                        d.Content = System.IO.File.ReadAllText(filePath);
+                                        _context.WorkspaceDocuments.Update(d);
+                                        needsSave = true;
+                                    }
+                                    catch {}
                                 }
-                                catch {}
                             }
                         }
                     }
