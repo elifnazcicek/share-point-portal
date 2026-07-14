@@ -926,7 +926,7 @@
                           <span style="color: var(--text-muted);">{{ getDocumentTypeDisplay(doc) }}</span>
                           <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; line-height: 1.4;">
                             <span style="font-weight: 600; color: var(--primary); display: inline-flex; align-items: center; gap: 4px;">
-                              <app-icon name="user" [size]="12"></app-icon>
+                              <app-icon [name]="doc.editPermission === 'OwnerOnly' ? 'user' : 'users'" [size]="12"></app-icon>
                               {{ doc.ownerUsername }}
                             </span>
                             <span style="color: var(--text-muted); font-size: 10.5px; display: inline-flex; align-items: center; gap: 4px;">
@@ -936,7 +936,7 @@
                           </div>
                           <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; line-height: 1.4;">
                             <span style="font-weight: 600; color: #107c41; display: inline-flex; align-items: center; gap: 4px;">
-                              <app-icon name="user" [size]="12"></app-icon>
+                              <app-icon [name]="doc.editPermission === 'OwnerOnly' ? 'user' : 'users'" [size]="12"></app-icon>
                               {{ doc.lastModifiedBy || doc.ownerUsername }}
                             </span>
                             <span style="color: var(--text-muted); font-size: 10.5px; display: inline-flex; align-items: center; gap: 4px;">
