@@ -1051,46 +1051,68 @@
             </div>
           </div>
 
-          <!-- MODAL: DOSYA ÖNİZLEME MODALI -->
+          <!-- MODAL: DOSYA DETAYLARI & DÜZENLEME MODALI -->
           @if (activeDoc(); as doc) {
             <div class="modal-overlay" (click)="activeDoc.set(null)"></div>
             <div class="modal" style="max-width: 600px;">
               <div class="modal-header">
-                <h3>Dosya Önizleme: {{ doc.title }}</h3>
+                <h3>Dosya Detayları & Düzenleme</h3>
                 <button class="modal-close" (click)="activeDoc.set(null)">
                   <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
                 </button>
               </div>
-              <div class="modal-body" style="font-family: inherit;">
-                <div class="document-metadata-card" style="padding: 12px; background: #faf9f8; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 11.5px; line-height: 1.6;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 16px;">
+                <!-- 1. Metadata and Details (Editable Title & Comment) -->
+                <div class="document-metadata-card" style="padding: 16px; background: #faf9f8; border-radius: var(--radius-sm); font-size: 12px; line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group" style="margin: 0; grid-column: span 2;">
+                      <label style="font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">Dosya Adı</label>
+                      <input type="text" class="form-control" style="font-size: 13px; height: 32px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="doc.title" (ngModelChange)="doc.title = $event" />
+                    </div>
                     <div><strong>Dosya Türü:</strong> {{ getDocumentTypeDisplay(doc) }}</div>
                     <div><strong>Boyut:</strong> {{ doc.fileSize }}</div>
                     <div><strong>Yükleyen (Sahip):</strong> {{ doc.ownerUsername }}</div>
                     <div><strong>Yükleme Tarihi:</strong> {{ doc.createdDate | date:'yyyy-MM-dd HH:mm' }}</div>
                     <div><strong>Güncelleyen:</strong> {{ doc.lastModifiedBy || doc.ownerUsername }}</div>
                     <div><strong>Güncelleme Tarihi:</strong> {{ doc.modifiedDate | date:'yyyy-MM-dd HH:mm' }}</div>
-                  </div>
-                  <div style="margin-top: 8px; border-top: 1px solid #f1f1f1; padding-top: 8px;">
-                    <strong>Yükleyen Açıklaması:</strong>
-                    <p style="margin: 4px 0 0 0; font-style: italic; color: var(--text-muted);">{{ doc.uploaderComment || 'Açıklama belirtilmedi.' }}</p>
+                    
+                    <div class="form-group" style="margin: 0; grid-column: span 2;">
+                      <label style="font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">Dosya Açıklaması</label>
+                      <textarea class="form-control" style="font-size: 12px; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; height: 60px; font-family: inherit; resize: none; background: #ffffff;" [ngModel]="doc.uploaderComment" (ngModelChange)="doc.uploaderComment = $event"></textarea>
+                    </div>
                   </div>
                 </div>
-                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; background: #ffffff;">
-                  <strong>Belge İçeriği:</strong>
+
+                <!-- 2. Document Content Area (If text document, let them edit it directly! If file, show download/update buttons) -->
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; background: #ffffff; display: flex; flex-direction: column; gap: 12px;">
                   @if (doc.isFile) {
-                    <div style="text-align: center; padding: 24px 12px;">
-                      <app-icon name="globe" [size]="48" color="#0078d4" style="margin-bottom: 12px;"></app-icon>
-                      <p style="margin: 0 0 12px 0; font-size: 13px;">Bu çalışma alanı bir kurumsal dosyaya aittir.</p>
-                      <a [href]="doc.fileUrl" target="_blank" class="btn btn-primary btn-sm">Dosyayı İndir / Bağlantıyı Aç</a>
+                    <div style="text-align: center; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                      <app-icon name="file" [size]="48" color="#0078d4"></app-icon>
+                      <p style="margin: 0; font-size: 13px; font-weight: 600;">Bu çalışma alanı bir kurumsal dosyaya aittir.</p>
+                      
+                      <div style="display: flex; gap: 10px; width: 100%; justify-content: center; margin-top: 8px;">
+                        <a [href]="doc.fileUrl" target="_blank" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; font-size: 12px;">
+                          <app-icon name="download" [size]="12"></app-icon> Dosyayı İndir
+                        </a>
+                        
+                        <!-- Update file selector button -->
+                        <label class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; font-size: 12px; cursor: pointer; margin: 0;">
+                          <app-icon name="plus" [size]="12"></app-icon> Dosyayı Güncelle (Yeni Dosya Yükle)
+                          <input type="file" style="display: none;" (change)="onUpdateFileSelected($event, doc)" />
+                        </label>
+                      </div>
                     </div>
                   } @else {
-                    <p style="white-space: pre-wrap; font-size: 13px; margin: 8px 0 0 0;">{{ doc.content || 'Boş not içeriği.' }}</p>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Belge Not İçeriği</label>
+                      <textarea class="form-control" style="font-size: 13px; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; height: 160px; font-family: inherit; resize: vertical; background: #ffffff;" [ngModel]="doc.content" (ngModelChange)="doc.content = $event"></textarea>
+                    </div>
                   }
                 </div>
               </div>
-              <div class="modal-footer">
+              <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
                 <button class="btn btn-outline" (click)="activeDoc.set(null)">Kapat</button>
+                <button class="btn btn-primary" (click)="saveActiveDocument(); activeDoc.set(null);">Kaydet & Kapat</button>
               </div>
             </div>
           }

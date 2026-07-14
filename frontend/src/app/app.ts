@@ -857,6 +857,40 @@ export class App implements OnInit {
     });
   }
 
+  protected onUpdateFileSelected(event: any, doc: WorkspaceDocument) {
+    const file = event.target?.files?.[0];
+    if (!file || !doc || !doc.id) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('username', this.currentUser() || 'Guest');
+
+    this.loading.set(true);
+    this.http.post<any>(`${this.workspaceUrl}/upload`, formData).subscribe({
+      next: (res) => {
+        doc.fileUrl = res.fileUrl;
+        doc.fileSize = res.fileSize;
+        doc.lastModifiedBy = this.currentUser() || 'Guest';
+
+        this.http.put<WorkspaceDocument>(`${this.workspaceUrl}/documents/${doc.id}?username=${encodeURIComponent(this.currentUser() || 'Guest')}`, doc).subscribe({
+          next: () => {
+            this.loadDocuments();
+            this.loading.set(false);
+            alert('Dosya başarıyla yüklendi ve güncellendi!');
+          },
+          error: (err) => {
+            this.loading.set(false);
+            alert('Dosya veritabanında güncellenirken hata oluştu.');
+          }
+        });
+      },
+      error: (err) => {
+        this.loading.set(false);
+        alert('Yeni dosya sunucuya yüklenirken hata oluştu.');
+      }
+    });
+  }
+
   protected deleteActiveDocument() {
     const doc = this.activeDoc();
     const user = this.currentUser();
