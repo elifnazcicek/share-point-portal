@@ -682,16 +682,13 @@
             
             <!-- COLUMN 1: YEMEK MENÜSÜ -->
             <div class="widget-panel">
-              <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <h3>Haftalık Yemek Menüsü</h3>
-                  @if (currentUserRole() === 'Admin') {
-                    <button type="button" class="btn btn-outline btn-xs" (click)="openLunchMenuModal()" style="font-size: 11px; padding: 2px 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; outline: none; border: 1px solid var(--primary); color: var(--primary); background: transparent; border-radius: 4px; height: 22px;">
-                      <app-icon name="settings" [size]="10" color="var(--primary)"></app-icon> Düzenle
-                    </button>
-                  }
-                </div>
-                <app-icon name="coffee" [size]="16" color="#2a9d8f"></app-icon>
+              <div class="widget-header" style="display: flex; align-items: center; gap: 8px;">
+                <h3>Haftalık Yemek Menüsü</h3>
+                @if (currentUserRole() === 'Admin') {
+                  <button type="button" class="btn btn-outline btn-xs" (click)="openLunchMenuModal()" style="font-size: 11px; padding: 2px 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; outline: none; border: 1px solid var(--primary); color: var(--primary); background: transparent; border-radius: 4px; height: 22px;">
+                    <app-icon name="settings" [size]="10" color="var(--primary)"></app-icon> Düzenle
+                  </button>
+                }
               </div>
               <div class="widget-body lunch-list">
                 <div class="lunch-day-row"><strong>Pazartesi:</strong> {{ lunchMenu().Pazartesi }}</div>
@@ -701,12 +698,11 @@
                 <div class="lunch-day-row"><strong>Cuma:</strong> {{ lunchMenu().Cuma }}</div>
               </div>
             </div>
-
+ 
             <!-- COLUMN 2: ÖNEMLİ ETKİNLİKLER -->
             <div class="widget-panel">
               <div class="widget-header">
                 <h3>Önemli Etkinlikler & Ajanda</h3>
-                <app-icon name="calendar" [size]="16" color="#0078d4"></app-icon>
               </div>
               <div class="widget-body" style="display:flex; flex-direction:column; box-sizing:border-box;">
                 @if (selectedCalendarDate()) {
@@ -739,7 +735,7 @@
                     }
                   </div>
                 </div>
-
+ 
                 <!-- Toggleable Add Event Button / Form -->
                 <div class="add-event-toggle-section">
                   <button type="button" class="btn-toggle-add-event" (click)="isAddEventFormOpen.set(!isAddEventFormOpen())">
@@ -756,12 +752,11 @@
                 </div>
               </div>
             </div>
-
+ 
             <!-- COLUMN 3: TAKVİM GRID -->
             <div class="widget-panel">
               <div class="widget-header">
                 <h3>Aylık Takvim</h3>
-                <app-icon name="calendar" [size]="16" color="#8b5cf6"></app-icon>
               </div>
               <div class="widget-body calendar-widget-body">
                 <div class="calendar-month-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 12px; font-weight: 700; font-size: 13.5px; color: var(--text-main); border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 6px;">
