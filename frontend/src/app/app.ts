@@ -378,10 +378,20 @@ export class App implements OnInit {
   protected readonly noteToShare = signal<any | null>(null);
 
   // Collaborative Workspaces
-  protected readonly workspaces = signal<{id: number, name: string, desc: string, notes: string, files: any[]}[]>([
-    { id: 1, name: 'Yıl Sonu Bütçe Değerlendirme', desc: 'Muhasebe ve IT ortak planlama odası', notes: 'Proje kapsamında IT donanım harcamaları Muhasebe tarafından bu alandan takip edilecektir.', files: [{ name: 'IT_Donanim_Butcesi.xlsx', size: '1.4 MB' }] }
+  protected readonly workspaces = signal<{id: number, name: string, desc: string, notes: string, files: any[], members: string[]}[]>([
+    { id: 1, name: 'Yıl Sonu Bütçe Değerlendirme', desc: 'Muhasebe ve IT ortak planlama odası', notes: 'Proje kapsamında IT donanım harcamaları Muhasebe tarafından bu alandan takip edilecektir.', files: [{ name: 'IT_Donanim_Butcesi.xlsx', size: '1.4 MB' }], members: ['admin', 'fin_user', 'it_user'] }
   ]);
   protected readonly isNewWorkspaceModalOpen = signal<boolean>(false);
+  protected readonly wsNameInput = signal<string>('');
+  protected readonly wsDescInput = signal<string>('');
+  protected readonly wsInvitedMembers = signal<string[]>([]);
+
+  protected readonly visibleWorkspaces = computed(() => {
+    const user = this.currentUser();
+    if (!user) return [];
+    if (user === 'admin') return this.workspaces();
+    return this.workspaces().filter(ws => ws.members && ws.members.includes(user));
+  });
 
   // Full Screen Dual Chat Contacts
   protected readonly chatContacts = signal<{username: string, fullName: string, role: string, online: boolean}[]>([
@@ -398,7 +408,7 @@ export class App implements OnInit {
   protected readonly chatMessageSearchQuery = signal<string>('');
 
   // Admin tabs & config parameters
-  protected readonly adminSubTab = signal<'users' | 'network' | 'logs' | 'home-edit'>('users');
+  protected readonly adminSubTab = signal<'users' | 'network' | 'logs' | 'home-edit' | 'approvals'>('users');
   protected readonly adminSubnetInput = signal<string>('10.100.0.0/16');
   protected readonly adminMaxFileSize = signal<number>(50);
   protected readonly adminExtensions = signal<string>('.pdf, .docx, .xlsx, .png, .jpg');
@@ -411,6 +421,9 @@ export class App implements OnInit {
   // Admin Workspace Management State
   protected readonly adminUsers = signal<AdminUser[]>([]);
   protected readonly approvalRequests = signal<AdminApprovalRequest[]>([]);
+  protected readonly pendingApprovalsCount = computed(() => {
+    return this.approvalRequests().filter(r => r.isPending).length;
+  });
 
   // Chat State
   protected readonly chatInput = signal<string>('');
@@ -702,6 +715,14 @@ export class App implements OnInit {
     if (savedNotes) {
       try {
         this.personalNotesAll.set(JSON.parse(savedNotes));
+      } catch (e) {}
+    }
+
+    // Restore workspaces
+    const savedWorkspaces = localStorage.getItem('workspacesAll');
+    if (savedWorkspaces) {
+      try {
+        this.workspaces.set(JSON.parse(savedWorkspaces));
       } catch (e) {}
     }
 
@@ -1088,6 +1109,40 @@ export class App implements OnInit {
 
     this.http.post<any>(`${this.workspaceUrl}/approvals/${id}/action?username=${encodeURIComponent(admin)}&approved=${approved}`, {}).subscribe({
       next: () => {
+        const req = this.approvalRequests().find(r => r.id === id);
+        if (approved && req && req.title.startsWith('NewWorkspaceRequest:')) {
+          const wsName = req.title.replace('NewWorkspaceRequest:', '');
+          let desc = '';
+          let members: string[] = ['admin'];
+
+          const descMatch = req.description.match(/Açıklama:\s*(.*?)\s*\|/);
+          if (descMatch) desc = descMatch[1];
+
+          const membersMatch = req.description.match(/Üyeler:\s*(.*)$/);
+          if (membersMatch) {
+            members = membersMatch[1].split(',').map(m => m.trim()).filter(Boolean);
+          }
+
+          const newWs = {
+            id: this.workspaces().length + 1,
+            name: wsName,
+            desc: desc,
+            notes: 'Ortak notlar...',
+            files: [],
+            members: members
+          };
+
+          this.workspaces.update(list => {
+            const updated = [...list, newWs];
+            localStorage.setItem('workspacesAll', JSON.stringify(updated));
+            return updated;
+          });
+          alert(`"${wsName}" ortak çalışma odası başarıyla onaylandı ve oluşturuldu.`);
+        } else if (!approved && req && req.title.startsWith('NewWorkspaceRequest:')) {
+          const wsName = req.title.replace('NewWorkspaceRequest:', '');
+          alert(`"${wsName}" ortak çalışma odası talebi reddedildi.`);
+        }
+
         this.loadApprovals();
         this.loadProfile(); // Reload logs
       }
@@ -1865,19 +1920,82 @@ export class App implements OnInit {
     alert(`Çalışma Odası: ${ws.name}\nAçıklama: ${ws.desc}\nOrtak Notlar: ${ws.notes}`);
   }
 
-  protected createNewWorkspace() {
-    const name = prompt('Ortak Çalışma Grubu Adı:');
-    if (!name) return;
-    const desc = prompt('Açıklama:');
-    const newWs = {
-      id: this.workspaces().length + 1,
-      name: name,
-      desc: desc || '',
-      notes: 'Ortak notlar...',
-      files: []
+  protected toggleWsInviteMember(username: string) {
+    this.wsInvitedMembers.update(current => {
+      if (current.includes(username)) {
+        return current.filter(u => u !== username);
+      } else {
+        return [...current, username];
+      }
+    });
+  }
+
+  protected submitWorkspaceApproval() {
+    const name = this.wsNameInput().trim();
+    const desc = this.wsDescInput().trim();
+    const user = this.currentUser() || 'Guest';
+    if (!name) {
+      alert('Lütfen çalışma odası adı giriniz.');
+      return;
+    }
+
+    const members = Array.from(new Set(['admin', user, ...this.wsInvitedMembers()]));
+
+    if (user === 'admin') {
+      const newWs = {
+        id: this.workspaces().length + 1,
+        name: name,
+        desc: desc,
+        notes: 'Ortak notlar...',
+        files: [],
+        members: members
+      };
+      this.workspaces.update(list => {
+        const updated = [...list, newWs];
+        localStorage.setItem('workspacesAll', JSON.stringify(updated));
+        return updated;
+      });
+      alert(`"${name}" ortak çalışma odası başarıyla oluşturuldu.`);
+      this.isNewWorkspaceModalOpen.set(false);
+      this.wsNameInput.set('');
+      this.wsDescInput.set('');
+      this.wsInvitedMembers.set([]);
+      return;
+    }
+
+    const payload = {
+      title: `NewWorkspaceRequest:${name}`,
+      description: `Talep Eden: ${user} | Açıklama: ${desc} | Üyeler: ${members.join(', ')}`,
+      requestedByUsername: user
     };
-    this.workspaces.update(list => [...list, newWs]);
-    alert('Yeni ortak çalışma alanı başarıyla açıldı.');
+
+    this.http.post<any>(`${this.workspaceUrl}/approvals`, payload).subscribe({
+      next: () => {
+        alert('Çalışma odası oluşturma talebi onay için yöneticiye gönderildi.');
+        this.isNewWorkspaceModalOpen.set(false);
+        this.wsNameInput.set('');
+        this.wsDescInput.set('');
+        this.wsInvitedMembers.set([]);
+        this.loadApprovals();
+      },
+      error: () => {
+        alert('Talep gönderilirken hata oluştu.');
+      }
+    });
+  }
+
+  protected getWorkspaceDescFromRequest(description: string): string {
+    const match = description.match(/Açıklama:\s*(.*?)\s*\|/);
+    return match ? match[1] : 'Açıklama girilmemiş.';
+  }
+
+  protected getWorkspaceMembersFromRequest(description: string): string {
+    const match = description.match(/Üyeler:\s*(.*)$/);
+    return match ? match[1] : 'Sadece Admin';
+  }
+
+  protected createNewWorkspace() {
+    this.isNewWorkspaceModalOpen.set(true);
   }
 
   protected selectChatUser(usr: any) {

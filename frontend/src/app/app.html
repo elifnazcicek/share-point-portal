@@ -1032,7 +1032,7 @@
                     <button class="btn btn-primary btn-sm" (click)="createNewWorkspace()">Ortak Çalışma Alanı Aç</button>
                   </div>
                   <div class="workspaces-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
-                    @for (ws of workspaces(); track ws.id) {
+                    @for (ws of visibleWorkspaces(); track ws.id) {
                       <div class="ws-proj-card" style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; background: #ffffff;" (click)="openWorkspaceDetail(ws)">
                         <div class="ws-proj-title">
                           <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--primary);">{{ ws.name }}</h4>
@@ -1412,6 +1412,12 @@
               <button class="btn" [class.btn-primary]="adminSubTab() === 'network'" [class.btn-outline]="adminSubTab() !== 'network'" (click)="adminSubTab.set('network')">Güvenli Ağ & Limitler</button>
               <button class="btn" [class.btn-primary]="adminSubTab() === 'logs'" [class.btn-outline]="adminSubTab() !== 'logs'" (click)="adminSubTab.set('logs')">Audit Log Raporu</button>
               <button class="btn" [class.btn-primary]="adminSubTab() === 'home-edit'" [class.btn-outline]="adminSubTab() !== 'home-edit'" (click)="adminSubTab.set('home-edit')">Ana Sayfa Özelleştirme</button>
+              <button class="btn" [class.btn-primary]="adminSubTab() === 'approvals'" [class.btn-outline]="adminSubTab() !== 'approvals'" (click)="adminSubTab.set('approvals')">
+                Onay Bekleyen Talepler
+                @if (pendingApprovalsCount() > 0) {
+                  <span style="background-color: var(--accent); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 4px;">{{ pendingApprovalsCount() }}</span>
+                }
+              </button>
             </div>
 
             <div class="admin-content-area" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px;">
@@ -1545,6 +1551,71 @@
                       <textarea [(ngModel)]="homeDescription" rows="4" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; resize: none; outline: none;"></textarea>
                     </div>
                     <button class="btn btn-primary" (click)="updateHomePageInfo()" style="align-self: flex-start;">Ana Sayfayı Güncelle</button>
+                  </div>
+                </div>
+              }
+
+              <!-- Tab 5: Onay Bekleyen Talepler -->
+              @if (adminSubTab() === 'approvals') {
+                <div class="admin-tab-section active">
+                  <h3>Onay Bekleyen Talepler</h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Sistem genelindeki ortak çalışma alanı oluşturma ve diğer onay taleplerini yönetebilirsiniz.</p>
+
+                  <div class="approvals-table-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                    <table class="admin-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                      <thead>
+                        <tr style="background-color: #faf9f8; border-bottom: 2px solid var(--border-color); text-align: left;">
+                          <th style="padding: 12px; width: 180px;">Talep Türü</th>
+                          <th style="padding: 12px;">Talep Detayı</th>
+                          <th style="padding: 12px; width: 140px;">Talep Eden</th>
+                          <th style="padding: 12px; width: 150px;">Tarih</th>
+                          <th style="padding: 12px; width: 160px; text-align: center;">Durum / Aksiyon</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @if (approvalRequests().length === 0) {
+                          <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Herhangi bir onay talebi bulunamadı.</td></tr>
+                        }
+                        @for (req of approvalRequests(); track req.id) {
+                          <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px; font-weight: 600;">
+                              @if (req.title.startsWith('NewWorkspaceRequest:')) {
+                                <span style="background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Çalışma Odası Talebi</span>
+                              } @else {
+                                <span style="background-color: rgba(100, 116, 139, 0.1); color: var(--text-muted); padding: 2px 8px; border-radius: 12px; font-size: 11px;">Genel Talep</span>
+                              }
+                            </td>
+                            <td style="padding: 12px;">
+                              @if (req.title.startsWith('NewWorkspaceRequest:')) {
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                  <strong style="color: var(--primary);">{{ req.title.replace('NewWorkspaceRequest:', '') }}</strong>
+                                  <span style="font-size: 12px; color: var(--text-main);">{{ getWorkspaceDescFromRequest(req.description) }}</span>
+                                  <span style="font-size: 11px; color: var(--text-muted);">Davet Edilenler: {{ getWorkspaceMembersFromRequest(req.description) }}</span>
+                                </div>
+                              } @else {
+                                <span>{{ req.description }}</span>
+                              }
+                            </td>
+                            <td style="padding: 12px; font-weight: 500;">{{ req.requestedByUsername }}</td>
+                            <td style="padding: 12px; color: var(--text-muted);">{{ req.createdDate }}</td>
+                            <td style="padding: 12px; text-align: center;">
+                              @if (req.isPending) {
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                  <button class="btn btn-primary btn-xs" style="background-color: #107c41; border-color: #107c41; padding: 4px 8px; color: #ffffff;" (click)="actionApproval(req.id, true)">Onayla</button>
+                                  <button class="btn btn-outline btn-xs" style="color: #a80000; border-color: #a80000; padding: 4px 8px;" (click)="actionApproval(req.id, false)">Reddet</button>
+                                </div>
+                              } @else {
+                                @if (req.isApproved) {
+                                  <span style="color: #107c41; font-weight: 600; font-size: 12px;">Onaylandı ({{ req.actionedByUsername }})</span>
+                                } @else {
+                                  <span style="color: #a80000; font-weight: 600; font-size: 12px;">Reddedildi ({{ req.actionedByUsername }})</span>
+                                }
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               }
@@ -2114,6 +2185,62 @@
       </div>
       <div class="modal-footer" style="display: flex; justify-content: flex-end;">
         <button type="button" class="btn btn-outline btn-sm" (click)="isShareNoteModalOpen.set(false)">İptal</button>
+      </div>
+    </div>
+
+    <!-- MODAL: YENİ ORTAK ÇALIŞMA ALANI OLUŞTURMA TALEP MODALI -->
+    <div class="modal-overlay" *ngIf="isNewWorkspaceModalOpen()" (click)="isNewWorkspaceModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isNewWorkspaceModalOpen()" style="max-width: 460px; z-index: 10000;">
+      <div class="modal-header">
+        <h3>Yeni Ortak Çalışma Odası Talebi</h3>
+        <button class="modal-close" (click)="isNewWorkspaceModalOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 20px; font-family: inherit; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-weight: 600; font-size: 12.5px;">Çalışma Grubu / Oda Adı</label>
+          <input 
+            type="text" 
+            [ngModel]="wsNameInput()" 
+            (ngModelChange)="wsNameInput.set($event)" 
+            placeholder="Oda adını giriniz..." 
+            style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--card-bg); color: var(--text-main); font-family: inherit; outline: none; box-sizing: border-box;"
+          />
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-weight: 600; font-size: 12.5px;">Açıklama / Amaç</label>
+          <textarea 
+            [ngModel]="wsDescInput()" 
+            (ngModelChange)="wsDescInput.set($event)" 
+            placeholder="Oda kullanım amacını açıklayın..." 
+            rows="3"
+            style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--card-bg); color: var(--text-main); font-family: inherit; outline: none; box-sizing: border-box; resize: none;"
+          ></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-weight: 600; font-size: 12.5px;">Davet Edilecek Çalışma Arkadaşlarım</label>
+          <div style="border: 1px solid var(--border-color); border-radius: 6px; max-height: 150px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: #fafafa;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 4px; opacity: 0.7;">
+              <input type="checkbox" checked disabled style="cursor: not-allowed;" />
+              <span style="font-size: 12.5px; font-weight: 600;">Ahmet Karaca (Global Admin) <span style="font-size: 10.5px; color: var(--text-muted); font-weight: normal;">- Otomatik Davet Edildi</span></span>
+            </div>
+            @for (usr of chatContacts(); track usr.username) {
+              @if (usr.username !== 'ai_bot' && usr.username !== 'admin' && usr.username !== currentUser()) {
+                <label style="display: flex; align-items: center; gap: 8px; padding: 4px; cursor: pointer; margin: 0;">
+                  <input type="checkbox" [checked]="wsInvitedMembers().includes(usr.username)" (change)="toggleWsInviteMember(usr.username)" style="cursor: pointer;" />
+                  <span style="font-size: 12.5px;">{{ usr.fullName }} ({{ usr.role }})</span>
+                </label>
+              }
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-outline btn-sm" (click)="isNewWorkspaceModalOpen.set(false)">İptal</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="submitWorkspaceApproval()">Onaya Gönder</button>
       </div>
     </div>
 
