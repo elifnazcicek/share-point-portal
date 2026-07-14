@@ -675,72 +675,7 @@
             </section>
           </div>
 
-          <!-- Admin Dashboard Widgets Section (Visible only to Admin/IT) -->
-          @if (currentUserRole() === 'IT Department' || currentUserRole() === 'Admin') {
-            <section class="admin-dashboard-widgets-section" style="width:100%; margin-bottom:20px;">
-              <div class="section-title">
-                <h3>Kurumsal Gösterge Paneli</h3>
-              </div>
 
-              <div class="widgets-row" style="margin-bottom:20px;">
-                <div class="dashboard-widget-card">
-                  <div class="widget-card-header">
-                    <app-icon name="calendar" [size]="16" color="#0078d4"></app-icon>
-                    <span>Görevler</span>
-                  </div>
-                  <div class="widget-card-body">
-                    <div class="badge-huge">1 Teslimat</div>
-                    <div class="widget-subtext">Harcamalar ve beyan faturaları onayda</div>
-                  </div>
-                </div>
-
-                <div class="dashboard-widget-card">
-                  <div class="widget-card-header">
-                    <app-icon name="dollar-sign" [size]="16" color="#10b981"></app-icon>
-                    <span>Expenses 2.0</span>
-                  </div>
-                  <div class="widget-card-body">
-                    <div class="badge-huge">$80.21</div>
-                    <div class="widget-subtext">IK beyan edilmemiş seyahat bakiyesi</div>
-                  </div>
-                </div>
-
-                <div class="dashboard-widget-card">
-                  <div class="widget-card-header">
-                    <app-icon name="activity" [size]="16" color="#8b5cf6"></app-icon>
-                    <span>Insights</span>
-                  </div>
-                  <div class="widget-card-body insights-body">
-                    <div class="insights-title">Zihninizi dinlendirin</div>
-                    <div class="widget-subtext">Gözlerinizi 5 dakika ekrandan ayırın</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- System Access Audit Logs Panel (Admin Only) -->
-              <div class="widget-panel" style="margin-bottom:20px;">
-                <div class="widget-header">
-                  <h3>Sistem Erişim Logları (Audit)</h3>
-                  <app-icon name="terminal" [size]="16" color="#0078d4"></app-icon>
-                </div>
-                <div class="widget-body audit-list">
-                  @for (log of recentLogs() | slice:0:5; track log.id) {
-                    <div class="audit-item">
-                      <div class="audit-dot"></div>
-                      <div class="audit-info">
-                        <span class="audit-action">{{ log.action }}</span>
-                        <div class="audit-meta">
-                          <span>{{ log.ipAddress }}</span> &bull; 
-                          <span>{{ log.departmentName }}</span> &bull; 
-                          <span>{{ log.timestamp | date:'HH:mm:ss' }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            </section>
-          }
 
           <!-- Three-Column Layout for Lunch Menu, Events, and Monthly Calendar -->
           <div class="bottom-layout-grid-three-cols">
