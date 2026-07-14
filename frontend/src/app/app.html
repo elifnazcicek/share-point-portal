@@ -1397,50 +1397,7 @@
             </div>
           }
 
-          <!-- MODAL: YEMEK MENÜSÜ GÜNCELLEME MODALI (ADMIN ONLY) -->
-          @if (isLunchMenuModalOpen(); as open) {
-            <div class="modal-overlay" (click)="isLunchMenuModalOpen.set(false)"></div>
-            <div class="modal" style="max-width: 500px;">
-              <div class="modal-header">
-                <h3>Yemek Menüsünü Güncelle</h3>
-                <button class="modal-close" (click)="isLunchMenuModalOpen.set(false)">
-                  <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
-                </button>
-              </div>
-              <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 14px;">
-                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Şirket genelinde görüntülenecek haftalık yemek menüsünü güncelleyin:</p>
-                
-                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">PAZARTESİ</label>
-                  <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchPazartesi()" (ngModelChange)="lunchPazartesi.set($event)" />
-                </div>
-                
-                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">SALI</label>
-                  <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchSali()" (ngModelChange)="lunchSali.set($event)" />
-                </div>
 
-                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">ÇARŞAMBA</label>
-                  <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchCarsamba()" (ngModelChange)="lunchCarsamba.set($event)" />
-                </div>
-
-                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">PERŞEMBE</label>
-                  <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchPersembe()" (ngModelChange)="lunchPersembe.set($event)" />
-                </div>
-
-                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">CUMA</label>
-                  <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchCuma()" (ngModelChange)="lunchCuma.set($event)" />
-                </div>
-              </div>
-              <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" class="btn btn-outline" (click)="isLunchMenuModalOpen.set(false)">İptal</button>
-                <button type="button" class="btn btn-primary" (click)="saveLunchMenu()">Kaydet</button>
-              </div>
-            </div>
-          }
         }
 
         <!-- SECTION 3: ADMIN SETTINGS & AUDIT LOG FEED -->
@@ -2071,6 +2028,49 @@
             }
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL: YEMEK MENÜSÜ GÜNCELLEME MODALI (ADMIN ONLY) -->
+    <div class="modal-overlay" *ngIf="isLunchMenuModalOpen()" (click)="isLunchMenuModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isLunchMenuModalOpen()" style="max-width: 500px; z-index: 10000;">
+      <div class="modal-header">
+        <h3>Yemek Menüsünü Güncelle</h3>
+        <button class="modal-close" (click)="isLunchMenuModalOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 14px;">
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Şirket genelinde görüntülenecek haftalık yemek menüsünü güncelleyin:</p>
+        
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">PAZARTESİ</label>
+          <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchPazartesi()" (ngModelChange)="lunchPazartesi.set($event)" />
+        </div>
+        
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">SALI</label>
+          <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchSali()" (ngModelChange)="lunchSali.set($event)" />
+        </div>
+
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">ÇARŞAMBA</label>
+          <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchCarsamba()" (ngModelChange)="lunchCarsamba.set($event)" />
+        </div>
+
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">PERŞEMBE</label>
+          <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchPersembe()" (ngModelChange)="lunchPersembe.set($event)" />
+        </div>
+
+        <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-weight: 700; font-size: 11px; color: var(--text-muted);">CUMA</label>
+          <input type="text" class="form-control" style="font-size: 13px; height: 36px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; background: #ffffff;" [ngModel]="lunchCuma()" (ngModelChange)="lunchCuma.set($event)" />
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn btn-outline" (click)="isLunchMenuModalOpen.set(false)">İptal</button>
+        <button type="button" class="btn btn-primary" (click)="saveLunchMenu()">Kaydet</button>
       </div>
     </div>
 
