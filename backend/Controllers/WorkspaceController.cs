@@ -40,7 +40,6 @@ namespace SharePointBackend.Controllers
 
             var docs = await _context.WorkspaceDocuments.ToListAsync();
 
-            // Filter lists based on new privacy logic
             var filteredDocs = docs.Where(d =>
                 d.Privacy == "Public" || d.IsPublic ||
                 d.OwnerUsername.ToLower() == user.ToLower() ||
@@ -48,6 +47,58 @@ namespace SharePointBackend.Controllers
                 (d.Privacy == "Department" && !string.IsNullOrEmpty(currentUserRole) &&
                  _context.Users.Any(u => u.Username.ToLower() == d.OwnerUsername.ToLower() && u.Role == currentUserRole))
             ).ToList();
+
+            bool needsSave = false;
+            foreach (var d in filteredDocs)
+            {
+                if (d.IsFile && string.IsNullOrEmpty(d.Content) && !string.IsNullOrEmpty(d.FileUrl))
+                {
+                    var ext = Path.GetExtension(d.Title ?? string.Empty).ToLowerInvariant();
+                    if (ext == ".xlsx" || ext == ".xls")
+                    {
+                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                        var fileName = Path.GetFileName(d.FileUrl);
+                        if (!string.IsNullOrEmpty(fileName))
+                        {
+                            var filePath = Path.Combine(uploadDir, fileName);
+                            if (System.IO.File.Exists(filePath))
+                            {
+                                try
+                                {
+                                    d.Content = ConvertExcelToHtmlTable(filePath);
+                                    _context.WorkspaceDocuments.Update(d);
+                                    needsSave = true;
+                                }
+                                catch {}
+                            }
+                        }
+                    }
+                    else if (ext == ".txt" || ext == ".md" || ext == ".html" || ext == ".css" || ext == ".js" || ext == ".json")
+                    {
+                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                        var fileName = Path.GetFileName(d.FileUrl);
+                        if (!string.IsNullOrEmpty(fileName))
+                        {
+                            var filePath = Path.Combine(uploadDir, fileName);
+                            if (System.IO.File.Exists(filePath))
+                            {
+                                try
+                                {
+                                    d.Content = System.IO.File.ReadAllText(filePath);
+                                    _context.WorkspaceDocuments.Update(d);
+                                    needsSave = true;
+                                }
+                                catch {}
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (needsSave)
+            {
+                await _context.SaveChangesAsync();
+            }
 
             var result = filteredDocs.Select(d => {
                 bool isPasswordProtected = !string.IsNullOrEmpty(d.AccessPassword);

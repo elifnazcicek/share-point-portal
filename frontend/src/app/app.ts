@@ -898,21 +898,20 @@ export class App implements OnInit {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url || '');
   }
 
-  protected isImageFile(url: string | undefined): boolean {
-    if (!url) return false;
-    const lower = url.toLowerCase();
-    return lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.gif') || lower.endsWith('.webp');
+  protected isImageFile(url: string | undefined, title: string | undefined = ''): boolean {
+    const checkStr = (url || title || '').toLowerCase();
+    return checkStr.endsWith('.png') || checkStr.endsWith('.jpg') || checkStr.endsWith('.jpeg') || checkStr.endsWith('.gif') || checkStr.endsWith('.webp') ||
+           checkStr.includes('.png') || checkStr.includes('.jpg') || checkStr.includes('.jpeg') || checkStr.includes('.gif') || checkStr.includes('.webp');
   }
 
-  protected isPdfFile(url: string | undefined): boolean {
-    if (!url) return false;
-    return url.toLowerCase().endsWith('.pdf');
+  protected isPdfFile(url: string | undefined, title: string | undefined = ''): boolean {
+    const checkStr = (url || title || '').toLowerCase();
+    return checkStr.endsWith('.pdf') || checkStr.includes('.pdf');
   }
 
-  protected isExcelFile(url: string | undefined): boolean {
-    if (!url) return false;
-    const lower = url.toLowerCase();
-    return lower.endsWith('.xlsx') || lower.endsWith('.xls');
+  protected isExcelFile(url: string | undefined, title: string | undefined = ''): boolean {
+    const checkStr = (url || title || '').toLowerCase();
+    return checkStr.endsWith('.xlsx') || checkStr.endsWith('.xls') || checkStr.includes('.xlsx') || checkStr.includes('.xls');
   }
 
   protected getSafeHtml(html: string | undefined): SafeHtml {
