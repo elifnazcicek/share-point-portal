@@ -834,14 +834,14 @@
             </div>
 
             <!-- Inside Content Container -->
-            <div class="docs-main-container" style="width: 100%; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px; box-sizing: border-box;">
+            <div class="docs-main-container" style="width: 100%; height: calc(100vh - 152px); background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;">
               
               <!-- A. DOSYA YÖNETİCİSİ TABI (DMS) -->
               @if (workspaceSubTab() === 'dms') {
-                <div class="docs-tab-content" style="display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: 520px; align-items: start;">
+                <div class="docs-tab-content" style="display: grid; grid-template-columns: 340px 1fr; gap: 20px; height: 100%; min-height: 0; align-items: stretch; overflow: hidden;">
                   
                   <!-- LEFT COLUMN: FILTERS, UPLOAD ZONE & VERTICAL FILE LIST -->
-                  <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+                  <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0; height: 100%; overflow: hidden;">
                     
                     <div class="dms-filters" style="display: flex; gap: 6px; flex-wrap: wrap;">
                       <button class="btn btn-outline btn-xs" [class.active]="dmsFilter() === 'all'" (click)="dmsFilter.set('all')" style="padding: 4px 8px; font-size: 11px;">Tümü</button>
@@ -915,7 +915,7 @@
                     </div>
 
                     <!-- Dikey Dosya Listesi (Not Defteri Sol Listesi gibi) -->
-                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; padding-right: 4px; min-height: 0;">
                       @if (filteredFiles().length === 0) {
                         <div style="padding: 20px; text-align: center; font-size: 12px; color: var(--text-muted); background: #faf9f8; border-radius: 6px; border: 1px solid var(--border-color);">Kayıtlı dosya bulunamadı.</div>
                       }
@@ -983,10 +983,10 @@
                   </div>
 
                   <!-- RIGHT COLUMN: INTEGRATED PREVIEWER & EDITOR -->
-                  <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #ffffff; padding: 16px; min-height: 480px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-width: 0; flex: 1; align-self: stretch;">
+                  <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #ffffff; padding: 16px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-width: 0; flex: 1; align-self: stretch; overflow: hidden;">
                     
                     @if (activeDoc(); as doc) {
-                      <div style="display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0;">
+                      <div style="display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; height: 100%; overflow: hidden;">
                         <!-- Header with Actions -->
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
                           <div style="flex: 1; min-width: 200px;">
@@ -1028,15 +1028,15 @@
                         </div>
 
                         <!-- Embedded File Content Area -->
-                        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background: #faf9f8; flex: 1; min-height: 340px; display: flex; flex-direction: column; min-width: 0;">
+                        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background: #faf9f8; flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100%;">
                           @if (doc.isFile) {
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 340px; min-width: 0;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-width: 0; min-height: 0; overflow: auto;">
                               @if (isImageFile(doc.fileUrl, doc.title)) {
-                                <img [src]="doc.fileUrl" style="max-width: 100%; max-height: 400px; object-fit: contain; display: block;" />
+                                <img [src]="doc.fileUrl" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" />
                               } @else if (isPdfFile(doc.fileUrl, doc.title)) {
-                                <iframe [src]="getSafeUrl(doc.fileUrl)" style="width: 100%; height: 400px; border: none; display: block;"></iframe>
+                                <iframe [src]="getSafeUrl(doc.fileUrl)" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
                               } @else if (isExcelFile(doc.fileUrl, doc.title)) {
-                                <div [innerHTML]="getSafeHtml(doc.content)" style="width: 100%; height: 400px; overflow: auto; padding: 12px; box-sizing: border-box; background: #ffffff; color: #000000; display: block;" class="excel-preview-table-container"></div>
+                                <div [innerHTML]="getSafeHtml(doc.content)" style="width: 100%; height: 100%; overflow: auto; padding: 12px; box-sizing: border-box; background: #ffffff; color: #000000; display: block;" class="excel-preview-table-container"></div>
                               } @else {
                                 <div style="text-align: center; padding: 24px;">
                                   <app-icon name="file" [size]="40" color="#64748b" style="margin-bottom: 12px;"></app-icon>
@@ -1046,7 +1046,7 @@
                               }
                             </div>
                           } @else {
-                            <textarea class="form-control" style="font-size: 12.5px; padding: 12px; border: none; width: 100%; height: 100%; min-height: 340px; box-sizing: border-box; font-family: inherit; resize: none; background: #ffffff; outline: none; flex: 1;" [ngModel]="doc.content" (ngModelChange)="doc.content = $event" placeholder="Belge içeriği..."></textarea>
+                            <textarea class="form-control" style="font-size: 12.5px; padding: 12px; border: none; width: 100%; height: 100%; box-sizing: border-box; font-family: inherit; resize: none; background: #ffffff; outline: none; flex: 1;" [ngModel]="doc.content" (ngModelChange)="doc.content = $event" placeholder="Belge içeriği..."></textarea>
                           }
                         </div>
                       </div>
@@ -1064,12 +1064,12 @@
 
               <!-- B. KİŞİSEL NOT DEFTERİ TABI -->
               @if (workspaceSubTab() === 'notepad') {
-                <div class="docs-tab-content">
-                  <div class="notepad-grid" style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; min-height: 480px;">
+                <div class="docs-tab-content" style="height: 100%; min-height: 0; overflow: hidden;">
+                  <div class="notepad-grid" style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; height: 100%; min-height: 0;">
                     <!-- Left Note List -->
-                    <div class="notes-sidebar" style="border-right: 1px solid var(--border-color); padding-right: 12px; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="notes-sidebar" style="border-right: 1px solid var(--border-color); padding-right: 12px; display: flex; flex-direction: column; gap: 12px; height: 100%; overflow: hidden;">
                       <button class="btn btn-primary btn-sm w-100" (click)="createNewNote()" style="border-radius: 6px;">Yeni Not Ekle</button>
-                      <div class="notes-list-scroll" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; max-height: 420px;">
+                      <div class="notes-list-scroll" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0;">
                         @for (note of personalNotes(); track note.id) {
                           <div class="note-list-item" [class.active]="activeNoteId() === note.id" (click)="selectNote(note)" style="padding: 12px; border-radius: 6px; border: 1px solid #edebe9; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 4px;" [style.border-color]="activeNoteId() === note.id ? '#0078d4' : '#edebe9'" [style.background-color]="activeNoteId() === note.id ? '#ffffff' : '#faf9f8'">
                             <h5 style="margin: 0; font-size: 13px; font-weight: 600;" [style.color]="activeNoteId() === note.id ? '#242424' : '#605e5c'">{{ note.title }}</h5>
@@ -1079,7 +1079,7 @@
                       </div>
                     </div>
                     <!-- Right Content Editor -->
-                    <div class="note-editor" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="note-editor" style="display: flex; flex-direction: column; gap: 12px; height: 100%; min-height: 0; overflow: hidden;">
                       <div class="editor-title-bar" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                         <input type="text" id="note-title" [(ngModel)]="noteTitleInput" placeholder="Not Başlığı..." style="flex: 1; padding: 8px 12px; font-size: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: 6px; outline: none;" />
                         <div style="position: relative;">
@@ -1093,20 +1093,22 @@
                         </div>
                         <button class="btn btn-primary btn-sm" (click)="saveNote()" style="border-radius: 6px;">Notu Kaydet</button>
                       </div>
-                      <textarea id="note-content" [(ngModel)]="noteContentInput" placeholder="Notunuzu yazmaya başlayın..." style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; resize: none; min-height: 380px; outline: none;"></textarea>
+                      <textarea id="note-content" [(ngModel)]="noteContentInput" placeholder="Notunuzu yazmaya başlayın..." style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; resize: none; outline: none; height: 100%; min-height: 0;"></textarea>
                     </div>
                   </div>
                 </div>
               }
 
+
+
               <!-- C. ORTAK ÇALIŞMA ALANI TABI -->
               @if (workspaceSubTab() === 'workspaces') {
-                <div class="docs-tab-content">
+                <div class="docs-tab-content" style="height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
                   <div class="workspace-d-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Ortak Çalışma Odaları (Workspace)</h3>
                     <button class="btn btn-primary btn-sm" (click)="createNewWorkspace()">Ortak Çalışma Alanı Aç</button>
                   </div>
-                  <div class="workspaces-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+                  <div class="workspaces-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 20px;">
                     @for (ws of workspaces(); track ws.id) {
                       <div class="ws-proj-card" style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; background: #ffffff;" (click)="openWorkspaceDetail(ws)">
                         <div class="ws-proj-title">
