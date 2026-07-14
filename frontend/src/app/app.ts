@@ -378,13 +378,50 @@ export class App implements OnInit {
   protected readonly noteToShare = signal<any | null>(null);
 
   // Collaborative Workspaces
-  protected readonly workspaces = signal<{id: number, name: string, desc: string, notes: string, files: any[], members: string[]}[]>([
-    { id: 1, name: 'Yıl Sonu Bütçe Değerlendirme', desc: 'Muhasebe ve IT ortak planlama odası', notes: 'Proje kapsamında IT donanım harcamaları Muhasebe tarafından bu alandan takip edilecektir.', files: [{ name: 'IT_Donanim_Butcesi.xlsx', size: '1.4 MB' }], members: ['admin', 'fin_user', 'it_user'] }
+  protected readonly workspaces = signal<{id: number, name: string, desc: string, notes: string, files: any[], members: string[], chat?: any[]}[]>([
+    { 
+      id: 1, 
+      name: 'Yıl Sonu Bütçe Değerlendirme', 
+      desc: 'Muhasebe ve IT ortak planlama odası', 
+      notes: 'Proje kapsamında IT donanım harcamaları Muhasebe tarafından bu alandan takip edilecektir.', 
+      files: [
+        { name: 'IT_Donanim_Budcesi.xlsx', type: 'Excel', uploadedBy: 'admin', uploadedDate: '2026-07-04 10:11', lastEditedBy: 'admin', lastEditedDate: '2026-07-04 10:11', size: '1.4 MB' },
+        { name: '2026_Finansal_Rapor.pdf', type: 'PDF', uploadedBy: 'fin_user', uploadedDate: '2026-07-05 14:20', lastEditedBy: 'fin_user', lastEditedDate: '2026-07-05 14:20', size: '2.8 MB' },
+        { name: 'IT_Altyapi_Gereksinimleri.docx', type: 'Word', uploadedBy: 'it_user', uploadedDate: '2026-07-06 09:30', lastEditedBy: 'it_user', lastEditedDate: '2026-07-06 09:30', size: '950 KB' },
+        { name: 'Sunucu_Kesinti_Analizi.pdf', type: 'PDF', uploadedBy: 'admin', uploadedDate: '2026-07-07 11:15', lastEditedBy: 'admin', lastEditedDate: '2026-07-07 11:15', size: '1.2 MB' }
+      ], 
+      members: ['admin', 'fin_user', 'it_user'],
+      chat: [
+        { sender: 'admin', senderName: 'Ahmet Karaca', text: 'Arkadaşlar, bütçe planlama odasını açtım.', time: '10:00' },
+        { sender: 'fin_user', senderName: 'Elif Yılmaz', text: 'Teşekkürler Ahmet Bey, bütçe excel dosyasını yükledim.', time: '10:05' },
+        { sender: 'it_user', senderName: 'Murat (IT)', text: 'Harika. Altyapı ihtiyaç listesini de hazırlayıp ekliyorum.', time: '10:15' }
+      ]
+    }
   ]);
   protected readonly isNewWorkspaceModalOpen = signal<boolean>(false);
+  protected readonly isWorkspaceOnlyView = signal<boolean>(false);
+  protected readonly activeWorkspace = signal<any | null>(null);
+  protected readonly activeFileHistory = signal<any | null>(null);
+  protected readonly wsNotesInput = signal<string>('');
+  protected readonly isWorkspaceChatOpen = signal<boolean>(true);
+  protected readonly wsChatMessageInput = signal<string>('');
+  protected readonly wsUploadTitle = signal<string>('');
+  protected readonly wsUploadPrivacy = signal<string>('Public');
+  protected readonly wsUploadPermission = signal<string>('Everyone');
+  protected readonly wsUploadNote = signal<string>('');
+  protected readonly wsSelectedFile = signal<File | null>(null);
   protected readonly wsNameInput = signal<string>('');
   protected readonly wsDescInput = signal<string>('');
   protected readonly wsInvitedMembers = signal<string[]>([]);
+  protected readonly chatContextMenuVisible = signal<boolean>(false);
+  protected readonly chatContextMenuX = signal<number>(0);
+  protected readonly chatContextMenuY = signal<number>(0);
+  protected readonly chatContextMenuMsg = signal<any | null>(null);
+  protected readonly chatContextMenuIdx = signal<number>(-1);
+  protected readonly chatContextMenuType = signal<'workspace' | 'main'>('workspace');
+  protected readonly replyingToMessage = signal<any | null>(null);
+  protected readonly isMentionListOpen = signal<boolean>(false);
+  protected readonly mentionChatType = signal<'workspace' | 'main'>('workspace');
 
   protected readonly visibleWorkspaces = computed(() => {
     const user = this.currentUser();
@@ -427,7 +464,7 @@ export class App implements OnInit {
 
   // Chat State
   protected readonly chatInput = signal<string>('');
-  protected readonly chatHistories = signal<Record<string, {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string}[]>>({
+  protected readonly chatHistories = signal<Record<string, {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string, isPinned?: boolean, replyTo?: {senderName: string, text: string}}[]>>({
     'admin_fin_user': [
       { sender: 'fin_user', text: 'Merhaba Ahmet Bey, bütçe sunumu için raporu hazırladım. Dosyalar kısmından inceleyebilirsiniz.', time: '09:30' }
     ],
@@ -484,7 +521,7 @@ export class App implements OnInit {
 
   // Carousel News Slides
   protected readonly activeSlide = signal<number>(0);
-  protected readonly slides = [
+  protected readonly slides = signal<any[]>([
     {
       title: 'Şirket Portalı Güncellemesi Tamamlandı',
       description: 'Yenilenen ağ yapısı ve çalışma alanları sayesinde tüm verilere tek bir yerden erişebilirsiniz.',
@@ -503,7 +540,7 @@ export class App implements OnInit {
       image: '/news_banner.png',
       tag: 'Sosyal Alanlar'
     }
-  ];
+  ]);
 
   // Turkish char case-insensitive conversion helper
   private normalizeTurkish(str: string): string {
@@ -722,8 +759,38 @@ export class App implements OnInit {
     const savedWorkspaces = localStorage.getItem('workspacesAll');
     if (savedWorkspaces) {
       try {
-        this.workspaces.set(JSON.parse(savedWorkspaces));
-      } catch (e) {}
+        const parsed = JSON.parse(savedWorkspaces);
+        if (parsed.length > 0) {
+          const first = parsed[0];
+          if (!first.members || !first.members.includes('admin') || !first.files || first.files.length < 4 || !first.files[0].uploadedBy) {
+            const defaults = this.workspaces();
+            localStorage.setItem('workspacesAll', JSON.stringify(defaults));
+            this.workspaces.set(defaults);
+          } else {
+            this.workspaces.set(parsed);
+          }
+        } else {
+          this.workspaces.set(parsed);
+        }
+      } catch (e) {
+        localStorage.setItem('workspacesAll', JSON.stringify(this.workspaces()));
+      }
+    } else {
+      localStorage.setItem('workspacesAll', JSON.stringify(this.workspaces()));
+    }
+
+    // Check for standalone workspace URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const wsIdParam = params.get('workspace');
+    if (wsIdParam) {
+      const wsId = parseInt(wsIdParam, 10);
+      const currentList = this.workspaces();
+      const foundWs = currentList.find(w => w.id === wsId);
+      if (foundWs) {
+        this.isWorkspaceOnlyView.set(true);
+        this.activeWorkspace.set(foundWs);
+        this.wsNotesInput.set(foundWs.notes || '');
+      }
     }
 
     // Restore Lunch Menu
@@ -1916,8 +1983,452 @@ export class App implements OnInit {
     alert('Not paylaşım bağlantısı panoya kopyalandı.');
   }
 
+  protected downloadWorkspaceFile(name: string) {
+    alert(`"${name}" dosyası başarıyla indiriliyor...`);
+  }
+
+  protected showWorkspaceAlert(msg: string) {
+    alert(msg);
+  }
+
+  protected showFileVersionHistory(fileObj: any) {
+    if (!fileObj.versions) {
+      fileObj.versions = [
+        { version: "v2.0 (Güncel)", uploadedBy: fileObj.uploadedBy || "admin", date: fileObj.uploadedDate || "2026-07-04 10:11", size: fileObj.size || "1.4 MB" },
+        { version: "v1.1", uploadedBy: "it_user", date: "2026-07-03 14:05", size: "1.3 MB" },
+        { version: "v1.0 (İlk Sürüm)", uploadedBy: "fin_user", date: "2026-07-02 09:15", size: "1.1 MB" }
+      ];
+    }
+    this.activeFileHistory.set(fileObj);
+  }
+
+  protected downloadFileVersion(fileName: string, versionStr: string) {
+    alert(`"${fileName}" dosyasının "${versionStr}" sürümü başarıyla indiriliyor...`);
+  }
+
+  protected toggleChat(event: Event) {
+    event.stopPropagation();
+    this.isWorkspaceChatOpen.set(!this.isWorkspaceChatOpen());
+  }
+
+  protected closeChatIfOpen(event: Event) {
+    if (this.isWorkspaceChatOpen()) {
+      this.isWorkspaceChatOpen.set(false);
+    }
+    this.chatContextMenuVisible.set(false);
+    this.isMentionListOpen.set(false);
+  }
+
+  protected startReplyToMessage() {
+    this.replyingToMessage.set(this.chatContextMenuMsg());
+    this.chatContextMenuVisible.set(false);
+  }
+
+  protected cancelReply() {
+    this.replyingToMessage.set(null);
+  }
+
+  protected onChatMessageContextMenu(event: MouseEvent, msg: any, idx: number, chatType: 'workspace' | 'main' = 'workspace') {
+    event.preventDefault();
+    event.stopPropagation();
+    this.chatContextMenuX.set(event.clientX);
+    this.chatContextMenuY.set(event.clientY);
+    this.chatContextMenuMsg.set(msg);
+    this.chatContextMenuIdx.set(idx);
+    this.chatContextMenuType.set(chatType);
+    this.chatContextMenuVisible.set(true);
+  }
+
+  protected deleteChatMessage() {
+    const idx = this.chatContextMenuIdx();
+    if (idx === -1) return;
+
+    if (this.chatContextMenuType() === 'workspace') {
+      const ws = this.activeWorkspace();
+      if (!ws) return;
+
+      this.workspaces.update(list => {
+        const updated = list.map(item => {
+          if (item.id === ws.id) {
+            const chatList = item.chat || [];
+            return {
+              ...item,
+              chat: chatList.filter((_, i) => i !== idx)
+            };
+          }
+          return item;
+        });
+        localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+        const nextWs = updated.find(item => item.id === ws.id);
+        if (nextWs) this.activeWorkspace.set(nextWs);
+
+        return updated;
+      });
+    } else {
+      const activeUser = this.activeChatUser();
+      const currentUser = this.currentUser();
+      if (!activeUser || !currentUser) return;
+      const key = this.getChatKey(currentUser, activeUser.username);
+
+      this.chatHistories.update(histories => {
+        const userHistory = histories[key] || [];
+        return {
+          ...histories,
+          [key]: userHistory.filter((_, i) => i !== idx)
+        };
+      });
+    }
+
+    this.chatContextMenuVisible.set(false);
+  }
+
+  protected pinChatMessage() {
+    const idx = this.chatContextMenuIdx();
+    if (idx === -1) return;
+
+    if (this.chatContextMenuType() === 'workspace') {
+      const ws = this.activeWorkspace();
+      if (!ws) return;
+
+      this.workspaces.update(list => {
+        const updated = list.map(item => {
+          if (item.id === ws.id) {
+            const chatList = item.chat || [];
+            const willPin = !chatList[idx].isPinned;
+
+            const updatedChat = chatList.map((m, i) => {
+              if (i === idx) {
+                return { ...m, isPinned: willPin };
+              }
+              // Clear previous pin status to ensure only one message is active pinned!
+              return { ...m, isPinned: false };
+            });
+
+            return {
+              ...item,
+              chat: updatedChat
+            };
+          }
+          return item;
+        });
+        localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+        const nextWs = updated.find(item => item.id === ws.id);
+        if (nextWs) this.activeWorkspace.set(nextWs);
+
+        return updated;
+      });
+    } else {
+      const activeUser = this.activeChatUser();
+      const currentUser = this.currentUser();
+      if (!activeUser || !currentUser) return;
+      const key = this.getChatKey(currentUser, activeUser.username);
+
+      this.chatHistories.update(histories => {
+        const userHistory = histories[key] || [];
+        const willPin = !userHistory[idx].isPinned;
+
+        const updatedHistory = userHistory.map((m, i) => {
+          if (i === idx) {
+            return { ...m, isPinned: willPin };
+          }
+          // Clear previous pin status to ensure only one message is active pinned!
+          return { ...m, isPinned: false };
+        });
+
+        return {
+          ...histories,
+          [key]: updatedHistory
+        };
+      });
+    }
+
+    this.chatContextMenuVisible.set(false);
+  }
+
+  protected unpinWorkspaceMessage(event: Event, msgToUnpin: any) {
+    event.stopPropagation();
+    const ws = this.activeWorkspace();
+    if (!ws) return;
+
+    this.workspaces.update(list => {
+      const updated = list.map(item => {
+        if (item.id === ws.id) {
+          const chatList = item.chat || [];
+          const updatedChat = chatList.map(m => {
+            if (m.text === msgToUnpin.text && m.sender === msgToUnpin.sender) {
+              return { ...m, isPinned: false };
+            }
+            return m;
+          });
+          return {
+            ...item,
+            chat: updatedChat
+          };
+        }
+        return item;
+      });
+      localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+      const nextWs = updated.find(item => item.id === ws.id);
+      if (nextWs) this.activeWorkspace.set(nextWs);
+
+      return updated;
+    });
+  }
+
+  protected unpinMainMessage(event: Event, msgToUnpin: any) {
+    event.stopPropagation();
+    const activeUser = this.activeChatUser();
+    const currentUser = this.currentUser();
+    if (!activeUser || !currentUser) return;
+    const key = this.getChatKey(currentUser, activeUser.username);
+
+    this.chatHistories.update(histories => {
+      const userHistory = histories[key] || [];
+      const updatedHistory = userHistory.map(m => {
+        if (m.text === msgToUnpin.text && m.sender === msgToUnpin.sender) {
+          return { ...m, isPinned: false };
+        }
+        return m;
+      });
+      return {
+        ...histories,
+        [key]: updatedHistory
+      };
+    });
+  }
+
+  protected getActivePinnedMessage(ws: any): any | null {
+    if (!ws || !ws.chat) return null;
+    const pinned = (ws.chat as any[]).filter(m => m.isPinned);
+    return pinned.length > 0 ? pinned[pinned.length - 1] : null;
+  }
+
+  protected getActivePinnedMainMessage(): any | null {
+    const messages = this.activeChatMessages();
+    const pinned = messages.filter((m: any) => m.isPinned);
+    return pinned.length > 0 ? pinned[pinned.length - 1] : null;
+  }
+
+  protected getPinnedMessages(ws: any): any[] {
+    if (!ws || !ws.chat) return [];
+    return (ws.chat as any[]).filter(m => m.isPinned);
+  }
+
   protected openWorkspaceDetail(ws: any) {
-    alert(`Çalışma Odası: ${ws.name}\nAçıklama: ${ws.desc}\nOrtak Notlar: ${ws.notes}`);
+    window.open('?workspace=' + ws.id, '_blank');
+  }
+
+  protected windowClose() {
+    window.close();
+  }
+
+  protected saveWorkspaceNotes() {
+    const ws = this.activeWorkspace();
+    if (!ws) return;
+
+    this.workspaces.update(list => {
+      const updated = list.map(item => {
+        if (item.id === ws.id) {
+          return {
+            ...item,
+            notes: this.wsNotesInput()
+          };
+        }
+        return item;
+      });
+      localStorage.setItem('workspacesAll', JSON.stringify(updated));
+      
+      const nextWs = updated.find(item => item.id === ws.id);
+      if (nextWs) this.activeWorkspace.set(nextWs);
+
+      return updated;
+    });
+
+    alert('Çalışma odası ortak notları başarıyla güncellendi.');
+  }
+
+  protected triggerWorkspaceFileSelect() {
+    const fileInput = document.getElementById('ws-file-input');
+    if (fileInput) fileInput.click();
+  }
+
+  protected onWorkspaceFileSelected(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      this.wsSelectedFile.set(files[0]);
+      this.wsUploadTitle.set(files[0].name.split('.').slice(0, -1).join('.'));
+    }
+  }
+
+  protected uploadFileToWorkspace() {
+    const file = this.wsSelectedFile();
+    const ws = this.activeWorkspace();
+    if (!file || !ws) {
+      alert('Lütfen yüklenecek bir dosya seçin.');
+      return;
+    }
+
+    const title = this.wsUploadTitle().trim() || file.name;
+    const fileExt = file.name.split('.').pop() || '';
+    const fullFileName = title.includes('.') ? title : `${title}.${fileExt}`;
+
+    const formattedSize = file.size >= 1024 * 1024
+      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+      : `${Math.round(file.size / 1024)} KB`;
+
+    let fileType = 'Belge';
+    if (['xls', 'xlsx'].includes(fileExt.toLowerCase())) fileType = 'Excel';
+    else if (['pdf'].includes(fileExt.toLowerCase())) fileType = 'PDF';
+    else if (['doc', 'docx'].includes(fileExt.toLowerCase())) fileType = 'Word';
+    else if (['png', 'jpg', 'jpeg', 'gif'].includes(fileExt.toLowerCase())) fileType = 'Görsel';
+
+    const user = this.currentUser() || 'admin';
+    const dateStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    const newFileObj = {
+      name: fullFileName,
+      type: fileType,
+      uploadedBy: user,
+      uploadedDate: dateStr,
+      lastEditedBy: user,
+      lastEditedDate: dateStr,
+      size: formattedSize
+    };
+
+    this.workspaces.update(list => {
+      const updated = list.map(item => {
+        if (item.id === ws.id) {
+          return {
+            ...item,
+            files: [...(item.files || []), newFileObj]
+          };
+        }
+        return item;
+      });
+      localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+      const nextWs = updated.find(item => item.id === ws.id);
+      if (nextWs) this.activeWorkspace.set(nextWs);
+
+      return updated;
+    });
+
+    alert(`"${fullFileName}" dosyası başarıyla yüklendi.`);
+    this.wsSelectedFile.set(null);
+    this.wsUploadTitle.set('');
+    this.wsUploadNote.set('');
+  }
+
+  protected clearWorkspaceUploadForm() {
+    this.wsSelectedFile.set(null);
+    this.wsUploadTitle.set('');
+    this.wsUploadNote.set('');
+  }
+
+  protected deleteWorkspaceFile(fileObj: any) {
+    const ws = this.activeWorkspace();
+    if (!ws) return;
+
+    if (confirm(`"${fileObj.name}" dosyasını silmek istediğinize emin misiniz?`)) {
+      this.workspaces.update(list => {
+        const updated = list.map(item => {
+          if (item.id === ws.id) {
+            return {
+              ...item,
+              files: (item.files || []).filter(f => f.name !== fileObj.name)
+            };
+          }
+          return item;
+        });
+        localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+        const nextWs = updated.find(item => item.id === ws.id);
+        if (nextWs) this.activeWorkspace.set(nextWs);
+
+        return updated;
+      });
+      alert('Dosya ortak çalışma alanından silindi.');
+    }
+  }
+
+  protected sendWorkspaceChatMessage() {
+    const text = this.wsChatMessageInput().trim();
+    if (!text) return;
+
+    const ws = this.activeWorkspace();
+    if (!ws) return;
+
+    const user = this.currentUser() || 'admin';
+    const fullName = this.currentUserFullName() || 'Ahmet (Global Admin)';
+    const replyData = this.replyingToMessage();
+
+    const newMsg = {
+      sender: user,
+      senderName: fullName,
+      text: text,
+      time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+      isPinned: false,
+      replyTo: replyData ? { senderName: replyData.senderName || replyData.sender, text: replyData.text } : undefined
+    };
+
+    this.replyingToMessage.set(null);
+
+    this.workspaces.update(list => {
+      const updated = list.map(item => {
+        if (item.id === ws.id) {
+          const chatList = item.chat || [];
+          return {
+            ...item,
+            chat: [...chatList, newMsg]
+          };
+        }
+        return item;
+      });
+      localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+      const nextWs = updated.find(item => item.id === ws.id);
+      if (nextWs) this.activeWorkspace.set(nextWs);
+
+      return updated;
+    });
+
+    this.wsChatMessageInput.set('');
+
+    const otherMembers = (ws.members as string[]).filter((m: string) => m !== user);
+    if (otherMembers.length > 0) {
+      setTimeout(() => {
+        const replier = otherMembers[Math.floor(Math.random() * otherMembers.length)];
+        const replierName = replier === 'admin' ? 'Ahmet Karaca' : (replier === 'fin_user' ? 'Elif Yılmaz' : (replier === 'it_user' ? 'Murat (IT)' : replier));
+        const replyMsg = {
+          sender: replier,
+          senderName: replierName,
+          text: 'Mesajınızı aldım, ortak dosyalar tablosunu kontrol ediyorum.',
+          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        this.workspaces.update(list => {
+          const updated = list.map(item => {
+            if (item.id === ws.id) {
+              const chatList = item.chat || [];
+              return {
+                ...item,
+                chat: [...chatList, replyMsg]
+              };
+            }
+            return item;
+          });
+          localStorage.setItem('workspacesAll', JSON.stringify(updated));
+
+          const nextWs = updated.find(item => item.id === ws.id);
+          if (nextWs) this.activeWorkspace.set(nextWs);
+
+          return updated;
+        });
+      }, 1500);
+    }
   }
 
   protected toggleWsInviteMember(username: string) {
@@ -2007,14 +2518,19 @@ export class App implements OnInit {
     if (!input) return;
 
     const user = this.currentUser() || 'admin';
+    const replyData = this.replyingToMessage();
+
     const payload = {
       sender: user,
       text: input,
       time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
       isSharedNote: false,
-      noteTitle: ''
+      noteTitle: '',
+      isPinned: false,
+      replyTo: replyData ? { senderName: replyData.senderName || (replyData.sender === 'admin' ? 'Ahmet Karaca' : (replyData.sender === 'fin_user' ? 'Elif Yılmaz' : (replyData.sender === 'it_user' ? 'Murat (IT)' : replyData.sender))), text: replyData.text } : undefined
     };
 
+    this.replyingToMessage.set(null);
     this.appendMessageToActiveChat(payload);
     this.fullChatInput.set('');
     this.chatMessageSearchQuery.set(''); // Clear search filter when sending message
@@ -2090,28 +2606,32 @@ export class App implements OnInit {
     });
   }
 
-  private appendMessageToActiveChat(msg: {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string}) {
+  private appendMessageToActiveChat(msg: {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string, isPinned?: boolean}) {
     const activeUser = this.activeChatUser();
-    if (!activeUser) return;
+    const currentUser = this.currentUser();
+    if (!activeUser || !currentUser) return;
+    const key = this.getChatKey(currentUser, activeUser.username);
 
     this.chatHistories.update(histories => {
-      const userHistory = histories[activeUser.username] || [];
+      const userHistory = histories[key] || [];
       return {
         ...histories,
-        [activeUser.username]: [...userHistory, msg]
+        [key]: [...userHistory, msg]
       };
     });
   }
 
   private removeMessageFromActiveChat(msg: any) {
     const activeUser = this.activeChatUser();
-    if (!activeUser) return;
+    const currentUser = this.currentUser();
+    if (!activeUser || !currentUser) return;
+    const key = this.getChatKey(currentUser, activeUser.username);
 
     this.chatHistories.update(histories => {
-      const userHistory = histories[activeUser.username] || [];
+      const userHistory = histories[key] || [];
       return {
         ...histories,
-        [activeUser.username]: userHistory.filter(m => m !== msg)
+        [key]: userHistory.filter(m => m !== msg)
       };
     });
   }
@@ -2178,11 +2698,11 @@ export class App implements OnInit {
 
   // Carousel slider navigations
   protected nextSlide() {
-    this.activeSlide.update(curr => (curr + 1) % this.slides.length);
+    this.activeSlide.update(curr => (curr + 1) % this.slides().length);
   }
 
   protected prevSlide() {
-    this.activeSlide.update(curr => (curr - 1 + this.slides.length) % this.slides.length);
+    this.activeSlide.update(curr => (curr - 1 + this.slides().length) % this.slides().length);
   }
 
   protected selectSlide(index: number) {
@@ -2305,5 +2825,205 @@ export class App implements OnInit {
   protected getCellDateString(day: number | null): string {
     if (day === null) return '';
     return `${this.currentYear()}-${String(this.currentMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  protected toggleMentionList(chatType: 'workspace' | 'main') {
+    this.mentionChatType.set(chatType);
+    this.isMentionListOpen.set(!this.isMentionListOpen());
+  }
+
+  protected onWorkspaceChatInputChange(value: string) {
+    this.wsChatMessageInput.set(value);
+    const lastAtIndex = value.lastIndexOf('@');
+    if (lastAtIndex !== -1 && lastAtIndex >= value.length - 15) {
+      this.mentionChatType.set('workspace');
+      this.isMentionListOpen.set(true);
+    } else {
+      this.isMentionListOpen.set(false);
+    }
+  }
+
+  protected onMainChatInputChange(value: string) {
+    this.fullChatInput.set(value);
+    const lastAtIndex = value.lastIndexOf('@');
+    if (lastAtIndex !== -1 && lastAtIndex >= value.length - 15) {
+      this.mentionChatType.set('main');
+      this.isMentionListOpen.set(true);
+    } else {
+      this.isMentionListOpen.set(false);
+    }
+  }
+
+  protected getMentionSearchQuery(text: string): string {
+    if (!text) return '';
+    const lastAtIndex = text.lastIndexOf('@');
+    if (lastAtIndex === -1) return '';
+    return text.substring(lastAtIndex + 1).toLowerCase();
+  }
+
+  protected getFilteredWorkspaceFiles(ws: any): any[] {
+    if (!ws || !ws.files) return [];
+    const query = this.getMentionSearchQuery(this.wsChatMessageInput());
+    if (!query) return ws.files;
+    return ws.files.filter((f: any) => f.name.toLowerCase().includes(query));
+  }
+
+  protected getFilteredPortalFiles(): string[] {
+    const allFiles = this.getAllPortalFiles();
+    const query = this.getMentionSearchQuery(this.fullChatInput());
+    if (!query) return allFiles;
+    return allFiles.filter(name => name.toLowerCase().includes(query));
+  }
+
+  protected insertFileMention(fileName: string, chatType: 'workspace' | 'main') {
+    if (chatType === 'workspace') {
+      const currentText = this.wsChatMessageInput() || '';
+      const lastAtIndex = currentText.lastIndexOf('@');
+      if (lastAtIndex !== -1) {
+        const prefix = currentText.substring(0, lastAtIndex);
+        this.wsChatMessageInput.set(`${prefix}@[file:${fileName}] `);
+      } else {
+        this.wsChatMessageInput.set(`@[file:${fileName}] `);
+      }
+    } else {
+      const currentText = this.fullChatInput() || '';
+      const lastAtIndex = currentText.lastIndexOf('@');
+      if (lastAtIndex !== -1) {
+        const prefix = currentText.substring(0, lastAtIndex);
+        this.fullChatInput.set(`${prefix}@[file:${fileName}] `);
+      } else {
+        this.fullChatInput.set(`@[file:${fileName}] `);
+      }
+    }
+    this.isMentionListOpen.set(false);
+  }
+
+  protected getMessageSegments(text: string): { type: 'text' | 'mention', value: string, fileName?: string }[] {
+    if (!text) return [];
+    const segments: { type: 'text' | 'mention', value: string, fileName?: string }[] = [];
+    const regex = /@\[file:(.*?)\]/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const matchIndex = match.index;
+      if (matchIndex > lastIndex) {
+        segments.push({
+          type: 'text',
+          value: text.substring(lastIndex, matchIndex)
+        });
+      }
+      const fileName = match[1];
+      segments.push({
+        type: 'mention',
+        value: `📄 ${fileName}`,
+        fileName: fileName
+      });
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      segments.push({
+        type: 'text',
+        value: text.substring(lastIndex)
+      });
+    }
+
+    return segments.length > 0 ? segments : [{ type: 'text', value: text }];
+  }
+
+  protected openFileMention(fileName: string) {
+    const fileUrl = `?file=${encodeURIComponent(fileName)}`;
+    window.open(fileUrl, '_blank');
+  }
+
+  protected getAllPortalFiles(): string[] {
+    const list: string[] = [];
+    this.workspaces().forEach(ws => {
+      if (ws.files) {
+        ws.files.forEach((f: any) => {
+          if (!list.includes(f.name)) list.push(f.name);
+        });
+      }
+    });
+    if (list.length === 0) {
+      list.push('Butce_Plani_2026.xlsx', 'IT_Altyapi_Gereksinimleri.docx', 'Sunucu_Kesinti_Analizi.pdf');
+    }
+    return list;
+  }
+
+  protected readonly selectedSlideIndex = signal<number | null>(null);
+  protected readonly slideOrder = signal<number>(1);
+
+  protected onSlideImageSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.homeImageUrl.set(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  protected startEditSlide(index: number) {
+    const slide = this.slides()[index];
+    this.homeHeadline.set(slide.title);
+    this.homeDescription.set(slide.description);
+    this.homeImageUrl.set(slide.image || '/news_banner.png');
+    this.slideOrder.set(index + 1);
+    this.selectedSlideIndex.set(index);
+  }
+
+  protected deleteSlide(index: number) {
+    this.slides.update(list => {
+      const updated = list.filter((_, i) => i !== index);
+      const currentActive = this.activeSlide();
+      if (currentActive >= updated.length) {
+        this.activeSlide.set(Math.max(0, updated.length - 1));
+      }
+      return updated;
+    });
+    if (this.selectedSlideIndex() === index) {
+      this.clearSlideForm();
+    } else if (this.selectedSlideIndex() !== null && this.selectedSlideIndex()! > index) {
+      this.selectedSlideIndex.update(idx => idx !== null ? idx - 1 : null);
+    }
+    alert('Slayt başarıyla silindi.');
+  }
+
+  protected saveSlideForm() {
+    const title = this.homeHeadline().trim();
+    const desc = this.homeDescription().trim();
+    const image = this.homeImageUrl().trim() || '/news_banner.png';
+
+    if (!title || !desc) {
+      alert('Lütfen manşet başlığı ve açıklamasını doldurun.');
+      return;
+    }
+
+    const newSlide = { title, description: desc, image, tag: 'Duyurular' };
+    const index = this.selectedSlideIndex();
+
+    this.slides.update(list => {
+      const updated = [...list];
+      if (index !== null && index >= 0 && index < list.length) {
+        updated[index] = newSlide;
+      } else {
+        updated.push(newSlide);
+      }
+      return updated;
+    });
+
+    this.clearSlideForm();
+    alert('Slayt başarıyla kaydedildi.');
+  }
+
+  protected clearSlideForm() {
+    this.homeHeadline.set('');
+    this.homeDescription.set('');
+    this.homeImageUrl.set('/news_banner.png');
+    this.slideOrder.set(this.slides().length + 1);
+    this.selectedSlideIndex.set(null);
   }
 }
