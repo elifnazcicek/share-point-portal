@@ -1086,10 +1086,22 @@
                 <!-- 2. Document Content Area (If text document, let them edit it directly! If file, show download/update buttons) -->
                 <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; background: #ffffff; display: flex; flex-direction: column; gap: 12px;">
                   @if (doc.isFile) {
-                    <div style="text-align: center; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
-                      <app-icon name="file" [size]="48" color="#0078d4"></app-icon>
-                      <p style="margin: 0; font-size: 13px; font-weight: 600;">Bu çalışma alanı bir kurumsal dosyaya aittir.</p>
-                      
+                    <!-- DYNAMIC FILE VIEWER -->
+                    <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                      <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background-color: #faf9f8; display: flex; align-items: center; justify-content: center; min-height: 250px; width: 100%;">
+                        @if (isImageFile(doc.fileUrl)) {
+                          <img [src]="doc.fileUrl" style="max-width: 100%; max-height: 350px; object-fit: contain; display: block;" />
+                        } @else if (isPdfFile(doc.fileUrl)) {
+                          <iframe [src]="getSafeUrl(doc.fileUrl)" style="width: 100%; height: 350px; border: none; display: block;"></iframe>
+                        } @else {
+                          <div style="text-align: center; padding: 24px 12px;">
+                            <app-icon name="file" [size]="48" color="#64748b" style="margin-bottom: 12px;"></app-icon>
+                            <p style="margin: 0; font-size: 13px; font-weight: 600; color: var(--text-main);">Bu dosya türü doğrudan önizlenemiyor</p>
+                            <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--text-muted);">Görüntülemek için aşağıdaki 'Dosyayı İndir' butonunu kullanabilirsiniz.</p>
+                          </div>
+                        }
+                      </div>
+
                       <div style="display: flex; gap: 10px; width: 100%; justify-content: center; margin-top: 8px;">
                         <a [href]="doc.fileUrl" target="_blank" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; font-size: 12px;">
                           <app-icon name="download" [size]="12"></app-icon> Dosyayı İndir

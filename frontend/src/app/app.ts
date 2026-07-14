@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject, HostListener } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppIconComponent } from './icon';
 
 interface Department {
@@ -126,6 +127,7 @@ interface PortalEvent {
 })
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly apiUrl = 'http://localhost:5100/api/portal'; // Dotnet Portal API URL
   private readonly authUrl = 'http://localhost:5100/api/auth'; // Dotnet Auth API URL
   private readonly workspaceUrl = 'http://localhost:5100/api/workspace'; // Dotnet Workspace API URL
@@ -889,6 +891,21 @@ export class App implements OnInit {
         alert('Yeni dosya sunucuya yüklenirken hata oluştu.');
       }
     });
+  }
+
+  protected getSafeUrl(url: string | undefined): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url || '');
+  }
+
+  protected isImageFile(url: string | undefined): boolean {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.gif') || lower.endsWith('.webp');
+  }
+
+  protected isPdfFile(url: string | undefined): boolean {
+    if (!url) return false;
+    return url.toLowerCase().endsWith('.pdf');
   }
 
   protected deleteActiveDocument() {
