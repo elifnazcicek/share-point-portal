@@ -499,7 +499,7 @@ export class App implements OnInit {
     { name: 'Dosyalar & Belgeler', tab: 'workspace', subTab: 'dms', description: 'Kurumsal dosya yöneticisi ve doküman havuzu.' },
     { name: 'Not Defteri', tab: 'workspace', subTab: 'notepad', description: 'Kişisel notlar ve taslak çalışmaları.' },
     { name: 'Ortak Çalışma Alanı', tab: 'workspace', subTab: 'workspaces', description: 'Proje çalışma odaları ve işbirlikleri.' },
-    { name: 'Chat (Sohbet)', tab: 'chat', subTab: null, description: 'Çalışanlar arası sohbet ve kurumsal iletişim.' },
+    { name: 'Sohbet', tab: 'chat', subTab: null, description: 'Çalışanlar arası sohbet ve kurumsal iletişim.' },
     { name: 'Yönetici Paneli', tab: 'admin', subTab: null, description: 'IT ve Sistem yönetici kontrol paneli.' }
   ];
 
