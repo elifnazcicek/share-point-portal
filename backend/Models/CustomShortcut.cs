@@ -23,5 +23,8 @@ namespace SharePointBackend.Models
         [Required]
         [MaxLength(50)]
         public string DeviceIp { get; set; } = string.Empty; // Associate shortcut with device IP
+
+        [MaxLength(100)]
+        public string? Username { get; set; }
     }
 }

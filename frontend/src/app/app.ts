@@ -171,10 +171,11 @@ export class App implements OnInit {
   protected readonly device = signal<Device | null>(null);
   protected readonly shortcuts = signal<Shortcut[]>([]);
   protected readonly customShortcuts = signal<any[]>([]);
+  protected readonly globalCustomShortcuts = signal<any[]>([]);
   protected readonly customShortcutTitle = signal<string>('');
   protected readonly customShortcutUrl = signal<string>('');
   protected readonly allShortcuts = computed(() => {
-    return [...this.shortcuts(), ...this.customShortcuts()];
+    return [...this.shortcuts(), ...this.globalCustomShortcuts(), ...this.customShortcuts()];
   });
   protected readonly announcements = signal<Announcement[]>([]);
   protected readonly recentLogs = signal<DeviceLog[]>([]);
@@ -184,7 +185,7 @@ export class App implements OnInit {
   // UI Navigation Tabs
   protected readonly activeTab = signal<'home' | 'workspace' | 'admin' | 'chat'>('home'); // Categorized top bar states
   protected readonly workspaceSubTab = signal<'dms' | 'notepad' | 'workspaces'>('dms');
-  protected readonly activeUserSim = signal<'ahmet' | 'elif' | 'misafir'>('ahmet');
+  protected readonly activeUserSim = signal<'ahmet' | 'elif' | 'it_user' | 'misafir'>('ahmet');
   protected readonly networkVpnMode = signal<'intranet' | 'extranet'>('intranet');
   protected readonly isSearchOpen = signal<boolean>(false); // Left search/launcher menu toggle
   protected readonly isEditShortcutsModalOpen = signal<boolean>(false);
@@ -651,10 +652,7 @@ export class App implements OnInit {
     }
 
     // Restore custom shortcuts
-    const savedCustoms = localStorage.getItem('custom_shortcuts');
-    if (savedCustoms) {
-      this.customShortcuts.set(JSON.parse(savedCustoms));
-    }
+    this.loadCustomShortcutsForUser();
 
     this.loadProfile();
 
@@ -704,6 +702,25 @@ export class App implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  private loadCustomShortcutsForUser() {
+    // 1. Load global custom shortcuts
+    const savedGlobals = localStorage.getItem('custom_shortcuts_global');
+    if (savedGlobals) {
+      this.globalCustomShortcuts.set(JSON.parse(savedGlobals));
+    } else {
+      this.globalCustomShortcuts.set([]);
+    }
+
+    // 2. Load personal custom shortcuts
+    const username = this.currentUser() || 'anonymous';
+    const savedCustoms = localStorage.getItem(`custom_shortcuts_${username}`);
+    if (savedCustoms) {
+      this.customShortcuts.set(JSON.parse(savedCustoms));
+    } else {
+      this.customShortcuts.set([]);
+    }
   }
 
   // Event handlers
@@ -1115,6 +1132,7 @@ export class App implements OnInit {
           }
 
           this.authSuccess.set('Başarıyla giriş yapıldı!');
+          this.loadCustomShortcutsForUser();
           this.loadProfile();
         }
       },
@@ -1240,6 +1258,7 @@ export class App implements OnInit {
     this.isProfileModalOpen.set(false);
     this.isChatDrawerOpen.set(false);
     this.isAnnouncementsDrawerOpen.set(false);
+    this.loadCustomShortcutsForUser();
     this.loadProfile();
   }
 
@@ -1255,7 +1274,7 @@ export class App implements OnInit {
     this.isSimulatorOpen.set(false);
   }
 
-  protected onActiveUserSimChange(user: 'ahmet' | 'elif' | 'misafir') {
+  protected onActiveUserSimChange(user: 'ahmet' | 'elif' | 'it_user' | 'misafir') {
     this.activeUserSim.set(user);
     if (user === 'ahmet') {
       localStorage.setItem('username', 'admin');
@@ -1271,6 +1290,13 @@ export class App implements OnInit {
       this.currentUser.set('fin_user');
       this.currentUserRole.set('Finance Department');
       this.currentUserFullName.set('Elif (Muhasebe Dept Admin)');
+    } else if (user === 'it_user') {
+      localStorage.setItem('username', 'it_user');
+      localStorage.setItem('role', 'IT Department');
+      localStorage.setItem('fullName', 'Murat (IT Departman Sorumlusu)');
+      this.currentUser.set('it_user');
+      this.currentUserRole.set('IT Department');
+      this.currentUserFullName.set('Murat (IT Departman Sorumlusu)');
     } else if (user === 'misafir') {
       localStorage.setItem('username', 'misafir');
       localStorage.setItem('role', 'Guest');
@@ -1279,6 +1305,7 @@ export class App implements OnInit {
       this.currentUserRole.set('Guest');
       this.currentUserFullName.set('Misafir (Ziyaretçi)');
     }
+    this.loadCustomShortcutsForUser();
     this.loadProfile();
   }
 
@@ -1858,15 +1885,31 @@ export class App implements OnInit {
       isAccessible: true,
       isCustom: true
     };
-    this.customShortcuts.update(list => [...list, newItem]);
-    localStorage.setItem('custom_shortcuts', JSON.stringify(this.customShortcuts()));
+    
+    const isIT = this.currentUserRole() === 'IT Department';
+    if (isIT) {
+      this.globalCustomShortcuts.update(list => [...list, newItem]);
+      localStorage.setItem('custom_shortcuts_global', JSON.stringify(this.globalCustomShortcuts()));
+    } else {
+      this.customShortcuts.update(list => [...list, newItem]);
+      const username = this.currentUser() || 'anonymous';
+      localStorage.setItem(`custom_shortcuts_${username}`, JSON.stringify(this.customShortcuts()));
+    }
+    
     this.customShortcutTitle.set('');
     this.customShortcutUrl.set('');
   }
 
   protected removeCustomShortcutLocal(id: number) {
-    this.customShortcuts.update(list => list.filter(item => item.id !== id));
-    localStorage.setItem('custom_shortcuts', JSON.stringify(this.customShortcuts()));
+    const username = this.currentUser() || 'anonymous';
+    const personalList = this.customShortcuts();
+    if (personalList.some(item => item.id === id)) {
+      this.customShortcuts.update(list => list.filter(item => item.id !== id));
+      localStorage.setItem(`custom_shortcuts_${username}`, JSON.stringify(this.customShortcuts()));
+    } else {
+      this.globalCustomShortcuts.update(list => list.filter(item => item.id !== id));
+      localStorage.setItem('custom_shortcuts_global', JSON.stringify(this.globalCustomShortcuts()));
+    }
   }
 
   protected onShortcutContextMenu(event: MouseEvent, app: any) {
