@@ -209,13 +209,19 @@ export class App implements OnInit {
   protected readonly isAnnouncementsDrawerOpen = signal<boolean>(false);
 
   // Cafeteria Lunch Menu (Yemek Menüsü)
-  protected readonly lunchMenu = {
+  protected readonly lunchMenu = signal<{ Pazartesi: string, Sali: string, Carsamba: string, Persembe: string, Cuma: string }>({
     Pazartesi: 'Mercimek Çorbası, İzmir Köfte, Pirinç Pilavı, Cacık',
     Sali: 'Yayla Çorbası, Tavuk Sote, Makarna, Kemalpaşa Tatlısı',
     Carsamba: 'Ezogelin Çorbası, Kuru Fasulye, Bulgur Pilavı, Turşu',
     Persembe: 'Tarhana Çorbası, Fırın Poşetinde Tavuk, Fırın Patates, Salata',
     Cuma: 'Düğün Çorbası, Kadınbudu Köfte, Erişte, Ayran'
-  };
+  });
+  protected readonly isLunchMenuModalOpen = signal<boolean>(false);
+  protected readonly lunchPazartesi = signal<string>('');
+  protected readonly lunchSali = signal<string>('');
+  protected readonly lunchCarsamba = signal<string>('');
+  protected readonly lunchPersembe = signal<string>('');
+  protected readonly lunchCuma = signal<string>('');
 
   // Events Calendar (Önemli Etkinlikler)
   protected readonly events = signal<PortalEvent[]>([
@@ -659,6 +665,14 @@ export class App implements OnInit {
       this.personalEvents.set(JSON.parse(savedEvents));
     }
 
+    // Restore Lunch Menu
+    const savedLunch = localStorage.getItem('lunchMenu');
+    if (savedLunch) {
+      try {
+        this.lunchMenu.set(JSON.parse(savedLunch));
+      } catch (e) {}
+    }
+
     // Restore custom shortcuts
     this.loadCustomShortcutsForUser();
 
@@ -911,6 +925,29 @@ export class App implements OnInit {
       const nextZoom = z + (direction * 0.05);
       return Math.min(2.0, Math.max(0.5, nextZoom));
     });
+  }
+
+  protected openLunchMenuModal() {
+    const current = this.lunchMenu();
+    this.lunchPazartesi.set(current.Pazartesi);
+    this.lunchSali.set(current.Sali);
+    this.lunchCarsamba.set(current.Carsamba);
+    this.lunchPersembe.set(current.Persembe);
+    this.lunchCuma.set(current.Cuma);
+    this.isLunchMenuModalOpen.set(true);
+  }
+
+  protected saveLunchMenu() {
+    const updated = {
+      Pazartesi: this.lunchPazartesi(),
+      Sali: this.lunchSali(),
+      Carsamba: this.lunchCarsamba(),
+      Persembe: this.lunchPersembe(),
+      Cuma: this.lunchCuma()
+    };
+    this.lunchMenu.set(updated);
+    localStorage.setItem('lunchMenu', JSON.stringify(updated));
+    this.isLunchMenuModalOpen.set(false);
   }
 
   protected deleteActiveDocument() {
