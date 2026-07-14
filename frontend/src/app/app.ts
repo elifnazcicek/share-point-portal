@@ -350,10 +350,25 @@ export class App implements OnInit {
 
   // DMS and Notepad sub-state
   protected readonly dmsFilter = signal<'all' | 'received' | 'sent' | 'public'>('all');
-  protected readonly personalNotes = signal<{id: number, title: string, content: string, date: string}[]>([
-    { id: 1, title: 'Pazartesi Planları', content: '1. IT şifre kasasının yedeklerini al.\n2. Elif ile bütçe dosyası hakkında görüş.', date: '08.07.2026 09:00' },
-    { id: 2, title: 'Alınacaklar Listesi', content: '- Sunucu odası için yeni patch kabloları sipariş edilecek.\n- İK duyuru şablonu incelenecek.', date: '08.07.2026 10:15' }
-  ]);
+  protected readonly personalNotesAll = signal<Record<string, {id: number, title: string, content: string, date: string}[]>>({
+    'admin': [
+      { id: 1, title: 'Pazartesi Planları', content: '1. IT şifre kasasının yedeklerini al.\n2. Elif ile bütçe dosyası hakkında görüş.', date: '08.07.2026 09:00' },
+      { id: 2, title: 'Alınacaklar Listesi', content: '- Sunucu odası için yeni patch kabloları sipariş edilecek.\n- İK duyuru şablonu incelenecek.', date: '08.07.2026 10:15' }
+    ],
+    'fin_user': [
+      { id: 1, title: 'Bütçe Hesaplamaları', content: '- Muhasebe hesap mutabakatları yapılacak.\n- Maaş ödemeleri listesi onaylanacak.', date: '09.07.2026 11:00' }
+    ],
+    'it_user': [
+      { id: 1, title: 'Network Bakım Planı', content: '- Switch konfigürasyon yedekleri alınacak.\n- VPN erişim izinleri gözden geçirilecek.', date: '10.07.2026 14:30' }
+    ],
+    'misafir': [
+      { id: 1, title: 'Ziyaretçi Notu', content: 'Ziyaretçi deneme notudur.', date: '11.07.2026 16:00' }
+    ]
+  });
+  protected readonly personalNotes = computed(() => {
+    const user = this.currentUser() || 'admin';
+    return this.personalNotesAll()[user] || [];
+  });
   protected readonly activeNoteId = signal<number>(1);
   protected readonly noteTitleInput = signal<string>('Pazartesi Planları');
   protected readonly noteContentInput = signal<string>('1. IT şifre kasasının yedeklerini al.\n2. Elif ile bütçe dosyası hakkında görüş.');
@@ -370,12 +385,13 @@ export class App implements OnInit {
   // Full Screen Dual Chat Contacts
   protected readonly chatContacts = signal<{username: string, fullName: string, role: string, online: boolean}[]>([
     { username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', online: true },
-    { username: 'elif', fullName: 'Elif Yılmaz', role: 'Dept Admin', online: true },
+    { username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', online: true },
+    { username: 'it_user', fullName: 'Murat (IT Sorumlusu)', role: 'IT Sorumlusu', online: true },
     { username: 'ai_bot', fullName: 'PortalOne AI', role: 'Yapay Zeka Asistanı', online: true },
-    { username: 'misafir', fullName: 'Yeni Kayıt (Ziyaretçi)', role: 'Ziyaretçi', online: false }
+    { username: 'misafir', fullName: 'Misafir (Ziyaretçi)', role: 'Ziyaretçi', online: false }
   ]);
   protected readonly activeChatUser = signal<{username: string, fullName: string, role: string, online: boolean} | null>({
-    username: 'elif', fullName: 'Elif Yılmaz', role: 'Dept Admin', online: true
+    username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', online: true
   });
   protected readonly fullChatInput = signal<string>('');
   protected readonly chatMessageSearchQuery = signal<string>('');
@@ -398,26 +414,39 @@ export class App implements OnInit {
   // Chat State
   protected readonly chatInput = signal<string>('');
   protected readonly chatHistories = signal<Record<string, {sender: string, text: string, time: string, isSharedNote?: boolean, noteTitle?: string}[]>>({
-    'elif': [
-      { sender: 'elif', text: 'Merhaba Ahmet Bey, bütçe sunumu için raporu hazırladım. Dosyalar kısmından inceleyebilirsiniz.', time: '09:30' }
+    'admin_fin_user': [
+      { sender: 'fin_user', text: 'Merhaba Ahmet Bey, bütçe sunumu için raporu hazırladım. Dosyalar kısmından inceleyebilirsiniz.', time: '09:30' }
     ],
-    'admin': [
-      { sender: 'admin', text: 'Tüm departman yetkililerine duyuru: Akşam yapılacak veritabanı bakımı sırasında kısa süreli kesintiler yaşanabilir.', time: '09:00' }
+    'admin_it_user': [
+      { sender: 'admin', text: 'Murat Bey, sunucu odasındaki kesinti hakkında bilgi alabilir miyim?', time: '10:00' },
+      { sender: 'it_user', text: 'Ahmet Bey, ana switch üzerindeki güncelleme bitti, sistem stabil.', time: '10:05' }
     ],
-    'ai_bot': [
+    'admin_ai_bot': [
       { sender: 'ai_bot', text: 'Merhaba! Ben PortalOne yapay zeka asistanıyım. Sistemdeki aktif çalışanlar, belgeler, son duyurular veya cihaz ağ durumunuz hakkında bana dilediğiniz soruyu sorabilirsiniz.', time: '08:30' }
     ],
-    'misafir': []
+    'fin_user_ai_bot': [
+      { sender: 'ai_bot', text: 'Merhaba Elif Hanım! Muhasebe ve finans verileriyle ilgili yapay zeka analizine hoş geldiniz.', time: '08:30' }
+    ],
+    'it_user_ai_bot': [
+      { sender: 'ai_bot', text: 'Merhaba Murat Bey! IT ve Ağ izleme asistanına hoş geldiniz.', time: '08:30' }
+    ]
   });
 
   protected readonly drawerMessages = signal<{sender: string, text: string, time: string}[]>([
     { sender: 'Kurumsal Destek Botu', text: 'Merhaba! Ben kurumsal hızlı destek robotuyum. Portal ile ilgili genel sorularınızı buradan yanıtlayabilirim.', time: '09:00' }
   ]);
 
+  private getChatKey(userA: string, userB: string): string {
+    const sorted = [userA, userB].sort();
+    return `${sorted[0]}_${sorted[1]}`;
+  }
+
   protected readonly activeChatMessages = computed(() => {
     const activeUser = this.activeChatUser();
-    if (!activeUser) return [];
-    return this.chatHistories()[activeUser.username] || [];
+    const currentUser = this.currentUser();
+    if (!activeUser || !currentUser) return [];
+    const key = this.getChatKey(currentUser, activeUser.username);
+    return this.chatHistories()[key] || [];
   });
 
   // File Privacy Modal States
@@ -665,6 +694,14 @@ export class App implements OnInit {
     const savedEvents = localStorage.getItem('personalEvents');
     if (savedEvents) {
       this.personalEvents.set(JSON.parse(savedEvents));
+    }
+
+    // Restore personal notes
+    const savedNotes = localStorage.getItem('personalNotesAll');
+    if (savedNotes) {
+      try {
+        this.personalNotesAll.set(JSON.parse(savedNotes));
+      } catch (e) {}
     }
 
     // Restore Lunch Menu
@@ -1378,6 +1415,7 @@ export class App implements OnInit {
 
   protected onActiveUserSimChange(user: 'ahmet' | 'elif' | 'it_user' | 'misafir') {
     this.activeUserSim.set(user);
+    let username = 'admin';
     if (user === 'ahmet') {
       localStorage.setItem('username', 'admin');
       localStorage.setItem('role', 'Admin');
@@ -1385,6 +1423,7 @@ export class App implements OnInit {
       this.currentUser.set('admin');
       this.currentUserRole.set('Admin');
       this.currentUserFullName.set('Ahmet (Global Admin)');
+      username = 'admin';
     } else if (user === 'elif') {
       localStorage.setItem('username', 'fin_user');
       localStorage.setItem('role', 'Finance Department');
@@ -1392,6 +1431,7 @@ export class App implements OnInit {
       this.currentUser.set('fin_user');
       this.currentUserRole.set('Finance Department');
       this.currentUserFullName.set('Elif (Muhasebe Dept Admin)');
+      username = 'fin_user';
     } else if (user === 'it_user') {
       localStorage.setItem('username', 'it_user');
       localStorage.setItem('role', 'IT Department');
@@ -1399,6 +1439,7 @@ export class App implements OnInit {
       this.currentUser.set('it_user');
       this.currentUserRole.set('IT Department');
       this.currentUserFullName.set('Murat (IT Departman Sorumlusu)');
+      username = 'it_user';
     } else if (user === 'misafir') {
       localStorage.setItem('username', 'misafir');
       localStorage.setItem('role', 'Guest');
@@ -1406,7 +1447,24 @@ export class App implements OnInit {
       this.currentUser.set('misafir');
       this.currentUserRole.set('Guest');
       this.currentUserFullName.set('Misafir (Ziyaretçi)');
+      username = 'misafir';
     }
+
+    // Set default active chat user based on simulator profile
+    if (username === 'admin') {
+      this.activeChatUser.set({ username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', online: true });
+    } else {
+      this.activeChatUser.set({ username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', online: true });
+    }
+
+    // Auto select the first note of the new profile
+    const notes = this.personalNotesAll()[username];
+    if (notes && notes.length > 0) {
+      this.selectNote(notes[0]);
+    } else {
+      this.selectNote(null);
+    }
+
     this.loadCustomShortcutsForUser();
     this.loadProfile();
   }
@@ -1697,35 +1755,54 @@ export class App implements OnInit {
   }
 
   protected selectNote(note: any) {
+    if (!note) {
+      this.activeNoteId.set(-1);
+      this.noteTitleInput.set('');
+      this.noteContentInput.set('');
+      return;
+    }
     this.activeNoteId.set(note.id);
     this.noteTitleInput.set(note.title);
     this.noteContentInput.set(note.content);
   }
 
   protected createNewNote() {
-    const newId = this.personalNotes().length + 1;
-    const newNote = {
-      id: newId,
-      title: 'Yeni Not',
-      content: '',
-      date: new Date().toLocaleString('tr-TR').slice(0, 16)
-    };
-    this.personalNotes.update(list => [...list, newNote]);
-    this.selectNote(newNote);
+    const user = this.currentUser() || 'admin';
+    this.personalNotesAll.update(all => {
+      const list = all[user] || [];
+      const newId = list.length > 0 ? Math.max(...list.map(n => n.id)) + 1 : 1;
+      const newNote = {
+        id: newId,
+        title: 'Yeni Not',
+        content: '',
+        date: new Date().toLocaleString('tr-TR').slice(0, 16)
+      };
+      const nextAll = { ...all, [user]: [...list, newNote] };
+      localStorage.setItem('personalNotesAll', JSON.stringify(nextAll));
+      setTimeout(() => this.selectNote(newNote), 0);
+      return nextAll;
+    });
   }
 
   protected saveNote() {
-    this.personalNotes.update(list => list.map(n => {
-      if (n.id === this.activeNoteId()) {
-        return {
-          ...n,
-          title: this.noteTitleInput(),
-          content: this.noteContentInput(),
-          date: new Date().toLocaleString('tr-TR').slice(0, 16)
-        };
-      }
-      return n;
-    }));
+    const user = this.currentUser() || 'admin';
+    this.personalNotesAll.update(all => {
+      const list = all[user] || [];
+      const updatedList = list.map(n => {
+        if (n.id === this.activeNoteId()) {
+          return {
+            ...n,
+            title: this.noteTitleInput(),
+            content: this.noteContentInput(),
+            date: new Date().toLocaleString('tr-TR').slice(0, 16)
+          };
+        }
+        return n;
+      });
+      const nextAll = { ...all, [user]: updatedList };
+      localStorage.setItem('personalNotesAll', JSON.stringify(nextAll));
+      return nextAll;
+    });
     alert('Not başarıyla kaydedildi.');
   }
 

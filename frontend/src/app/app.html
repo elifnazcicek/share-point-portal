@@ -1563,22 +1563,24 @@
               <h4 style="margin: 0 0 10px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Çalışma Arkadaşlarım</h4>
               <div class="chat-users-scroll" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; max-height: 480px;">
                 @for (usr of chatContacts(); track usr.username) {
-                  <div class="chat-user-item" [class.active]="activeChatUser()?.username === usr.username" (click)="selectChatUser(usr)" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;" [style.background-color]="activeChatUser()?.username === usr.username ? 'rgba(0,120,212,0.05)' : 'transparent'">
-                    <div style="position: relative;">
-                      <div class="avatar-sm" [style.background-color]="usr.username === 'ai_bot' ? '#10b981' : 'var(--primary)'" style="width: 32px; height: 32px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">
-                        @if (usr.username === 'ai_bot') {
-                          🤖
-                        } @else {
-                          {{ usr.fullName.slice(0, 2) | uppercase }}
-                        }
+                  @if (usr.username !== currentUser()) {
+                    <div class="chat-user-item" [class.active]="activeChatUser()?.username === usr.username" (click)="selectChatUser(usr)" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;" [style.background-color]="activeChatUser()?.username === usr.username ? 'rgba(0,120,212,0.05)' : 'transparent'">
+                      <div style="position: relative;">
+                        <div class="avatar-sm" [style.background-color]="usr.username === 'ai_bot' ? '#10b981' : 'var(--primary)'" style="width: 32px; height: 32px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">
+                          @if (usr.username === 'ai_bot') {
+                            🤖
+                          } @else {
+                            {{ usr.fullName.slice(0, 2) | uppercase }}
+                          }
+                        </div>
+                        <span class="online-indicator" style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #ffffff;" [style.background-color]="usr.online ? '#2a9d8f' : '#cbd5e1'"></span>
                       </div>
-                      <span class="online-indicator" style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #ffffff;" [style.background-color]="usr.online ? '#2a9d8f' : '#cbd5e1'"></span>
+                      <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden;">
+                        <span style="font-size: 12.5px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.fullName }}</span>
+                        <span style="font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.role }}</span>
+                      </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden;">
-                      <span style="font-size: 12.5px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.fullName }}</span>
-                      <span style="font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.role }}</span>
-                    </div>
-                  </div>
+                  }
                 }
               </div>
             </aside>
