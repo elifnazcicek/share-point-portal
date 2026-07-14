@@ -918,8 +918,6 @@
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 4px;">{{ doc.title }}</span>
                             @if (doc.privacy === 'Private') {
                               <span style="font-size: 10px; background-color: rgba(100, 116, 139, 0.1); color: var(--text-muted); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="lock" [size]="10"></app-icon> Gizli</span>
-                            } @else if (doc.privacy === 'Department') {
-                              <span style="font-size: 10px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="server" [size]="10" color="#3b82f6"></app-icon> {{ doc.departmentName || 'Departman' }}</span>
                             }
                             @if (doc.isPasswordProtected) {
                               <span style="font-size: 10px; background-color: rgba(245, 158, 11, 0.1); color: #f59f0b; border: 1px solid rgba(245, 158, 11, 0.2); padding: 2px 6px; border-radius: 10px; white-space: nowrap; display:inline-flex; align-items:center; gap:2px;"><app-icon name="shield" [size]="10" color="#f59f0b"></app-icon> Şifreli</span>
