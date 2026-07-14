@@ -174,8 +174,15 @@ export class App implements OnInit {
   protected readonly globalCustomShortcuts = signal<any[]>([]);
   protected readonly customShortcutTitle = signal<string>('');
   protected readonly customShortcutUrl = signal<string>('');
+  protected readonly customShortcutTargetDept = signal<string>('Everyone');
   protected readonly allShortcuts = computed(() => {
-    return [...this.shortcuts(), ...this.globalCustomShortcuts(), ...this.customShortcuts()];
+    const userRole = this.currentUserRole() || 'Guest';
+    const filteredGlobals = this.globalCustomShortcuts().filter(s => {
+      if (!s.targetDept || s.targetDept === 'Everyone') return true;
+      if (userRole === 'Admin' || userRole === 'IT Department') return true;
+      return s.targetDept.toLowerCase() === userRole.toLowerCase();
+    });
+    return [...this.shortcuts(), ...filteredGlobals, ...this.customShortcuts()];
   });
   protected readonly announcements = signal<Announcement[]>([]);
   protected readonly recentLogs = signal<DeviceLog[]>([]);
@@ -1873,6 +1880,7 @@ export class App implements OnInit {
     if (!/^https?:\/\//i.test(url)) {
       url = 'https://' + url;
     }
+    const isIT = this.currentUserRole() === 'IT Department' || this.currentUserRole() === 'Admin';
     const newItem = {
       id: Date.now(),
       name: title,
@@ -1883,10 +1891,10 @@ export class App implements OnInit {
       departmentId: null,
       isLocked: false,
       isAccessible: true,
-      isCustom: true
+      isCustom: true,
+      targetDept: isIT ? this.customShortcutTargetDept() : 'Everyone'
     };
     
-    const isIT = this.currentUserRole() === 'IT Department';
     if (isIT) {
       this.globalCustomShortcuts.update(list => [...list, newItem]);
       localStorage.setItem('custom_shortcuts_global', JSON.stringify(this.globalCustomShortcuts()));
@@ -1898,6 +1906,7 @@ export class App implements OnInit {
     
     this.customShortcutTitle.set('');
     this.customShortcutUrl.set('');
+    this.customShortcutTargetDept.set('Everyone');
   }
 
   protected removeCustomShortcutLocal(id: number) {

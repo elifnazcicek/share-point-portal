@@ -1754,6 +1754,23 @@
                 style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; width:100%; box-sizing:border-box; font-family: inherit;" 
               />
             </div>
+            @if (currentUserRole() === 'IT Department' || currentUserRole() === 'Admin') {
+              <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display:block;">Erişebilecek Departman</label>
+                <select 
+                  [ngModel]="customShortcutTargetDept()" 
+                  (ngModelChange)="customShortcutTargetDept.set($event)" 
+                  style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; width:100%; box-sizing:border-box; font-family: inherit; background-color: #fff;"
+                >
+                  <option value="Everyone">Herkes (Genel)</option>
+                  <option value="IT Department">IT Department</option>
+                  <option value="HR Department">HR Department</option>
+                  <option value="Finance Department">Finance Department</option>
+                  <option value="Marketing Department">Marketing Department</option>
+                  <option value="Operations Department">Operations Department</option>
+                </select>
+              </div>
+            }
             <button type="button" class="btn btn-primary" (click)="addCustomShortcutLocal(); isEditShortcutsModalOpen.set(false);" style="font-size: 12.5px; padding: 10px; width: 100%; font-weight: 600; margin-top: 6px;">
               Kısayolu Ekle & Kaydet
             </button>
