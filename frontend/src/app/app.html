@@ -596,7 +596,7 @@
       </div>
     } @else {
       <!-- PORTAL CORE CONTAINER -->
-      <main class="portal-container">
+      <main class="portal-container" [style.max-width]="activeTab() === 'workspace' ? '100%' : '1400px'">
         
         <!-- SECTION 1: HOME PAGE -->
         @if (activeTab() === 'home') {
