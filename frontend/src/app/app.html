@@ -657,19 +657,18 @@
               </div>
 
               <div class="apps-grid">
-                @for (app of allShortcuts() | slice:0:12; track app.id) {
-                  <div 
-                    class="app-tile" 
-                    [class.locked]="!app.isAccessible"
-                    (click)="handleToolClick(app)"
-                    (contextmenu)="onShortcutContextMenu($event, app)"
-                    [style.background-color]="app.color"
-                  >
-                    @if (!app.isAccessible) {
-                      <div class="tile-lock"><app-icon name="lock" [size]="12" color="#ffffff"></app-icon></div>
-                    }
-                    <span class="tile-title">{{ app.name }}</span>
-                  </div>
+                @for (app of allShortcuts(); track app.id) {
+                  @if (app.isAccessible) {
+                    <div 
+                      class="app-tile" 
+                      (click)="handleToolClick(app)"
+                      (contextmenu)="onShortcutContextMenu($event, app)"
+                      [style.background-color]="app.color"
+                      style="display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 12px; height: 96px; box-sizing: border-box;"
+                    >
+                      <span class="tile-title">{{ app.name }}</span>
+                    </div>
+                  }
                 }
               </div>
             </section>
