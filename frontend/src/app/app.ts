@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed, inject, HostListener } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { AppIconComponent } from './icon';
 
 interface Department {
@@ -872,6 +872,7 @@ export class App implements OnInit {
       next: (res) => {
         doc.fileUrl = res.fileUrl;
         doc.fileSize = res.fileSize;
+        doc.content = res.content || '';
         doc.lastModifiedBy = this.currentUser() || 'Guest';
 
         this.http.put<WorkspaceDocument>(`${this.workspaceUrl}/documents/${doc.id}?username=${encodeURIComponent(this.currentUser() || 'Guest')}`, doc).subscribe({
@@ -906,6 +907,16 @@ export class App implements OnInit {
   protected isPdfFile(url: string | undefined): boolean {
     if (!url) return false;
     return url.toLowerCase().endsWith('.pdf');
+  }
+
+  protected isExcelFile(url: string | undefined): boolean {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return lower.endsWith('.xlsx') || lower.endsWith('.xls');
+  }
+
+  protected getSafeHtml(html: string | undefined): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html || '');
   }
 
   protected deleteActiveDocument() {
@@ -1589,7 +1600,7 @@ export class App implements OnInit {
       next: (res) => {
         const payload: WorkspaceDocument = {
           title: title,
-          content: `# ${title}\n\nEk Açıklama: ${comment}`,
+          content: res.content || `# ${title}\n\nEk Açıklama: ${comment}`,
           ownerUsername: this.currentUser() || 'Guest',
           isPublic: privacy === 'Public',
           privacy: privacy,

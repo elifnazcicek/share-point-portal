@@ -5,6 +5,9 @@ using SharePointBackend.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text;
+using ExcelDataReader;
 
 namespace SharePointBackend.Controllers
 {
@@ -387,12 +390,84 @@ namespace SharePointBackend.Controllers
                 ? $"{(double)file.Length / (1024 * 1024):F1} MB"
                 : $"{(double)file.Length / 1024:F0} KB";
 
+            // Parse file content if it is text or excel!
+            string? fileContent = null;
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext == ".txt" || ext == ".md" || ext == ".html" || ext == ".css" || ext == ".js" || ext == ".json")
+            {
+                try
+                {
+                    fileContent = await System.IO.File.ReadAllTextAsync(filePath);
+                }
+                catch {}
+            }
+            else if (ext == ".xlsx" || ext == ".xls")
+            {
+                fileContent = ConvertExcelToHtmlTable(filePath);
+            }
+
             return Ok(new
             {
                 FileUrl = fileUrl,
                 FileSize = sizeStr,
-                Title = file.FileName
+                Title = file.FileName,
+                Content = fileContent
             });
+        }
+
+        private string ConvertExcelToHtmlTable(string filePath)
+        {
+            try
+            {
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                using (var stream = System.IO.File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                        {
+                            ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                            {
+                                UseHeaderRow = true
+                            }
+                        });
+
+                        if (result.Tables.Count == 0)
+                            return "<p style='color:red;text-align:center;padding:20px;'>Excel dosyası boş veya sayfası bulunamadı.</p>";
+
+                        var table = result.Tables[0]; // Read first sheet
+                        var html = new StringBuilder();
+                        html.Append("<table class='excel-table'>");
+
+                        // Headers
+                        html.Append("<thead><tr>");
+                        foreach (System.Data.DataColumn column in table.Columns)
+                        {
+                            html.AppendFormat("<th>{0}</th>", System.Net.WebUtility.HtmlEncode(column.ColumnName));
+                        }
+                        html.Append("</tr></thead>");
+
+                        // Rows
+                        html.Append("<tbody>");
+                        foreach (System.Data.DataRow row in table.Rows)
+                        {
+                            html.Append("<tr>");
+                            foreach (var item in row.ItemArray)
+                            {
+                                html.AppendFormat("<td>{0}</td>", System.Net.WebUtility.HtmlEncode(item?.ToString() ?? ""));
+                            }
+                            html.Append("</tr>");
+                        }
+                        html.Append("</tbody></table>");
+
+                        return html.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"<p style='color:red;padding:20px;'>Excel okuma hatası: {System.Net.WebUtility.HtmlEncode(ex.Message)}</p>";
+            }
         }
 
         // GET: api/workspace/documents/{id}/versions
