@@ -2074,6 +2074,49 @@
       </div>
     </div>
 
+    <!-- MODAL: NOTU SOHBETTE PAYLAŞ MODALI -->
+    <div class="modal-overlay" *ngIf="isShareNoteModalOpen()" (click)="isShareNoteModalOpen.set(false)"></div>
+    <div class="modal" *ngIf="isShareNoteModalOpen()" style="max-width: 420px; z-index: 10000;">
+      <div class="modal-header">
+        <h3>Notu Sohbette Paylaş</h3>
+        <button class="modal-close" (click)="isShareNoteModalOpen.set(false)">
+          <app-icon name="plus" [size]="20" style="transform: rotate(45deg)"></app-icon>
+        </button>
+      </div>
+      <div class="modal-body" style="font-family: inherit; display: flex; flex-direction: column; gap: 14px;">
+        <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+          "<strong>{{ noteToShare()?.title }}</strong>" notunu paylaşmak istediğiniz çalışma arkadaşınızı seçin:
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+          @for (contact of getShareableContacts(); track contact.username) {
+            <div 
+              (click)="shareNoteWithContact(contact)" 
+              style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: #ffffff;"
+              onmouseover="this.style.borderColor='var(--primary)'; this.style.backgroundColor='#faf9f8';"
+              onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='#ffffff';"
+            >
+              <div class="avatar-sm" [style.background-color]="contact.username === 'ai_bot' ? '#10b981' : 'var(--primary)'" style="width: 32px; height: 32px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">
+                @if (contact.username === 'ai_bot') {
+                  🤖
+                } @else {
+                  {{ contact.fullName.slice(0, 2) | uppercase }}
+                }
+              </div>
+              <div style="flex: 1;">
+                <h4 style="margin: 0; font-size: 13px; font-weight: 600; color: var(--text-main);">{{ contact.fullName }}</h4>
+                <span style="font-size: 11px; color: var(--text-muted);">{{ contact.role }}</span>
+              </div>
+              <app-icon name="chevron-right" [size]="14" color="var(--text-muted)"></app-icon>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-outline btn-sm" (click)="isShareNoteModalOpen.set(false)">İptal</button>
+      </div>
+    </div>
+
     <!-- CUSTOM CONTEXT MENU FOR SHORTCUT TILES -->
     <div 
       *ngIf="contextMenuVisible()" 

@@ -358,6 +358,8 @@ export class App implements OnInit {
   protected readonly noteTitleInput = signal<string>('Pazartesi Planları');
   protected readonly noteContentInput = signal<string>('1. IT şifre kasasının yedeklerini al.\n2. Elif ile bütçe dosyası hakkında görüş.');
   protected readonly isNoteShareMenuOpen = signal<boolean>(false);
+  protected readonly isShareNoteModalOpen = signal<boolean>(false);
+  protected readonly noteToShare = signal<any | null>(null);
 
   // Collaborative Workspaces
   protected readonly workspaces = signal<{id: number, name: string, desc: string, notes: string, files: any[]}[]>([
@@ -1728,13 +1730,21 @@ export class App implements OnInit {
   }
 
   protected shareNoteInChat() {
-    const activeUser = this.activeChatUser();
-    if (!activeUser) {
-      alert('Lütfen paylaşmak için sohbetten bir arkadaş seçin.');
-      return;
-    }
     const note = this.personalNotes().find(n => n.id === this.activeNoteId());
     if (!note) return;
+    this.noteToShare.set(note);
+    this.isNoteShareMenuOpen.set(false);
+    this.isShareNoteModalOpen.set(true);
+  }
+
+  protected getShareableContacts() {
+    const curr = this.currentUser();
+    return this.chatContacts().filter(c => c.username !== curr);
+  }
+
+  protected shareNoteWithContact(contact: any) {
+    const note = this.noteToShare();
+    if (!note || !contact) return;
 
     const payload = {
       sender: this.currentUser() || 'admin',
@@ -1744,10 +1754,24 @@ export class App implements OnInit {
       noteTitle: note.title
     };
 
-    // Add to messages signal
-    this.appendMessageToActiveChat(payload);
-    this.isNoteShareMenuOpen.set(false);
-    alert(`"${note.title}" notu sohbet üzerinden ${activeUser.fullName} ile paylaşıldı.`);
+    // Add directly to the selected contact's chat history
+    this.chatHistories.update(histories => {
+      const userHistory = histories[contact.username] || [];
+      return {
+        ...histories,
+        [contact.username]: [...userHistory, payload]
+      };
+    });
+
+    // Close modal
+    this.isShareNoteModalOpen.set(false);
+    this.noteToShare.set(null);
+
+    // Prompt user if they want to navigate to the chat room to view it
+    if (confirm(`"${note.title}" notu ${contact.fullName} ile başarıyla paylaşıldı. Sohbeti açmak ister misiniz?`)) {
+      this.activeChatUser.set(contact);
+      this.activeTab.set('chat');
+    }
   }
 
   protected copyNoteLink() {
