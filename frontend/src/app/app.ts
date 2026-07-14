@@ -445,7 +445,7 @@ export class App implements OnInit {
   protected readonly chatMessageSearchQuery = signal<string>('');
 
   // Admin tabs & config parameters
-  protected readonly adminSubTab = signal<'users' | 'network' | 'logs' | 'home-edit' | 'approvals'>('users');
+  protected readonly adminSubTab = signal<'users' | 'network' | 'logs' | 'home-edit' | 'approvals' | 'delegation'>('users');
   protected readonly adminSubnetInput = signal<string>('10.100.0.0/16');
   protected readonly adminMaxFileSize = signal<number>(50);
   protected readonly adminExtensions = signal<string>('.pdf, .docx, .xlsx, .png, .jpg');
@@ -3025,5 +3025,99 @@ export class App implements OnInit {
     this.homeImageUrl.set('/news_banner.png');
     this.slideOrder.set(this.slides().length + 1);
     this.selectedSlideIndex.set(null);
+  }
+
+  // Görev Devri ve Yetkilendirme State & Methods
+  protected readonly delegations = signal<any[]>([
+    {
+      id: 'del-1',
+      username: 'fin_user',
+      fullName: 'Elif (Muhasebe Dept Admin)',
+      taskKey: 'lunch-menu',
+      taskName: 'Yemek Menüsü Güncelleme',
+      duration: '1 Hafta',
+      reason: 'Yönetici yoğunluğu nedeniyle yemek menüsü güncellenmesi geçici devredilmiştir.',
+      startDate: new Date(),
+      status: 'Aktif'
+    }
+  ]);
+
+  protected readonly delegationTargetUser = signal<string>('fin_user');
+  protected readonly delegationTaskKey = signal<string>('lunch-menu');
+  protected readonly delegationDuration = signal<string>('1 Hafta');
+  protected readonly delegationReason = signal<string>('');
+
+  protected addDelegation() {
+    const username = this.delegationTargetUser();
+    const taskKey = this.delegationTaskKey();
+    const duration = this.delegationDuration();
+    const reason = this.delegationReason().trim();
+
+    if (!username || !taskKey) {
+      alert('Lütfen tüm zorunlu alanları doldurun.');
+      return;
+    }
+
+    const taskNames: Record<string, string> = {
+      'lunch-menu': 'Yemek Menüsü Güncelleme',
+      'home-edit': 'Ana Sayfa Slayt Yönetimi',
+      'logs': 'Audit Log Raporu Görüntüleme',
+      'approvals': 'Onay Taleplerini Yönetme',
+      'users': 'Kullanıcı Rol Ataması',
+      'network': 'Güvenli Ağ & Limitler'
+    };
+
+    const userFullNames: Record<string, string> = {
+      'fin_user': 'Elif (Muhasebe Dept Admin)',
+      'it_user': 'Murat (IT Departman Sorumlusu)',
+      'misafir': 'Misafir (Ziyaretçi)'
+    };
+
+    const newDelegation = {
+      id: 'del-' + Date.now(),
+      username,
+      fullName: userFullNames[username] || username,
+      taskKey,
+      taskName: taskNames[taskKey] || taskKey,
+      duration,
+      reason: reason || 'Yönetici tarafından görev devri yapıldı.',
+      startDate: new Date(),
+      status: 'Aktif'
+    };
+
+    this.delegations.update(list => [...list, newDelegation]);
+    this.delegationReason.set('');
+    alert('Görev başarıyla devredildi.');
+  }
+
+  protected revokeDelegation(id: string) {
+    this.delegations.update(list => 
+      list.map(d => d.id === id ? { ...d, status: 'İptal' } : d)
+    );
+    alert('Devredilen görev başarıyla geri alındı.');
+  }
+
+  protected hasDelegatedPermission(taskKey: string): boolean {
+    const currentUser = this.currentUser();
+    if (this.currentUserRole() === 'Admin') return true;
+
+    return this.delegations().some(d => 
+      d.username === currentUser && 
+      d.taskKey === taskKey && 
+      d.status === 'Aktif'
+    );
+  }
+
+  protected onAdminTabClick() {
+    this.activeTab.set('admin');
+    if (this.currentUserRole() !== 'Admin') {
+      if (this.hasDelegatedPermission('users')) this.adminSubTab.set('users');
+      else if (this.hasDelegatedPermission('network')) this.adminSubTab.set('network');
+      else if (this.hasDelegatedPermission('logs')) this.adminSubTab.set('logs');
+      else if (this.hasDelegatedPermission('home-edit')) this.adminSubTab.set('home-edit');
+      else if (this.hasDelegatedPermission('approvals')) this.adminSubTab.set('approvals');
+    } else {
+      this.adminSubTab.set('users');
+    }
   }
 }

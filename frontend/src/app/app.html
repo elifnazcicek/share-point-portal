@@ -1408,16 +1408,29 @@
 
             <!-- Admin Sub Tabs Menu -->
             <div class="admin-panel-tabs" style="display: flex; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <button class="btn" [class.btn-primary]="adminSubTab() === 'users'" [class.btn-outline]="adminSubTab() !== 'users'" (click)="adminSubTab.set('users')">Kullanıcı Rol Ataması</button>
-              <button class="btn" [class.btn-primary]="adminSubTab() === 'network'" [class.btn-outline]="adminSubTab() !== 'network'" (click)="adminSubTab.set('network')">Güvenli Ağ & Limitler</button>
-              <button class="btn" [class.btn-primary]="adminSubTab() === 'logs'" [class.btn-outline]="adminSubTab() !== 'logs'" (click)="adminSubTab.set('logs')">Audit Log Raporu</button>
-              <button class="btn" [class.btn-primary]="adminSubTab() === 'home-edit'" [class.btn-outline]="adminSubTab() !== 'home-edit'" (click)="adminSubTab.set('home-edit')">Ana Sayfa Özelleştirme</button>
-              <button class="btn" [class.btn-primary]="adminSubTab() === 'approvals'" [class.btn-outline]="adminSubTab() !== 'approvals'" (click)="adminSubTab.set('approvals')">
-                Onay Bekleyen Talepler
-                @if (pendingApprovalsCount() > 0) {
-                  <span style="background-color: var(--accent); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 4px;">{{ pendingApprovalsCount() }}</span>
-                }
-              </button>
+              @if (currentUserRole() === 'Admin' || hasDelegatedPermission('users')) {
+                <button class="btn" [class.btn-primary]="adminSubTab() === 'users'" [class.btn-outline]="adminSubTab() !== 'users'" (click)="adminSubTab.set('users')">Kullanıcı Rol Ataması</button>
+              }
+              @if (currentUserRole() === 'Admin' || hasDelegatedPermission('network')) {
+                <button class="btn" [class.btn-primary]="adminSubTab() === 'network'" [class.btn-outline]="adminSubTab() !== 'network'" (click)="adminSubTab.set('network')">Güvenli Ağ & Limitler</button>
+              }
+              @if (currentUserRole() === 'Admin' || hasDelegatedPermission('logs')) {
+                <button class="btn" [class.btn-primary]="adminSubTab() === 'logs'" [class.btn-outline]="adminSubTab() !== 'logs'" (click)="adminSubTab.set('logs')">Audit Log Raporu</button>
+              }
+              @if (currentUserRole() === 'Admin' || hasDelegatedPermission('home-edit')) {
+                <button class="btn" [class.btn-primary]="adminSubTab() === 'home-edit'" [class.btn-outline]="adminSubTab() !== 'home-edit'" (click)="adminSubTab.set('home-edit')">Ana Sayfa Özelleştirme</button>
+              }
+              @if (currentUserRole() === 'Admin' || hasDelegatedPermission('approvals')) {
+                <button class="btn" [class.btn-primary]="adminSubTab() === 'approvals'" [class.btn-outline]="adminSubTab() !== 'approvals'" (click)="adminSubTab.set('approvals')">
+                  Onay Bekleyen Talepler
+                  @if (pendingApprovalsCount() > 0) {
+                    <span style="background-color: var(--accent); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 4px;">{{ pendingApprovalsCount() }}</span>
+                  }
+                </button>
+              }
+              @if (currentUserRole() === 'Admin') {
+                <button class="btn" [class.btn-primary]="adminSubTab() === 'delegation'" [class.btn-outline]="adminSubTab() !== 'delegation'" (click)="adminSubTab.set('delegation')">Görev Devri & Yetki</button>
+              }
             </div>
 
             <div class="admin-content-area" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px;">
@@ -1706,6 +1719,115 @@
                         }
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Tab 6: Görev Devri & Geçici Yetkilendirme (Admin Only) -->
+              @if (adminSubTab() === 'delegation' && currentUserRole() === 'Admin') {
+                <div class="admin-tab-section active" style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+                  <div>
+                    <h3 style="font-size: 18px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Görev Devri ve Geçici Yetkilendirme</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 16px 0;">Yöneticilerin yoğunluk durumuna göre belirli görevleri (örneğin Haftalık Yemek Menüsü güncelleme) diğer personele süre sınırı belirleyerek devretmesini sağlar.</p>
+                  </div>
+
+                  <!-- Form: Create Delegation -->
+                  <div style="display: flex; flex-direction: column; gap: 16px; background: #ffffff; border: 1px solid var(--border-color); padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); width: 100%; box-sizing: border-box;">
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 4px;">
+                      <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-main);">Yeni Görev / Yetki Devri Tanımla</h4>
+                    </div>
+
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap; width: 100%;">
+                      <div class="form-group" style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">Yetkilendirilecek Personel</label>
+                        <select [ngModel]="delegationTargetUser()" (ngModelChange)="delegationTargetUser.set($event)" class="form-select" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; outline: none; background: #ffffff; cursor: pointer; width: 100%; box-sizing: border-box;">
+                          <option value="fin_user">Elif (Muhasebe Dept Admin)</option>
+                          <option value="it_user">Murat (IT Departman Sorumlusu)</option>
+                          <option value="misafir">Misafir (Ziyaretçi)</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group" style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">Devredilecek Görev / Yetki</label>
+                        <select [ngModel]="delegationTaskKey()" (ngModelChange)="delegationTaskKey.set($event)" class="form-select" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; outline: none; background: #ffffff; cursor: pointer; width: 100%; box-sizing: border-box;">
+                          <option value="lunch-menu">Yemek Menüsü Güncelleme (Örn: Elif)</option>
+                          <option value="home-edit">Ana Sayfa Slayt Yönetimi</option>
+                          <option value="logs">Audit Log Raporu Görüntüleme</option>
+                          <option value="approvals">Onay Taleplerini Yönetme</option>
+                          <option value="users">Kullanıcı Rol Ataması</option>
+                          <option value="network">Güvenli Ağ & Limitler</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group" style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">Yetki Süresi</label>
+                        <select [ngModel]="delegationDuration()" (ngModelChange)="delegationDuration.set($event)" class="form-select" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; outline: none; background: #ffffff; cursor: pointer; width: 100%; box-sizing: border-box;">
+                          <option value="24 Saat">24 Saat (Geçici)</option>
+                          <option value="1 Hafta">1 Hafta</option>
+                          <option value="1 Ay">1 Ay</option>
+                          <option value="Süresiz">Süresiz</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">Yetki Devir Gerekçesi / Açıklama</label>
+                      <textarea [(ngModel)]="delegationReason" placeholder="Görev devri gerekçesini giriniz..." rows="2" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; resize: none; outline: none; width: 100%; box-sizing: border-box;"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; width: 100%; margin-top: 8px;">
+                      <button class="btn btn-primary" (click)="addDelegation()" style="height: 38px; font-weight: 600; font-size: 13px; min-width: 140px;">Görevi Devret</button>
+                    </div>
+                  </div>
+
+                  <!-- Table: Active Delegations -->
+                  <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-top: 12px;">
+                      <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-main);">Aktif Görev Devirleri</h4>
+                    </div>
+
+                    <div style="width: 100%; overflow-x: auto; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px;">
+                      <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                        <thead>
+                          <tr style="background: #faf9f8; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 11px; text-transform: uppercase;">
+                            <th style="padding: 12px 16px;">Yetki Verilen Personel</th>
+                            <th style="padding: 12px 16px;">Devredilen Görev</th>
+                            <th style="padding: 12px 16px;">Süre</th>
+                            <th style="padding: 12px 16px;">Gerekçe</th>
+                            <th style="padding: 12px 16px;">Başlangıç Tarihi</th>
+                            <th style="padding: 12px 16px;">Durum</th>
+                            <th style="padding: 12px 16px; width: 140px; text-align: center;">İşlem</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (d of delegations(); track d.id) {
+                            <tr style="border-bottom: 1px solid var(--border-color); vertical-align: middle;">
+                              <td style="padding: 14px 16px; font-weight: 600; color: var(--text-main);">{{ d.fullName }}</td>
+                              <td style="padding: 14px 16px;">
+                                <span style="font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(0, 120, 212, 0.08); color: var(--primary);">{{ d.taskName }}</span>
+                              </td>
+                              <td style="padding: 14px 16px; font-weight: 500;">{{ d.duration }}</td>
+                              <td style="padding: 14px 16px; color: var(--text-muted);">{{ d.reason }}</td>
+                              <td style="padding: 14px 16px; color: var(--text-muted);">{{ d.startDate | date:'dd.MM.yyyy HH:mm' }}</td>
+                              <td style="padding: 14px 16px;">
+                                <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;"
+                                      [style.background]="d.status === 'Aktif' ? 'rgba(16, 124, 65, 0.1)' : 'rgba(168, 0, 0, 0.1)'"
+                                      [style.color]="d.status === 'Aktif' ? '#107c41' : '#a80000'">
+                                  {{ d.status }}
+                                </span>
+                              </td>
+                              <td style="padding: 14px 16px; text-align: center;">
+                                @if (d.status === 'Aktif') {
+                                  <button class="btn btn-outline btn-xs" style="color: #a80000; border-color: #a80000; font-weight: 600;" (click)="revokeDelegation(d.id)">Yetkiyi Geri Al</button>
+                                } @else {
+                                  <span style="color: var(--text-muted); font-size: 12px;">Devre Dışı</span>
+                                }
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               }
