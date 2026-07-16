@@ -662,24 +662,24 @@ export class App implements OnInit {
     // 4. Filter Employees/Users (Combine database users and chatContacts)
     const allUsersList: { username: string, fullName: string, role: string, email: string }[] = [];
     
-    // Add database users
-    this.adminUsers().forEach(u => {
+    // Add frontend chat contacts first (holds realistic localized names like Elif Yılmaz and Murat)
+    this.chatContacts().forEach(c => {
       allUsersList.push({
-        username: u.username,
-        fullName: u.fullName,
-        role: u.role,
-        email: u.email
+        username: c.username,
+        fullName: c.fullName,
+        role: c.role,
+        email: c.email || `${c.username}@portalone.com`
       });
     });
 
-    // Add frontend chat contacts if not already added
-    this.chatContacts().forEach(c => {
-      if (!allUsersList.some(u => u.username.toLowerCase() === c.username.toLowerCase())) {
+    // Add database users if not already added (e.g. hr_user, ops_user)
+    this.adminUsers().forEach(u => {
+      if (!allUsersList.some(c => c.username.toLowerCase() === u.username.toLowerCase())) {
         allUsersList.push({
-          username: c.username,
-          fullName: c.fullName,
-          role: c.role,
-          email: c.email || `${c.username}@portalone.com`
+          username: u.username,
+          fullName: u.fullName,
+          role: u.role,
+          email: u.email || `${u.username}@portalone.com`
         });
       }
     });

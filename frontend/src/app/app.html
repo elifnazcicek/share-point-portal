@@ -379,7 +379,7 @@
             <app-icon name="search" [size]="16" color="#94a3b8"></app-icon>
             <input 
               type="text" 
-              placeholder="Uygulama veya doküman arayın..." 
+              placeholder="Uygulama, belge veya çalışan arayın..." 
               [ngModel]="searchQuery()"
               (ngModelChange)="searchQuery.set($event)"
             />
@@ -1857,7 +1857,7 @@
                   placeholder="Çalışan ara..." 
                   style="width: 100%; padding: 8px 30px 8px 12px; font-size: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; font-family: inherit; box-sizing: border-box;" 
                 />
-                <span style="position: absolute; right: 10px; color: var(--text-muted); opacity: 0.6; display: flex; align-items: center; pointer-events: none;">
+                <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); opacity: 0.6; display: flex; align-items: center; pointer-events: none;">
                   <app-icon name="search" [size]="12"></app-icon>
                 </span>
               </div>
@@ -1939,21 +1939,10 @@
               </div>
 
               <!-- Input bar -->
-              <div class="chat-input-bar" style="padding: 12px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; background: #ffffff; width: 100%; box-sizing: border-box;">
-                <!-- Sohbet İçi Arama Kutusu -->
-                <div class="chat-search-wrapper" style="position: relative; width: 160px; display: flex; align-items: center; flex-shrink: 0;">
-                  <input type="text" [ngModel]="chatMessageSearchQuery()" (ngModelChange)="chatMessageSearchQuery.set($event)" placeholder="Sohbette ara..." style="width: 100%; padding: 8px 30px 8px 12px; font-size: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none; font-family: inherit; box-sizing: border-box;" />
-                  <span style="position: absolute; right: 10px; color: var(--text-muted); pointer-events: none; display: flex; align-items: center; opacity: 0.6;">
-                    <app-icon name="search" [size]="12"></app-icon>
-                  </span>
-                </div>
-
-                <!-- Dikey Ayırıcı -->
-                <div style="width: 1px; height: 24px; background-color: var(--border-color); flex-shrink: 0;"></div>
-
+              <div class="chat-input-bar" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; background: #ffffff; width: 100%; box-sizing: border-box;">
                 <!-- Mesaj Yazma Girişi -->
-                <input type="text" [ngModel]="fullChatInput()" (ngModelChange)="fullChatInput.set($event)" (keydown.enter)="sendFullChatMessage()" placeholder="Bir mesaj yazın..." style="flex: 1; padding: 8px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; outline: none; font-family: inherit; height: 36px; box-sizing: border-box;" />
-                <button type="button" class="btn btn-primary" (click)="sendFullChatMessage()" style="height: 36px;">Gönder</button>
+                <input type="text" [ngModel]="fullChatInput()" (ngModelChange)="fullChatInput.set($event)" (keydown.enter)="sendFullChatMessage()" placeholder="Bir mesaj yazın..." style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; outline: none; font-family: inherit; height: 38px; box-sizing: border-box;" />
+                <button type="button" class="btn btn-primary" (click)="sendFullChatMessage()" style="height: 38px;">Gönder</button>
               </div>
             </div>
           </div>
