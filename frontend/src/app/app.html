@@ -304,7 +304,7 @@
         <button class="cat-nav-btn" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')" style="position: relative; display: inline-flex; align-items: center; gap: 6px;">
           Sohbet
           @if (totalUnreadChatCount() > 0) {
-            <span style="background-color: #d13438; color: #ffffff; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box;">
+            <span style="background-color: #d13438; color: #ffffff; font-size: 9px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #ffffff; display: flex; align-items: center; justify-content: center; padding: 0 3px; box-sizing: border-box; box-shadow: 0 1px 4px rgba(0,0,0,0.15);">
               {{ totalUnreadChatCount() }}
             </span>
           }
@@ -1851,7 +1851,7 @@
                 @for (usr of chatContacts(); track usr.username) {
                   @if (usr.username !== currentUser()) {
                     <div class="chat-user-item" [class.active]="activeChatUser()?.username === usr.username" (click)="selectChatUser(usr)" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;" [style.background-color]="activeChatUser()?.username === usr.username ? 'rgba(0,120,212,0.05)' : 'transparent'">
-                      <div style="position: relative;">
+                      <div style="position: relative; display: inline-block; width: 32px; height: 32px; flex-shrink: 0;">
                         <div class="avatar-sm" [style.background-color]="usr.username === 'ai_bot' ? '#10b981' : 'var(--primary)'" style="width: 32px; height: 32px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">
                           @if (usr.username === 'ai_bot') {
                             🤖
@@ -1859,17 +1859,16 @@
                             {{ usr.fullName.slice(0, 2) | uppercase }}
                           }
                         </div>
-                        <span class="online-indicator" style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #ffffff;" [style.background-color]="usr.online ? '#2a9d8f' : '#cbd5e1'"></span>
+                        @if (getUnreadCountForContact(usr.username) > 0) {
+                          <span style="position: absolute; bottom: -2px; right: -2px; background-color: #d13438; color: #ffffff; font-size: 9px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.15); box-sizing: border-box; line-height: 1; padding: 0 2px;">
+                            {{ getUnreadCountForContact(usr.username) }}
+                          </span>
+                        }
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden; flex: 1;">
                         <span style="font-size: 12.5px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.fullName }}</span>
                         <span style="font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.role }}</span>
                       </div>
-                      @if (getUnreadCountForContact(usr.username) > 0) {
-                        <span style="background-color: #d13438; color: #ffffff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-left: 4px; flex-shrink: 0;">
-                          {{ getUnreadCountForContact(usr.username) }}
-                        </span>
-                      }
                     </div>
                   }
                 }
