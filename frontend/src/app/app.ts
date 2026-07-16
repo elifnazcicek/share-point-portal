@@ -427,7 +427,7 @@ export class App implements OnInit {
   protected readonly visibleWorkspaces = computed(() => {
     const user = this.currentUser();
     if (!user) return [];
-    if (user === 'admin') return this.workspaces();
+    if (user === 'admin' || user === 'demo') return this.workspaces();
     return this.workspaces().filter(ws => ws.members && ws.members.includes(user));
   });
 
@@ -1650,7 +1650,7 @@ export class App implements OnInit {
     }
 
     // Set default active chat user based on simulator profile
-    if (username === 'admin') {
+    if (username === 'admin' || username === 'demo') {
       this.activeChatUser.set({ username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', email: 'elif.yilmaz@portalone.com', online: true });
     } else {
       this.activeChatUser.set({ username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', email: 'ahmet.karaca@portalone.com', online: true });
@@ -2003,6 +2003,27 @@ export class App implements OnInit {
       return nextAll;
     });
     alert('Not başarıyla kaydedildi.');
+  }
+
+  protected deleteNote(note: any) {
+    if (!note) return;
+    if (!confirm(`"${note.title}" notunu silmek istediğinize emin misiniz?`)) return;
+    
+    const user = this.currentUser() || 'admin';
+    this.personalNotesAll.update(all => {
+      const list = all[user] || [];
+      const filtered = list.filter(n => n.id !== note.id);
+      const nextAll = { ...all, [user]: filtered };
+      localStorage.setItem('personalNotesAll', JSON.stringify(nextAll));
+      return nextAll;
+    });
+
+    const remaining = this.personalNotes();
+    if (remaining.length > 0) {
+      this.selectNote(remaining[0]);
+    } else {
+      this.selectNote(null);
+    }
   }
 
   protected shareNoteInChat() {
@@ -2477,7 +2498,7 @@ export class App implements OnInit {
     if (otherMembers.length > 0) {
       setTimeout(() => {
         const replier = otherMembers[Math.floor(Math.random() * otherMembers.length)];
-        const replierName = replier === 'admin' ? 'Ahmet Karaca' : (replier === 'fin_user' ? 'Elif Yılmaz' : (replier === 'it_user' ? 'Murat (IT)' : replier));
+        const replierName = replier === 'admin' ? 'Ahmet Karaca' : (replier === 'demo' ? 'Demo Admin' : (replier === 'fin_user' ? 'Elif Yılmaz' : (replier === 'it_user' ? 'Murat (IT)' : replier)));
         const replyMsg = {
           sender: replier,
           senderName: replierName,
@@ -2528,7 +2549,7 @@ export class App implements OnInit {
 
     const members = Array.from(new Set(['admin', user, ...this.wsInvitedMembers()]));
 
-    if (user === 'admin') {
+    if (user === 'admin' || user === 'demo') {
       const newWs = {
         id: this.workspaces().length + 1,
         name: name,
@@ -2611,7 +2632,7 @@ export class App implements OnInit {
       isSharedNote: false,
       noteTitle: '',
       isPinned: false,
-      replyTo: replyData ? { senderName: replyData.senderName || (replyData.sender === 'admin' ? 'Ahmet Karaca' : (replyData.sender === 'fin_user' ? 'Elif Yılmaz' : (replyData.sender === 'it_user' ? 'Murat (IT)' : replyData.sender))), text: replyData.text } : undefined
+      replyTo: replyData ? { senderName: replyData.senderName || (replyData.sender === 'admin' ? 'Ahmet Karaca' : (replyData.sender === 'demo' ? 'Demo Admin' : (replyData.sender === 'fin_user' ? 'Elif Yılmaz' : (replyData.sender === 'it_user' ? 'Murat (IT)' : replyData.sender)))), text: replyData.text } : undefined
     };
 
     const activeUser = this.activeChatUser();
@@ -2875,6 +2896,7 @@ export class App implements OnInit {
   @HostListener('document:click')
   protected closeContextMenu() {
     this.contextMenuVisible.set(false);
+    this.chatContextMenuVisible.set(false);
   }
 
   protected removeShortcutViaContextMenu() {

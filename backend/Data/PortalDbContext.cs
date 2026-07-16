@@ -147,7 +147,8 @@ namespace SharePointBackend.Data
                 new User { Id = 3, Username = "hr_user", PasswordHash = HashPassword("hr123"), FullName = "Zeynep Demir", Role = "HR Department", Email = "zeynep.demir@portalone.com", PhoneNumber = "555-0102" },
                 new User { Id = 4, Username = "fin_user", PasswordHash = HashPassword("fin123"), FullName = "Elif Yılmaz", Role = "Finance Department", Email = "elif.yilmaz@portalone.com", PhoneNumber = "555-0103" },
                 new User { Id = 5, Username = "ops_user", PasswordHash = HashPassword("ops123"), FullName = "Can Özkan", Role = "Operations Department", Email = "can.ozkan@portalone.com", PhoneNumber = "555-0104" },
-                new User { Id = 6, Username = "dev_user", PasswordHash = HashPassword("dev123"), FullName = "Selin Kaya", Role = "IT Department", Email = "selin.kaya@portalone.com", PhoneNumber = "555-0105" }
+                new User { Id = 6, Username = "dev_user", PasswordHash = HashPassword("dev123"), FullName = "Selin Kaya", Role = "IT Department", Email = "selin.kaya@portalone.com", PhoneNumber = "555-0105" },
+                new User { Id = 7, Username = "demo", PasswordHash = HashPassword("demo"), FullName = "Demo Admin", Role = "IT Department", Email = "demo.admin@portalone.com", PhoneNumber = "555-0107" }
             );
 
             // Seed Documents
