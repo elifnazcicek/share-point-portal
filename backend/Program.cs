@@ -10,13 +10,13 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<PortalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure CORS for Angular Frontend running on Port 4400
+// Configure CORS for Angular Frontend running on Port 4400 and local network hosts
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularPortal",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4400")
+            policy.SetIsOriginAllowed(origin => true)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
