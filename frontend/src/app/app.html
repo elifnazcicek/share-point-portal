@@ -1016,7 +1016,9 @@
                 <div class="docs-tab-content">
                   <div class="workspace-d-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Ortak Çalışma Odaları (Workspace)</h3>
-                    <button class="btn btn-primary btn-sm" (click)="createNewWorkspace()">Ortak Çalışma Alanı Aç</button>
+                    @if (canCreateWorkspace()) {
+                      <button class="btn btn-primary btn-sm" (click)="createNewWorkspace()">Ortak Çalışma Alanı Aç</button>
+                    }
                   </div>
                   <div class="workspaces-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
                     @for (ws of visibleWorkspaces(); track ws.id) {
@@ -1029,6 +1031,13 @@
                           <span style="font-size: 11px; color: var(--text-muted);">{{ ws.files?.length || 0 }} Dosya / Görsel</span>
                           <button class="btn btn-outline btn-xs" (click)="$event.stopPropagation(); openWorkspaceDetail(ws)">Odaya Gir</button>
                         </div>
+                      </div>
+                    }
+                    @if (visibleWorkspaces().length === 0) {
+                      <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: #faf9f8; text-align: center; color: var(--text-muted);">
+                        <app-icon name="info" [size]="28" color="#a19f9d" style="margin-bottom: 12px; display: block;"></app-icon>
+                        <span style="font-size: 13.5px; font-weight: 600; color: #323130;">Dahil olduğunuz mevcut bir çalışma odası bulunamadı.</span>
+                        <span style="font-size: 11.5px; margin-top: 6px; color: #605e5c;">Bir sorun olduğunu düşünüyorsanız lütfen departman yetkilinize danışın.</span>
                       </div>
                     }
                   </div>

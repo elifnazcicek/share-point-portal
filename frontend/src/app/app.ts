@@ -3195,6 +3195,11 @@ export class App implements OnInit {
     );
   }
 
+  protected canCreateWorkspace(): boolean {
+    const role = this.currentUserRole();
+    return role === 'Admin' || role === 'IT Department';
+  }
+
   protected onAdminTabClick() {
     this.activeTab.set('admin');
     if (this.currentUserRole() !== 'Admin') {
