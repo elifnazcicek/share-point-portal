@@ -805,7 +805,7 @@ export class App implements OnInit {
     if (savedWorkspaces) {
       try {
         const parsed = JSON.parse(savedWorkspaces);
-        if (parsed.length > 0) {
+        if (parsed && parsed.length > 0) {
           const first = parsed[0];
           if (!first.members || !first.members.includes('admin') || !first.files || first.files.length < 4 || !first.files[0].uploadedBy) {
             const defaults = this.workspaces();
@@ -815,7 +815,10 @@ export class App implements OnInit {
             this.workspaces.set(parsed);
           }
         } else {
-          this.workspaces.set(parsed);
+          // If empty, restore defaults so admin/users always have the rooms
+          const defaults = this.workspaces();
+          localStorage.setItem('workspacesAll', JSON.stringify(defaults));
+          this.workspaces.set(defaults);
         }
       } catch (e) {
         localStorage.setItem('workspacesAll', JSON.stringify(this.workspaces()));
@@ -3197,7 +3200,9 @@ export class App implements OnInit {
 
   protected canCreateWorkspace(): boolean {
     const role = this.currentUserRole();
-    return role === 'Admin' || role === 'IT Department';
+    if (!role) return false;
+    const roleNorm = role.toLowerCase();
+    return roleNorm !== 'guest' && roleNorm !== 'misafir';
   }
 
   protected onAdminTabClick() {
