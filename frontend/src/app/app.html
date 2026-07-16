@@ -301,8 +301,13 @@
           Dosyalar & Belgeler
         </button>
 
-        <button class="cat-nav-btn" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')">
+        <button class="cat-nav-btn" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')" style="position: relative; display: inline-flex; align-items: center; gap: 6px;">
           Sohbet
+          @if (totalUnreadChatCount() > 0) {
+            <span style="background-color: #d13438; color: #ffffff; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box;">
+              {{ totalUnreadChatCount() }}
+            </span>
+          }
         </button>
 
         <button class="cat-nav-btn" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
@@ -1856,10 +1861,15 @@
                         </div>
                         <span class="online-indicator" style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; border: 1px solid #ffffff;" [style.background-color]="usr.online ? '#2a9d8f' : '#cbd5e1'"></span>
                       </div>
-                      <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden;">
+                      <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden; flex: 1;">
                         <span style="font-size: 12.5px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.fullName }}</span>
                         <span style="font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ usr.role }}</span>
                       </div>
+                      @if (getUnreadCountForContact(usr.username) > 0) {
+                        <span style="background-color: #d13438; color: #ffffff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-left: 4px; flex-shrink: 0;">
+                          {{ getUnreadCountForContact(usr.username) }}
+                        </span>
+                      }
                     </div>
                   }
                 }

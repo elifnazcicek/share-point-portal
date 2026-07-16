@@ -487,6 +487,30 @@ export class App implements OnInit {
     { sender: 'Kurumsal Destek Botu', text: 'Merhaba! Ben kurumsal hızlı destek robotuyum. Portal ile ilgili genel sorularınızı buradan yanıtlayabilirim.', time: '09:00' }
   ]);
 
+  protected readonly unreadCounts = signal<Record<string, number>>({
+    'admin_fin_user': 2,
+    'admin_it_user': 1,
+    'fin_user_admin': 1
+  });
+
+  protected readonly totalUnreadChatCount = computed(() => {
+    const current = this.currentUser();
+    if (!current) return 0;
+    let total = 0;
+    this.chatContacts().forEach(c => {
+      const key = `${current}_${c.username}`;
+      total += this.unreadCounts()[key] || 0;
+    });
+    return total;
+  });
+
+  protected getUnreadCountForContact(contactUsername: string): number {
+    const current = this.currentUser();
+    if (!current) return 0;
+    const key = `${current}_${contactUsername}`;
+    return this.unreadCounts()[key] || 0;
+  }
+
   private getChatKey(userA: string, userB: string): string {
     const sorted = [userA, userB].sort();
     return `${sorted[0]}_${sorted[1]}`;
@@ -2511,6 +2535,14 @@ export class App implements OnInit {
 
   protected selectChatUser(usr: any) {
     this.activeChatUser.set(usr);
+    if (usr) {
+      const current = this.currentUser();
+      const key = `${current}_${usr.username}`;
+      this.unreadCounts.update(counts => ({
+        ...counts,
+        [key]: 0
+      }));
+    }
   }
 
   protected sendFullChatMessage() {
@@ -2530,12 +2562,20 @@ export class App implements OnInit {
       replyTo: replyData ? { senderName: replyData.senderName || (replyData.sender === 'admin' ? 'Ahmet Karaca' : (replyData.sender === 'fin_user' ? 'Elif Yılmaz' : (replyData.sender === 'it_user' ? 'Murat (IT)' : replyData.sender))), text: replyData.text } : undefined
     };
 
+    const activeUser = this.activeChatUser();
+    if (activeUser && activeUser.username !== 'ai_bot') {
+      const key = `${activeUser.username}_${user}`;
+      this.unreadCounts.update(counts => ({
+        ...counts,
+        [key]: (counts[key] || 0) + 1
+      }));
+    }
+
     this.replyingToMessage.set(null);
     this.appendMessageToActiveChat(payload);
     this.fullChatInput.set('');
     this.chatMessageSearchQuery.set(''); // Clear search filter when sending message
 
-    const activeUser = this.activeChatUser();
     if (activeUser?.username === 'ai_bot') {
       const typingMsg = {
         sender: 'ai_bot',
