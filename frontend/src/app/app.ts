@@ -472,6 +472,8 @@ export class App implements OnInit {
   protected readonly logSearchUser = signal<string>('');
   protected readonly logSearchAction = signal<string>('');
   protected readonly logSearchDept = signal<string>('');
+  protected readonly logSearchStartDate = signal<string>('');
+  protected readonly logSearchEndDate = signal<string>('');
 
   // Admin Workspace Management State
   protected readonly adminUsers = signal<AdminUser[]>([]);
@@ -2742,11 +2744,23 @@ export class App implements OnInit {
     const userQ = this.logSearchUser().toLowerCase();
     const actionQ = this.logSearchAction().toLowerCase();
     const deptQ = this.logSearchDept().toLowerCase();
+    const startVal = this.logSearchStartDate();
+    const endVal = this.logSearchEndDate();
+
     return this.recentLogs().filter(log => {
       const nameMatch = !userQ || log.deviceName.toLowerCase().includes(userQ) || log.ipAddress.toLowerCase().includes(userQ);
       const actionMatch = !actionQ || log.action.toLowerCase().includes(actionQ);
       const deptMatch = !deptQ || log.departmentName.toLowerCase().includes(deptQ);
-      return nameMatch && actionMatch && deptMatch;
+      
+      // Date range filtering (compare YYYY-MM-DD)
+      let dateMatch = true;
+      if (log.timestamp) {
+        const logDateStr = log.timestamp.split('T')[0];
+        if (startVal && logDateStr < startVal) dateMatch = false;
+        if (endVal && logDateStr > endVal) dateMatch = false;
+      }
+      
+      return nameMatch && actionMatch && deptMatch && dateMatch;
     });
   }
 

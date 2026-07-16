@@ -1505,25 +1505,25 @@
               @if (adminSubTab() === 'logs') {
                 <div class="admin-tab-section active">
                   <h3>Sistem Denetim İzi (Audit Logs)</h3>
-                  <div class="log-filters" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                  <div class="log-filters" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
                     <input 
                       type="text" 
                       [ngModel]="logSearchUser()" 
                       (ngModelChange)="logSearchUser.set($event)" 
                       placeholder="Cihaz adı veya IP..." 
-                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 180px; outline: none; font-family: inherit;" 
+                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 150px; outline: none; font-family: inherit;" 
                     />
                     <input 
                       type="text" 
                       [ngModel]="logSearchAction()" 
                       (ngModelChange)="logSearchAction.set($event)" 
                       placeholder="İşlem veya aksiyon..." 
-                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 180px; outline: none; font-family: inherit;" 
+                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 150px; outline: none; font-family: inherit;" 
                     />
                     <select 
                       [ngModel]="logSearchDept()" 
                       (ngModelChange)="logSearchDept.set($event)" 
-                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 180px; outline: none; cursor: pointer; font-family: inherit; background-color: white;"
+                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 150px; outline: none; cursor: pointer; font-family: inherit; background-color: white;"
                     >
                       <option value="">Tüm Departmanlar</option>
                       <option value="General">Genel (General)</option>
@@ -1532,6 +1532,33 @@
                       <option value="Finance Department">Finans Departmanı</option>
                       <option value="Operations Department">Operasyon Departmanı</option>
                     </select>
+
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted);">
+                      <span>Tarih:</span>
+                      <input 
+                        type="date" 
+                        [ngModel]="logSearchStartDate()" 
+                        (ngModelChange)="logSearchStartDate.set($event)" 
+                        style="padding: 5px 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12px; outline: none; font-family: inherit;" 
+                      />
+                      <span>-</span>
+                      <input 
+                        type="date" 
+                        [ngModel]="logSearchEndDate()" 
+                        (ngModelChange)="logSearchEndDate.set($event)" 
+                        style="padding: 5px 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12px; outline: none; font-family: inherit;" 
+                      />
+                      @if (logSearchStartDate() || logSearchEndDate()) {
+                        <button 
+                          type="button" 
+                          (click)="logSearchStartDate.set(''); logSearchEndDate.set('')" 
+                          style="background: transparent; border: none; color: #ef4444; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0 4px;"
+                          title="Tarih filtresini temizle"
+                        >
+                          Temizle
+                        </button>
+                      }
+                    </div>
                   </div>
 
                   <div class="approvals-table-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
