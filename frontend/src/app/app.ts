@@ -471,6 +471,7 @@ export class App implements OnInit {
   protected readonly homeDescription = signal<string>('Tüm departman belgelerinin, notların ve onay mekanizmalarının tek bir çatı altında yönetildiği yeni kurumsal portalımıza hoş geldiniz.');
   protected readonly logSearchUser = signal<string>('');
   protected readonly logSearchAction = signal<string>('');
+  protected readonly logSearchDept = signal<string>('');
 
   // Admin Workspace Management State
   protected readonly adminUsers = signal<AdminUser[]>([]);
@@ -2740,10 +2741,12 @@ export class App implements OnInit {
   protected filteredLogs() {
     const userQ = this.logSearchUser().toLowerCase();
     const actionQ = this.logSearchAction().toLowerCase();
+    const deptQ = this.logSearchDept().toLowerCase();
     return this.recentLogs().filter(log => {
-      const nameMatch = !userQ || log.deviceName.toLowerCase().includes(userQ) || log.departmentName.toLowerCase().includes(userQ);
+      const nameMatch = !userQ || log.deviceName.toLowerCase().includes(userQ) || log.ipAddress.toLowerCase().includes(userQ);
       const actionMatch = !actionQ || log.action.toLowerCase().includes(actionQ);
-      return nameMatch && actionMatch;
+      const deptMatch = !deptQ || log.departmentName.toLowerCase().includes(deptQ);
+      return nameMatch && actionMatch && deptMatch;
     });
   }
 

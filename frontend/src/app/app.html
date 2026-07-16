@@ -1506,8 +1506,32 @@
                 <div class="admin-tab-section active">
                   <h3>Sistem Denetim İzi (Audit Logs)</h3>
                   <div class="log-filters" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-                    <input type="text" [(ngModel)]="logSearchUser" placeholder="Cihaz adına göre filtrele..." style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 200px; outline: none;" />
-                    <input type="text" [(ngModel)]="logSearchAction" placeholder="İşleme göre filtrele..." style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 200px; outline: none;" />
+                    <input 
+                      type="text" 
+                      [ngModel]="logSearchUser()" 
+                      (ngModelChange)="logSearchUser.set($event)" 
+                      placeholder="Cihaz adı veya IP..." 
+                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 180px; outline: none; font-family: inherit;" 
+                    />
+                    <input 
+                      type="text" 
+                      [ngModel]="logSearchAction()" 
+                      (ngModelChange)="logSearchAction.set($event)" 
+                      placeholder="İşlem veya aksiyon..." 
+                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 180px; outline: none; font-family: inherit;" 
+                    />
+                    <select 
+                      [ngModel]="logSearchDept()" 
+                      (ngModelChange)="logSearchDept.set($event)" 
+                      style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 12.5px; width: 180px; outline: none; cursor: pointer; font-family: inherit; background-color: white;"
+                    >
+                      <option value="">Tüm Departmanlar</option>
+                      <option value="General">Genel (General)</option>
+                      <option value="IT Department">IT Departmanı</option>
+                      <option value="HR Department">İK Departmanı</option>
+                      <option value="Finance Department">Finans Departmanı</option>
+                      <option value="Operations Department">Operasyon Departmanı</option>
+                    </select>
                   </div>
 
                   <div class="approvals-table-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
