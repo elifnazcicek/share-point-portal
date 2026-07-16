@@ -431,15 +431,15 @@ export class App implements OnInit {
   });
 
   // Full Screen Dual Chat Contacts
-  protected readonly chatContacts = signal<{username: string, fullName: string, role: string, online: boolean}[]>([
-    { username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', online: true },
-    { username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', online: true },
-    { username: 'it_user', fullName: 'Murat (IT Sorumlusu)', role: 'IT Sorumlusu', online: true },
-    { username: 'ai_bot', fullName: 'PortalOne AI', role: 'Yapay Zeka Asistanı', online: true },
-    { username: 'misafir', fullName: 'Misafir (Ziyaretçi)', role: 'Ziyaretçi', online: false }
+  protected readonly chatContacts = signal<{username: string, fullName: string, role: string, email: string, online: boolean}[]>([
+    { username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', email: 'ahmet.karaca@portalone.com', online: true },
+    { username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', email: 'elif.yilmaz@portalone.com', online: true },
+    { username: 'it_user', fullName: 'Murat (IT Sorumlusu)', role: 'IT Sorumlusu', email: 'murat.kaya@portalone.com', online: true },
+    { username: 'ai_bot', fullName: 'PortalOne AI', role: 'Yapay Zeka Asistanı', email: 'ai.bot@portalone.com', online: true },
+    { username: 'misafir', fullName: 'Misafir (Ziyaretçi)', role: 'Ziyaretçi', email: 'misafir@portalone.com', online: false }
   ]);
-  protected readonly activeChatUser = signal<{username: string, fullName: string, role: string, online: boolean} | null>({
-    username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', online: true
+  protected readonly activeChatUser = signal<{username: string, fullName: string, role: string, email: string, online: boolean} | null>({
+    username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', email: 'elif.yilmaz@portalone.com', online: true
   });
   protected readonly fullChatInput = signal<string>('');
   protected readonly chatMessageSearchQuery = signal<string>('');
@@ -646,14 +646,15 @@ export class App implements OnInit {
     });
 
     // 4. Filter Employees/Users (Combine database users and chatContacts)
-    const allUsersList: { username: string, fullName: string, role: string }[] = [];
+    const allUsersList: { username: string, fullName: string, role: string, email: string }[] = [];
     
     // Add database users
     this.adminUsers().forEach(u => {
       allUsersList.push({
         username: u.username,
         fullName: u.fullName,
-        role: u.role
+        role: u.role,
+        email: u.email
       });
     });
 
@@ -663,7 +664,8 @@ export class App implements OnInit {
         allUsersList.push({
           username: c.username,
           fullName: c.fullName,
-          role: c.role
+          role: c.role,
+          email: c.email || `${c.username}@portalone.com`
         });
       }
     });
@@ -672,7 +674,8 @@ export class App implements OnInit {
       const nameNorm = this.normalizeTurkish(u.fullName || '');
       const usernameNorm = this.normalizeTurkish(u.username || '');
       const roleNorm = this.normalizeTurkish(u.role || '');
-      return nameNorm.includes(query) || usernameNorm.includes(query) || roleNorm.includes(query);
+      const emailNorm = this.normalizeTurkish(u.email || '');
+      return nameNorm.includes(query) || usernameNorm.includes(query) || roleNorm.includes(query) || emailNorm.includes(query);
     });
 
     return {
@@ -704,6 +707,7 @@ export class App implements OnInit {
       username: user.username,
       fullName: user.fullName || user.username,
       role: user.role || 'Çalışan',
+      email: user.email || `${user.username}@portalone.com`,
       online: true
     });
     this.isSearchOpen.set(false);
@@ -1599,9 +1603,9 @@ export class App implements OnInit {
 
     // Set default active chat user based on simulator profile
     if (username === 'admin') {
-      this.activeChatUser.set({ username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', online: true });
+      this.activeChatUser.set({ username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', email: 'elif.yilmaz@portalone.com', online: true });
     } else {
-      this.activeChatUser.set({ username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', online: true });
+      this.activeChatUser.set({ username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', email: 'ahmet.karaca@portalone.com', online: true });
     }
 
     // Auto select the first note of the new profile
