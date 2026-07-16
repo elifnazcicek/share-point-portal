@@ -2550,18 +2550,6 @@ export class App implements OnInit {
 
       // Trigger HTTP request with retry logic
       this.sendAiRequestWithRetry(input, user, typingMsg, 1, 3);
-    } else {
-      // Simulate reply after 1 second for standard colleagues
-      setTimeout(() => {
-        const reply = {
-          sender: activeUser?.username || 'elif',
-          text: 'Sorunuzu aldım, en kısa sürede dönüş sağlayacağım.',
-          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-          isSharedNote: false,
-          noteTitle: ''
-        };
-        this.appendMessageToActiveChat(reply);
-      }, 1000);
     }
   }
 
@@ -2619,6 +2607,11 @@ export class App implements OnInit {
         [key]: [...userHistory, msg]
       };
     });
+
+    setTimeout(() => {
+      const el = document.querySelector('.chat-messages-area');
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 50);
   }
 
   private removeMessageFromActiveChat(msg: any) {
