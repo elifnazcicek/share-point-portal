@@ -443,6 +443,20 @@ export class App implements OnInit {
   });
   protected readonly fullChatInput = signal<string>('');
   protected readonly chatMessageSearchQuery = signal<string>('');
+  protected readonly chatContactSearchQuery = signal<string>('');
+
+  protected readonly filteredChatContacts = computed(() => {
+    const list = this.chatContacts();
+    const query = this.normalizeTurkish(this.chatContactSearchQuery().trim());
+    if (!query) return list;
+
+    return list.filter(c => {
+      const name = this.normalizeTurkish(c.fullName || '');
+      const role = this.normalizeTurkish(c.role || '');
+      const email = this.normalizeTurkish(c.email || '');
+      return name.includes(query) || role.includes(query) || email.includes(query);
+    });
+  });
 
   // Admin tabs & config parameters
   protected readonly adminSubTab = signal<'users' | 'network' | 'logs' | 'home-edit' | 'approvals' | 'delegation'>('users');
