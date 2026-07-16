@@ -350,29 +350,6 @@
       <div class="search-overlay-backdrop" (click)="isSearchOpen.set(false)"></div>
       <div class="windows-search-panel">
         
-        <!-- Left Start Rail -->
-        <div class="start-rail">
-          <div class="rail-top">
-            <div class="rail-avatar" (click)="openProfileModal(); isSearchOpen.set(false);" style="cursor:pointer;" [title]="currentUser() || 'User'">
-              {{ currentUser()?.slice(0,2) | uppercase }}
-            </div>
-            <button class="rail-btn" (click)="activeTab.set('workspace'); isSearchOpen.set(false)" title="Çalışma Alanı / Belgeler">
-              <app-icon name="calendar" [size]="18" color="#94a3b8"></app-icon>
-            </button>
-            <button class="rail-btn" (click)="isSimulatorOpen.set(true); isSearchOpen.set(false)" title="Ağ Simülatörü">
-              <app-icon name="activity" [size]="18" color="#94a3b8"></app-icon>
-            </button>
-            @if (currentUserRole() === 'IT Department' || currentUserRole() === 'Admin') {
-              <button class="rail-btn" (click)="activeTab.set('admin'); isSearchOpen.set(false)" title="Admin Paneli">
-                <app-icon name="settings" [size]="18" color="#94a3b8"></app-icon>
-              </button>
-            }
-          </div>
-          <button class="rail-btn rail-power" (click)="logout()" title="Oturumu Kapat">
-            <app-icon name="log-out" [size]="18" color="#ef4444"></app-icon>
-          </button>
-        </div>
-
         <!-- Middle Main App Search List with Pinned Apps Pinned Rows instead of squares -->
         <div class="start-main-area">
           <div class="search-box-start">
