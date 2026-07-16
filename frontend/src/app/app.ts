@@ -127,9 +127,10 @@ interface PortalEvent {
 })
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5100/api/portal'; // Dotnet Portal API URL
-  private readonly authUrl = 'http://localhost:5100/api/auth'; // Dotnet Auth API URL
-  private readonly workspaceUrl = 'http://localhost:5100/api/workspace'; // Dotnet Workspace API URL
+  private readonly apiHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  private readonly apiUrl = `http://${this.apiHost}:5100/api/portal`; // Dotnet Portal API URL
+  private readonly authUrl = `http://${this.apiHost}:5100/api/auth`; // Dotnet Auth API URL
+  private readonly workspaceUrl = `http://${this.apiHost}:5100/api/workspace`; // Dotnet Workspace API URL
 
   // Authentication State
   protected readonly isLoggedIn = signal<boolean>(false);
