@@ -193,7 +193,7 @@ export class App implements OnInit {
   // UI Navigation Tabs
   protected readonly activeTab = signal<'home' | 'workspace' | 'admin' | 'chat'>('home'); // Categorized top bar states
   protected readonly workspaceSubTab = signal<'dms' | 'notepad' | 'workspaces'>('dms');
-  protected readonly activeUserSim = signal<'ahmet' | 'elif' | 'it_user' | 'misafir'>('ahmet');
+  protected readonly activeUserSim = signal<'ahmet' | 'elif' | 'it_user' | 'misafir' | 'hr_user' | 'ops_user' | 'dev_user'>('ahmet');
   protected readonly networkVpnMode = signal<'intranet' | 'extranet'>('intranet');
   protected readonly isSearchOpen = signal<boolean>(false); // Left search/launcher menu toggle
   protected readonly isEditShortcutsModalOpen = signal<boolean>(false);
@@ -435,6 +435,9 @@ export class App implements OnInit {
     { username: 'admin', fullName: 'Ahmet Karaca', role: 'Global Admin', email: 'ahmet.karaca@portalone.com', online: true },
     { username: 'fin_user', fullName: 'Elif Yılmaz', role: 'Accounting Dept Admin', email: 'elif.yilmaz@portalone.com', online: true },
     { username: 'it_user', fullName: 'Murat (IT Sorumlusu)', role: 'IT Sorumlusu', email: 'murat.kaya@portalone.com', online: true },
+    { username: 'hr_user', fullName: 'Zeynep Demir', role: 'HR Manager', email: 'zeynep.demir@portalone.com', online: false },
+    { username: 'ops_user', fullName: 'Can Özkan', role: 'Operations Supervisor', email: 'can.ozkan@portalone.com', online: false },
+    { username: 'dev_user', fullName: 'Selin Kaya', role: 'Software Developer', email: 'selin.kaya@portalone.com', online: false },
     { username: 'ai_bot', fullName: 'PortalOne AI', role: 'Yapay Zeka Asistanı', email: 'ai.bot@portalone.com', online: true },
     { username: 'misafir', fullName: 'Misafir (Ziyaretçi)', role: 'Ziyaretçi', email: 'misafir@portalone.com', online: false }
   ]);
@@ -1578,7 +1581,7 @@ export class App implements OnInit {
     this.isSimulatorOpen.set(false);
   }
 
-  protected onActiveUserSimChange(user: 'ahmet' | 'elif' | 'it_user' | 'misafir') {
+  protected onActiveUserSimChange(user: 'ahmet' | 'elif' | 'it_user' | 'misafir' | 'hr_user' | 'ops_user' | 'dev_user') {
     this.activeUserSim.set(user);
     let username = 'admin';
     if (user === 'ahmet') {
@@ -1613,6 +1616,30 @@ export class App implements OnInit {
       this.currentUserRole.set('Guest');
       this.currentUserFullName.set('Misafir (Ziyaretçi)');
       username = 'misafir';
+    } else if (user === 'hr_user') {
+      localStorage.setItem('username', 'hr_user');
+      localStorage.setItem('role', 'HR Department');
+      localStorage.setItem('fullName', 'Zeynep Demir (HR Manager)');
+      this.currentUser.set('hr_user');
+      this.currentUserRole.set('HR Department');
+      this.currentUserFullName.set('Zeynep Demir (HR Manager)');
+      username = 'hr_user';
+    } else if (user === 'ops_user') {
+      localStorage.setItem('username', 'ops_user');
+      localStorage.setItem('role', 'Operations Department');
+      localStorage.setItem('fullName', 'Can Özkan (Operations Supervisor)');
+      this.currentUser.set('ops_user');
+      this.currentUserRole.set('Operations Department');
+      this.currentUserFullName.set('Can Özkan (Operations Supervisor)');
+      username = 'ops_user';
+    } else if (user === 'dev_user') {
+      localStorage.setItem('username', 'dev_user');
+      localStorage.setItem('role', 'IT Department');
+      localStorage.setItem('fullName', 'Selin Kaya (Software Developer)');
+      this.currentUser.set('dev_user');
+      this.currentUserRole.set('IT Department');
+      this.currentUserFullName.set('Selin Kaya (Software Developer)');
+      username = 'dev_user';
     }
 
     // Set default active chat user based on simulator profile
@@ -3155,6 +3182,15 @@ export class App implements OnInit {
     return this.delegations().some(d => 
       d.username === currentUser && 
       d.taskKey === taskKey && 
+      d.status === 'Aktif'
+    );
+  }
+
+  protected canAccessAdminPanel(): boolean {
+    if (this.currentUserRole() === 'Admin') return true;
+    const currentUser = this.currentUser();
+    return this.delegations().some(d => 
+      d.username === currentUser && 
       d.status === 'Aktif'
     );
   }

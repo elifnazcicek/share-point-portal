@@ -310,9 +310,11 @@
           }
         </button>
 
-        <button class="cat-nav-btn" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
-          Yönetici Paneli
-        </button>
+        @if (canAccessAdminPanel()) {
+          <button class="cat-nav-btn" [class.active]="activeTab() === 'admin'" (click)="onAdminTabClick()">
+            Yönetici Paneli
+          </button>
+        }
       </nav>
 
       <div class="header-right" style="gap: 12px;">
@@ -322,6 +324,9 @@
           <option value="ahmet" style="color:#000;">Aktif Kullanıcı: Ahmet (Global Admin)</option>
           <option value="elif" style="color:#000;">Aktif Kullanıcı: Elif (Muhasebe Dept)</option>
           <option value="it_user" style="color:#000;">Aktif Kullanıcı: Murat (IT Sorumlusu)</option>
+          <option value="hr_user" style="color:#000;">Aktif Kullanıcı: Zeynep (HR Manager)</option>
+          <option value="ops_user" style="color:#000;">Aktif Kullanıcı: Can (Ops Supervisor)</option>
+          <option value="dev_user" style="color:#000;">Aktif Kullanıcı: Selin (Dev User)</option>
           <option value="misafir" style="color:#000;">Aktif Kullanıcı: Misafir (Ziyaretçi)</option>
         </select>
 
