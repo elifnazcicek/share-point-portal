@@ -3200,9 +3200,7 @@ export class App implements OnInit {
 
   protected canCreateWorkspace(): boolean {
     const role = this.currentUserRole();
-    if (!role) return false;
-    const roleNorm = role.toLowerCase();
-    return roleNorm !== 'guest' && roleNorm !== 'misafir';
+    return role === 'Admin' || role === 'IT Department';
   }
 
   protected onAdminTabClick() {
