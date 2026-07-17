@@ -3185,7 +3185,12 @@ export class App implements OnInit {
       'logs': 'Audit Log Raporu Görüntüleme',
       'approvals': 'Onay Taleplerini Yönetme',
       'users': 'Kullanıcı Rol Ataması',
-      'network': 'Güvenli Ağ & Limitler'
+      'network': 'Güvenli Ağ & Limitler',
+      'dms-admin': 'DMS Dosya ve Arşiv Yönetimi',
+      'announcements': 'Genel Duyuru Yayınlama',
+      'workspace-admin': 'Ortak Çalışma Odası (Workspace) Yönetimi',
+      'hr-approvals': 'İK İzin & Talep Onayları',
+      'delegation-admin': 'Yetki Devri Yönetimi (Delegasyon)'
     };
 
     const userFullNames: Record<string, string> = {
@@ -3240,7 +3245,7 @@ export class App implements OnInit {
 
   protected canCreateWorkspace(): boolean {
     const role = this.currentUserRole();
-    return role === 'Admin' || role === 'IT Department';
+    return role === 'Admin' || role === 'IT Department' || this.hasDelegatedPermission('workspace-admin');
   }
 
   protected onAdminTabClick() {
@@ -3251,6 +3256,7 @@ export class App implements OnInit {
       else if (this.hasDelegatedPermission('logs')) this.adminSubTab.set('logs');
       else if (this.hasDelegatedPermission('home-edit')) this.adminSubTab.set('home-edit');
       else if (this.hasDelegatedPermission('approvals')) this.adminSubTab.set('approvals');
+      else if (this.hasDelegatedPermission('delegation') || this.hasDelegatedPermission('delegation-admin')) this.adminSubTab.set('delegation');
     } else {
       this.adminSubTab.set('users');
     }
